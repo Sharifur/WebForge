@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drag Drop Test</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@dnd-kit/core@6.0.8/dist/index.umd.js"></script>
+    <style>
+        .draggable {
+            padding: 10px;
+            margin: 5px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: grab;
+        }
+        .droppable {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .droppable.over {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        const { DndContext, useDraggable, useDroppable } = window.DndKit;
+        
+        function DraggableItem({ id, children }) {
+            const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+                id: id,
+                data: { type: 'widget-template', widget: { type: 'test', label: 'Test Widget' } }
+            });
+            
+            const style = {
+                transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+                opacity: isDragging ? 0.5 : 1
+            };
+            
+            return (
+                <div
+                    ref={setNodeRef}
+                    style={style}
+                    {...listeners}
+                    {...attributes}
+                    className="draggable"
+                >
+                    {children}
+                </div>
+            );
+        }
+        
+        function DroppableArea({ id, children }) {
+            const { setNodeRef, isOver } = useDroppable({
+                id: id,
+                data: { type: 'canvas' }
+            });
+            
+            return (
+                <div
+                    ref={setNodeRef}
+                    className={`droppable ${isOver ? 'over' : ''}`}
+                >
+                    {children}
+                </div>
+            );
+        }
+        
+        function App() {
+            const [items, setItems] = useState([]);
+            
+            function handleDragEnd(event) {
+                const { active, over } = event;
+                console.log('Drag end:', { active, over });
+                
+                if (over && over.data.current?.type === 'canvas') {
+                    console.log('Item dropped on canvas!');
+                    setItems(prev => [...prev, `Item ${Date.now()}`]);
+                }
+            }
+            
+            return (
+                <DndContext onDragEnd={handleDragEnd}>
+                    <div style={{ display: 'flex' }}>
+                        <div style={{ padding: '20px' }}>
+                            <h3>Draggable Items</h3>
+                            <DraggableItem id="widget-test">Test Widget</DraggableItem>
+                            <DraggableItem id="widget-button">Button Widget</DraggableItem>
+                        </div>
+                        
+                        <div style={{ padding: '20px' }}>
+                            <h3>Drop Zone</h3>
+                            <DroppableArea id="canvas">
+                                {items.length === 0 ? (
+                                    <div>Drop widgets here</div>
+                                ) : (
+                                    <div>
+                                        {items.map((item, i) => (
+                                            <div key={i}>{item}</div>
+                                        ))}
+                                    </div>
+                                )}
+                            </DroppableArea>
+                        </div>
+                    </div>
+                </DndContext>
+            );
+        }
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
