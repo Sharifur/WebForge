@@ -1,0 +1,291 @@
+<?php
+
+namespace Plugins\Pagebuilder\Core;
+
+use Plugins\Pagebuilder\Core\Fields\TextField;
+use Plugins\Pagebuilder\Core\Fields\TextareaField;
+use Plugins\Pagebuilder\Core\Fields\NumberField;
+use Plugins\Pagebuilder\Core\Fields\SelectField;
+use Plugins\Pagebuilder\Core\Fields\MultiSelectField;
+use Plugins\Pagebuilder\Core\Fields\ToggleField;
+use Plugins\Pagebuilder\Core\Fields\ColorField;
+use Plugins\Pagebuilder\Core\Fields\IconField;
+use Plugins\Pagebuilder\Core\Fields\ImageField;
+use Plugins\Pagebuilder\Core\Fields\UrlField;
+use Plugins\Pagebuilder\Core\Fields\EmailField;
+use Plugins\Pagebuilder\Core\Fields\PasswordField;
+use Plugins\Pagebuilder\Core\Fields\RangeField;
+use Plugins\Pagebuilder\Core\Fields\RadioField;
+use Plugins\Pagebuilder\Core\Fields\CheckboxField;
+use Plugins\Pagebuilder\Core\Fields\DateField;
+use Plugins\Pagebuilder\Core\Fields\TimeField;
+use Plugins\Pagebuilder\Core\Fields\DateTimeField;
+use Plugins\Pagebuilder\Core\Fields\RepeaterField;
+use Plugins\Pagebuilder\Core\Fields\GroupField;
+use Plugins\Pagebuilder\Core\Fields\DividerField;
+use Plugins\Pagebuilder\Core\Fields\HeadingField;
+use Plugins\Pagebuilder\Core\Fields\CodeField;
+use Plugins\Pagebuilder\Core\Fields\WysiwygField;
+use Plugins\Pagebuilder\Core\Fields\DimensionField;
+
+/**
+ * FieldManager - Static factory class for creating field instances
+ * 
+ * Provides a fluent API for creating all supported field types with IDE autocompletion
+ * and type safety. Each method returns a configured field instance that can be further
+ * customized using chainable methods.
+ * 
+ * @package Plugins\Pagebuilder\Core
+ */
+class FieldManager
+{
+    /**
+     * Create a text input field
+     *
+     * @return TextField
+     */
+    public static function TEXT(): TextField
+    {
+        return new TextField();
+    }
+
+    /**
+     * Create a textarea field
+     *
+     * @return TextareaField
+     */
+    public static function TEXTAREA(): TextareaField
+    {
+        return new TextareaField();
+    }
+
+    /**
+     * Create a number input field
+     *
+     * @return NumberField
+     */
+    public static function NUMBER(): NumberField
+    {
+        return new NumberField();
+    }
+
+    /**
+     * Create a select dropdown field
+     *
+     * @return SelectField
+     */
+    public static function SELECT(): SelectField
+    {
+        return new SelectField();
+    }
+
+    /**
+     * Create a multi-select field
+     *
+     * @return MultiSelectField
+     */
+    public static function MULTISELECT(): MultiSelectField
+    {
+        return new MultiSelectField();
+    }
+
+    /**
+     * Create a toggle/switch field
+     *
+     * @return ToggleField
+     */
+    public static function TOGGLE(): ToggleField
+    {
+        return new ToggleField();
+    }
+
+    /**
+     * Create a color picker field
+     *
+     * @return ColorField
+     */
+    public static function COLOR(): ColorField
+    {
+        return new ColorField();
+    }
+
+    /**
+     * Create an icon picker field
+     *
+     * @return IconField
+     */
+    public static function ICON(): IconField
+    {
+        return new IconField();
+    }
+
+    /**
+     * Create an image upload/picker field
+     *
+     * @return ImageField
+     */
+    public static function IMAGE(): ImageField
+    {
+        return new ImageField();
+    }
+
+    /**
+     * Create a URL input field
+     *
+     * @return UrlField
+     */
+    public static function URL(): UrlField
+    {
+        return new UrlField();
+    }
+
+    /**
+     * Create an email input field
+     *
+     * @return EmailField
+     */
+    public static function EMAIL(): EmailField
+    {
+        return new EmailField();
+    }
+
+    /**
+     * Create a password input field
+     *
+     * @return PasswordField
+     */
+    public static function PASSWORD(): PasswordField
+    {
+        return new PasswordField();
+    }
+
+    /**
+     * Create a range slider field
+     *
+     * @return RangeField
+     */
+    public static function RANGE(): RangeField
+    {
+        return new RangeField();
+    }
+
+    /**
+     * Create a radio buttons field
+     *
+     * @return RadioField
+     */
+    public static function RADIO(): RadioField
+    {
+        return new RadioField();
+    }
+
+    /**
+     * Create a checkbox field
+     *
+     * @return CheckboxField
+     */
+    public static function CHECKBOX(): CheckboxField
+    {
+        return new CheckboxField();
+    }
+
+    /**
+     * Create a date picker field
+     *
+     * @return DateField
+     */
+    public static function DATE(): DateField
+    {
+        return new DateField();
+    }
+
+    /**
+     * Create a time picker field
+     *
+     * @return TimeField
+     */
+    public static function TIME(): TimeField
+    {
+        return new TimeField();
+    }
+
+    /**
+     * Create a datetime picker field
+     *
+     * @return DateTimeField
+     */
+    public static function DATETIME(): DateTimeField
+    {
+        return new DateTimeField();
+    }
+
+    /**
+     * Create a repeater field for dynamic content
+     *
+     * @return RepeaterField
+     */
+    public static function REPEATER(): RepeaterField
+    {
+        return new RepeaterField();
+    }
+
+    /**
+     * Create a group container for organizing fields
+     *
+     * @return GroupField
+     */
+    public static function GROUP(): GroupField
+    {
+        return new GroupField();
+    }
+
+    /**
+     * Create a visual divider/separator
+     *
+     * @return DividerField
+     */
+    public static function DIVIDER(): DividerField
+    {
+        return new DividerField();
+    }
+
+    /**
+     * Create a heading for field sections
+     *
+     * @return HeadingField
+     */
+    public static function HEADING(): HeadingField
+    {
+        return new HeadingField();
+    }
+
+    /**
+     * Create a code editor field
+     *
+     * @return CodeField
+     */
+    public static function CODE(): CodeField
+    {
+        return new CodeField();
+    }
+
+    /**
+     * Create a WYSIWYG editor field
+     *
+     * @return WysiwygField
+     */
+    public static function WYSIWYG(): WysiwygField
+    {
+        return new WysiwygField();
+    }
+
+    /**
+     * Create a dimension field for spacing, padding, margin etc.
+     *
+     * @return DimensionField
+     */
+    public static function DIMENSION(): DimensionField
+    {
+        return new DimensionField();
+    }
+}

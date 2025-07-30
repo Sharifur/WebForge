@@ -1,12 +1,101 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
+import widgetService from '@/Services/widgetService';
+import { Loader, ChevronDown, ChevronRight } from 'lucide-react';
+import PhpFieldRenderer from '@/Components/PageBuilder/Fields/PhpFieldRenderer';
 
 const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const { updateWidget } = usePageBuilderStore();
+  const [phpFields, setPhpFields] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [localWidget, setLocalWidget] = useState(widget);
+  const debounceTimeoutRef = useRef(null);
+
+  // PHP widget types
+  const phpWidgetTypes = [
+    'heading',
+    'paragraph', 
+    'image',
+    'list',
+    'link',
+    'divider',
+    'spacer',
+    'grid',
+    'video',
+    'icon',
+    'code',
+    'tabs',
+    'testimonial',
+    'button',
+    'contact_form',
+    'image_gallery'
+  ];
+
+  // Check if this is a PHP widget
+  const isPhpWidget = phpWidgetTypes.includes(widget.type);
+
+  // Fetch PHP widget fields when widget changes and it's a PHP widget
+  useEffect(() => {
+    if (isPhpWidget) {
+      fetchPhpWidgetFields();
+    }
+  }, [widget.type, isPhpWidget]);
+
+  const fetchPhpWidgetFields = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const fieldsData = await widgetService.getWidgetFields(widget.type, 'general');
+      if (fieldsData) {
+        setPhpFields(fieldsData);
+      } else {
+        setError('Failed to load widget fields');
+      }
+    } catch (err) {
+      console.error('Error fetching PHP widget fields:', err);
+      setError('Error loading widget fields');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Sync local widget with prop changes
+  useEffect(() => {
+    setLocalWidget(widget);
+  }, [widget]);
+
+  // Debounced store update function
+  const debouncedStoreUpdate = useCallback((updatedWidget) => {
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    // Set new timeout for 1 second delay
+    debounceTimeoutRef.current = setTimeout(() => {
+      // Update the widget in the store
+      updateWidget(widget.id, updatedWidget);
+      
+      // Update the selected widget
+      onWidgetUpdate(updatedWidget);
+    }, 1000);
+  }, [widget.id, updateWidget, onWidgetUpdate]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const updateContent = (path, value) => {
     const pathArray = path.split('.');
-    const updatedWidget = { ...widget };
+    const updatedWidget = { ...localWidget };
     
     // Navigate to the nested property
     let current = updatedWidget;
@@ -20,15 +109,22 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     // Set the value
     current[pathArray[pathArray.length - 1]] = value;
     
-    // Update the widget in the store
-    updateWidget(widget.id, updatedWidget);
+    // Update local state immediately for visual feedback
+    setLocalWidget(updatedWidget);
     
-    // Update the selected widget
-    onWidgetUpdate(updatedWidget);
+    // Debounce the store update
+    debouncedStoreUpdate(updatedWidget);
+  };
+
+  const toggleGroupCollapse = (groupKey) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupKey]: !prev[groupKey]
+    }));
   };
 
   const renderWidgetSettings = () => {
-    switch (widget.type) {
+    switch (localWidget.type) {
       case 'heading':
         return (
           <div className="space-y-4">
@@ -38,7 +134,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.text || ''}
+                value={localWidget.content?.text || ''}
                 onChange={(e) => updateContent('content.text', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter heading text"
@@ -50,7 +146,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Tag
               </label>
               <select
-                value={widget.content?.tag || 'h2'}
+                value={localWidget.content?.tag || 'h2'}
                 onChange={(e) => updateContent('content.tag', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -73,7 +169,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Content
               </label>
               <textarea
-                value={widget.content?.html || ''}
+                value={localWidget.content?.html || ''}
                 onChange={(e) => updateContent('content.html', e.target.value)}
                 rows={8}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -95,7 +191,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.text || ''}
+                value={localWidget.content?.text || ''}
                 onChange={(e) => updateContent('content.text', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Button text"
@@ -108,7 +204,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="url"
-                value={widget.content?.url || ''}
+                value={localWidget.content?.url || ''}
                 onChange={(e) => updateContent('content.url', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="https://example.com"
@@ -120,7 +216,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Style
               </label>
               <select
-                value={widget.content?.variant || 'primary'}
+                value={localWidget.content?.variant || 'primary'}
                 onChange={(e) => updateContent('content.variant', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -136,7 +232,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Size
               </label>
               <select
-                value={widget.content?.size || 'medium'}
+                value={localWidget.content?.size || 'medium'}
                 onChange={(e) => updateContent('content.size', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -150,7 +246,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               <input
                 id="openInNewTab"
                 type="checkbox"
-                checked={widget.content?.openInNewTab || false}
+                checked={localWidget.content?.openInNewTab || false}
                 onChange={(e) => updateContent('content.openInNewTab', e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
@@ -170,7 +266,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="url"
-                value={widget.content?.src || ''}
+                value={localWidget.content?.src || ''}
                 onChange={(e) => updateContent('content.src', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="https://example.com/image.jpg"
@@ -183,7 +279,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.alt || ''}
+                value={localWidget.content?.alt || ''}
                 onChange={(e) => updateContent('content.alt', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Image description"
@@ -196,7 +292,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.caption || ''}
+                value={localWidget.content?.caption || ''}
                 onChange={(e) => updateContent('content.caption', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Image caption (optional)"
@@ -208,7 +304,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Alignment
               </label>
               <select
-                value={widget.content?.alignment || 'left'}
+                value={localWidget.content?.alignment || 'left'}
                 onChange={(e) => updateContent('content.alignment', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -228,7 +324,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Style
               </label>
               <select
-                value={widget.content?.style || 'solid'}
+                value={localWidget.content?.style || 'solid'}
                 onChange={(e) => updateContent('content.style', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -244,7 +340,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="color"
-                value={widget.content?.color || '#e5e7eb'}
+                value={localWidget.content?.color || '#e5e7eb'}
                 onChange={(e) => updateContent('content.color', e.target.value)}
                 className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
               />
@@ -261,7 +357,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.height || '20px'}
+                value={localWidget.content?.height || '20px'}
                 onChange={(e) => updateContent('content.height', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="20px"
@@ -282,7 +378,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 <button
                   onClick={() => updateContent('content.columns', 1)}
                   className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (widget.content?.columns || 1) === 1
+                    (localWidget.content?.columns || 1) === 1
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
@@ -297,7 +393,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 <button
                   onClick={() => updateContent('content.columns', 2)}
                   className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (widget.content?.columns || 1) === 2
+                    (localWidget.content?.columns || 1) === 2
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
@@ -313,7 +409,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 <button
                   onClick={() => updateContent('content.columns', 3)}
                   className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (widget.content?.columns || 1) === 3
+                    (localWidget.content?.columns || 1) === 3
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
@@ -330,7 +426,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 <button
                   onClick={() => updateContent('content.columns', 4)}
                   className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (widget.content?.columns || 1) === 4
+                    (localWidget.content?.columns || 1) === 4
                       ? 'border-blue-500 bg-blue-50 text-blue-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-700'
                   }`}
@@ -355,7 +451,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   <button
                     onClick={() => updateContent('content.gridTemplate', '30% 70%')}
                     className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      widget.content?.gridTemplate === '30% 70%'
+                      localWidget.content?.gridTemplate === '30% 70%'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                     }`}
@@ -371,7 +467,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   <button
                     onClick={() => updateContent('content.gridTemplate', '70% 30%')}
                     className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      widget.content?.gridTemplate === '70% 30%'
+                      localWidget.content?.gridTemplate === '70% 30%'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                     }`}
@@ -387,7 +483,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   <button
                     onClick={() => updateContent('content.gridTemplate', '25% 50% 25%')}
                     className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      widget.content?.gridTemplate === '25% 50% 25%'
+                      localWidget.content?.gridTemplate === '25% 50% 25%'
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                     }`}
@@ -409,7 +505,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 </label>
                 <input
                   type="text"
-                  value={widget.content?.gridTemplate || ''}
+                  value={localWidget.content?.gridTemplate || ''}
                   onChange={(e) => updateContent('content.gridTemplate', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="1fr 2fr 1fr or 200px auto 100px"
@@ -426,7 +522,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.gap || '20px'}
+                value={localWidget.content?.gap || '20px'}
                 onChange={(e) => updateContent('content.gap', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="20px"
@@ -439,7 +535,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.padding || '20px'}
+                value={localWidget.content?.padding || '20px'}
                 onChange={(e) => updateContent('content.padding', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="20px"
@@ -452,7 +548,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="color"
-                value={widget.content?.backgroundColor || '#ffffff'}
+                value={localWidget.content?.backgroundColor || '#ffffff'}
                 onChange={(e) => updateContent('content.backgroundColor', e.target.value)}
                 className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
               />
@@ -464,7 +560,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.borderRadius || '0px'}
+                value={localWidget.content?.borderRadius || '0px'}
                 onChange={(e) => updateContent('content.borderRadius', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="0px"
@@ -482,7 +578,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </label>
               <input
                 type="text"
-                value={widget.content?.title || ''}
+                value={localWidget.content?.title || ''}
                 onChange={(e) => updateContent('content.title', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Collapsible section title"
@@ -494,7 +590,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 Content
               </label>
               <textarea
-                value={widget.content?.content || ''}
+                value={localWidget.content?.content || ''}
                 onChange={(e) => updateContent('content.content', e.target.value)}
                 rows={6}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -506,7 +602,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               <input
                 id="isOpenByDefault"
                 type="checkbox"
-                checked={widget.content?.isOpenByDefault || false}
+                checked={localWidget.content?.isOpenByDefault || false}
                 onChange={(e) => updateContent('content.isOpenByDefault', e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
@@ -526,9 +622,97 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     }
   };
 
+  // Render PHP widget fields
+  const renderPhpWidgetFields = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <Loader className="w-5 h-5 animate-spin text-blue-600" />
+          <span className="ml-2 text-sm text-gray-600">Loading fields...</span>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-2 text-sm">{error}</div>
+          <button 
+            onClick={fetchPhpWidgetFields}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    if (!phpFields || !phpFields.fields) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          <p className="text-sm">No general settings available</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {Object.entries(phpFields.fields).map(([groupKey, groupConfig]) => {
+          // Check if this is a group field
+          if (groupConfig.type === 'group' && groupConfig.fields) {
+            const isCollapsed = collapsedGroups[groupKey];
+            return (
+              <div key={groupKey} className="border border-gray-200 rounded-lg">
+                <button
+                  onClick={() => toggleGroupCollapse(groupKey)}
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+                >
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    {groupConfig.label}
+                  </h3>
+                  {isCollapsed ? (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  )}
+                </button>
+                {!isCollapsed && (
+                  <div className="px-4 pb-4 border-t border-gray-100">
+                    <div className="space-y-4 pt-3">
+                      {Object.entries(groupConfig.fields).map(([fieldKey, fieldConfig]) => (
+                        <PhpFieldRenderer
+                          key={`${groupKey}.${fieldKey}`}
+                          fieldKey={fieldKey}
+                          fieldConfig={fieldConfig}
+                          value={localWidget.general?.[groupKey]?.[fieldKey]}
+                          onChange={(value) => updateContent(`general.${groupKey}.${fieldKey}`, value)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          } else {
+            // Handle non-group fields (fallback)
+            return (
+              <PhpFieldRenderer
+                key={groupKey}
+                fieldKey={groupKey}
+                fieldConfig={groupConfig}
+                value={localWidget.general?.[groupKey]}
+                onChange={(value) => updateContent(`general.${groupKey}`, value)}
+              />
+            );
+          }
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
-      {renderWidgetSettings()}
+      {isPhpWidget ? renderPhpWidgetFields() : renderWidgetSettings()}
     </div>
   );
 };

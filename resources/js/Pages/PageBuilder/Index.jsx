@@ -17,6 +17,7 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
     isDragging,
     activeId,
     hoveredDropZone,
+    settingsPanelVisible,
     setPageContent,
     setSelectedWidget,
     setActivePanel,
@@ -53,7 +54,9 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
 
   return (
     <>
-      <Head title={`Page Builder - ${page.title}`} />
+      <Head title={`Page Builder - ${page.title}`}>
+        <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+      </Head>
       
       <div className="h-screen flex bg-gray-50 overflow-hidden">
         <DndContext 
@@ -87,12 +90,14 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
           </div>
           
           {/* Right Sidebar - Settings Panel */}
-          <SettingsPanel 
-            widget={selectedWidget}
-            page={page}
-            onUpdate={setPageContent}
-            onWidgetUpdate={setSelectedWidget}
-          />
+          {settingsPanelVisible && (
+            <SettingsPanel 
+              widget={selectedWidget}
+              page={page}
+              onUpdate={setPageContent}
+              onWidgetUpdate={setSelectedWidget}
+            />
+          )}
           
           {/* Drag Overlay */}
           <DragOverlay>

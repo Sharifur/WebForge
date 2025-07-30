@@ -65,8 +65,9 @@ export const useDragAndDrop = () => {
 
     if (!over) return;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
+    try {
+      const activeData = active.data.current;
+      const overData = over.data.current;
 
     // Validation Rules
     // Rule 1: Container widgets cannot be placed inside other containers/columns
@@ -182,6 +183,11 @@ export const useDragAndDrop = () => {
         reorderContainers(oldIndex, newIndex);
       }
       return;
+    }
+    } catch (error) {
+      console.error('Error in handleDragEnd:', error);
+      console.error('Active data:', active.data.current);
+      console.error('Over data:', over?.data?.current);
     }
   };
 

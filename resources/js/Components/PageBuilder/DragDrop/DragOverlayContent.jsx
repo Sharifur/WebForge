@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Puzzle, 
   Layout, 
@@ -14,8 +14,27 @@ import {
   Columns,
   Grid3X3
 } from 'lucide-react';
+import { PhpWidgetIcon } from '@/Components/PageBuilder/Widgets/PhpWidgetRenderer';
+import widgetService from '@/Services/widgetService';
 
 const DragOverlayContent = ({ activeId, widgets, sections }) => {
+  const [phpWidgets, setPhpWidgets] = useState([]);
+
+  // Fetch PHP widgets for overlay display
+  useEffect(() => {
+    const fetchPhpWidgets = async () => {
+      try {
+        const allWidgets = await widgetService.getAllWidgets();
+        const formattedWidgets = widgetService.formatWidgetsForReact(allWidgets);
+        setPhpWidgets(Array.isArray(formattedWidgets) ? formattedWidgets : []);
+      } catch (error) {
+        console.error('Error fetching PHP widgets for drag overlay:', error);
+        setPhpWidgets([]);
+      }
+    };
+
+    fetchPhpWidgets();
+  }, []);
   // Icon mapping
   const iconMap = {
     'Type': Type,
@@ -32,8 +51,31 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
   // Handle widget dragging
   if (activeId.startsWith('widget-')) {
     const widgetType = activeId.replace('widget-', '');
-    const widget = widgets?.find(w => w.type === widgetType);
     
+    // First check PHP widgets
+    const phpWidget = Array.isArray(phpWidgets) ? phpWidgets.find(w => w.type === widgetType) : null;
+    if (phpWidget) {
+      return (
+        <div className={`bg-white border-2 border-blue-400 rounded-lg p-3 shadow-lg max-w-xs ${
+          phpWidget.is_pro ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white' : ''
+        }`}>
+          <div className="flex items-center space-x-3">
+            <PhpWidgetIcon iconName={phpWidget.icon} className="w-5 h-5 text-gray-600" />
+            <div>
+              <span className="text-sm font-medium text-gray-700">{phpWidget.name}</span>
+              {phpWidget.is_pro && (
+                <span className="ml-2 text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
+                  PRO
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Fall back to legacy React widgets
+    const widget = widgets?.find(w => w.type === widgetType);
     if (widget) {
       const IconComponent = iconMap[widget.icon] || Puzzle;
       return (

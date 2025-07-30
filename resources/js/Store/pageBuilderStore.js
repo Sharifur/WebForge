@@ -21,6 +21,8 @@ const usePageBuilderStore = create((set, get) => ({
   isDragging: false,
   activeId: null,
   hoveredDropZone: null,
+  settingsPanelVisible: false,
+  widgetSnapshots: {}, // Store original widget states for reverting changes
   
   // Actions
   initializePageContent: (content) => set({ 
@@ -36,7 +38,28 @@ const usePageBuilderStore = create((set, get) => ({
     };
   }),
   
-  setSelectedWidget: (widget) => set({ selectedWidget: widget }),
+  setSelectedWidget: (widget) => set(state => {
+    // Create snapshot when selecting a widget for the first time
+    if (widget && widget.id && !state.widgetSnapshots[widget.id]) {
+      return {
+        selectedWidget: widget,
+        settingsPanelVisible: widget !== null,
+        widgetSnapshots: {
+          ...state.widgetSnapshots,
+          [widget.id]: {
+            content: JSON.parse(JSON.stringify(widget.content || {})),
+            style: JSON.parse(JSON.stringify(widget.style || {})),
+            advanced: JSON.parse(JSON.stringify(widget.advanced || {}))
+          }
+        }
+      };
+    }
+    
+    return {
+      selectedWidget: widget,
+      settingsPanelVisible: widget !== null
+    };
+  }),
   
   setActivePanel: (panel) => set({ activePanel: panel }),
   
@@ -45,6 +68,65 @@ const usePageBuilderStore = create((set, get) => ({
   setActiveId: (activeId) => set({ activeId }),
   
   setHoveredDropZone: (zone) => set({ hoveredDropZone: zone }),
+  
+  setSettingsPanelVisible: (visible) => set({ settingsPanelVisible: visible }),
+  
+  toggleSettingsPanel: () => set(state => ({ settingsPanelVisible: !state.settingsPanelVisible })),
+  
+  // Widget snapshot methods
+  createWidgetSnapshot: (widgetId, widget) => set(state => ({
+    widgetSnapshots: {
+      ...state.widgetSnapshots,
+      [widgetId]: {
+        content: JSON.parse(JSON.stringify(widget.content || {})),
+        style: JSON.parse(JSON.stringify(widget.style || {})),
+        advanced: JSON.parse(JSON.stringify(widget.advanced || {}))
+      }
+    }
+  })),
+  
+  revertWidgetToSnapshot: (widgetId) => set(state => {
+    const snapshot = state.widgetSnapshots[widgetId];
+    if (!snapshot) return state;
+    
+    return {
+      pageContent: {
+        ...state.pageContent,
+        containers: state.pageContent.containers.map(container => ({
+          ...container,
+          columns: container.columns.map(column => ({
+            ...column,
+            widgets: column.widgets.map(widget =>
+              widget.id === widgetId 
+                ? { 
+                    ...widget, 
+                    content: JSON.parse(JSON.stringify(snapshot.content)),
+                    style: JSON.parse(JSON.stringify(snapshot.style)),
+                    advanced: JSON.parse(JSON.stringify(snapshot.advanced))
+                  } 
+                : widget
+            )
+          }))
+        }))
+      },
+      selectedWidget: state.selectedWidget?.id === widgetId 
+        ? { 
+            ...state.selectedWidget,
+            content: JSON.parse(JSON.stringify(snapshot.content)),
+            style: JSON.parse(JSON.stringify(snapshot.style)),
+            advanced: JSON.parse(JSON.stringify(snapshot.advanced))
+          }
+        : state.selectedWidget
+    };
+  }),
+  
+  clearWidgetSnapshot: (widgetId) => set(state => {
+    const newSnapshots = { ...state.widgetSnapshots };
+    delete newSnapshots[widgetId];
+    return { widgetSnapshots: newSnapshots };
+  }),
+  
+  clearAllWidgetSnapshots: () => set({ widgetSnapshots: {} }),
   
   // Container Actions
   addContainer: (container) => set(state => ({
@@ -74,13 +156,14 @@ const usePageBuilderStore = create((set, get) => ({
   
   // Widget Actions
   addWidgetToColumn: (widgetTemplate, columnId, containerId) => set(state => {
-    const newWidget = {
-      id: `widget-${Date.now()}`,
-      type: widgetTemplate.type,
-      content: { ...widgetTemplate.defaultContent },
-      style: { ...widgetTemplate.defaultStyle },
-      advanced: { ...widgetTemplate.defaultAdvanced }
-    };
+    try {
+      const newWidget = {
+        id: `widget-${Date.now()}`,
+        type: widgetTemplate.type,
+        content: { ...widgetTemplate.defaultContent },
+        style: { ...widgetTemplate.defaultStyle },
+        advanced: { ...widgetTemplate.defaultAdvanced }
+      };
 
     // Special handling for container widgets
     if (widgetTemplate.type === 'container') {
@@ -119,6 +202,10 @@ const usePageBuilderStore = create((set, get) => ({
       },
       isDirty: true
     };
+    } catch (error) {
+      console.error('[PageBuilderStore] Error in addWidgetToColumn:', error);
+      return state;
+    }
   }),
   
   updateWidget: (widgetId, updates) => set(state => ({

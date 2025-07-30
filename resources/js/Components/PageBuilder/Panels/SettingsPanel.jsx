@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Settings, Palette, Wrench } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Settings, Palette, Wrench, X } from 'lucide-react';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import GeneralSettings from './Settings/GeneralSettings';
 import StyleSettings from './Settings/StyleSettings';
 import AdvancedSettings from './Settings/AdvancedSettings';
@@ -610,8 +611,107 @@ const GradientEditor = ({ value, onChange }) => {
   );
 };
 
-const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate }) => {
+const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
   const [activeTab, setActiveTab] = useState('general');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const originalSettingsRef = useRef(null);
+  const currentSettingsRef = useRef(null);
+  const { 
+    setSelectedWidget, 
+    setSettingsPanelVisible, 
+    revertWidgetToSnapshot, 
+    clearWidgetSnapshot 
+  } = usePageBuilderStore();
+
+  // Store original settings when widget changes
+  useEffect(() => {
+    if (widget) {
+      originalSettingsRef.current = JSON.stringify({
+        content: widget.content || {},
+        style: widget.style || {},
+        advanced: widget.advanced || {}
+      });
+      setHasUnsavedChanges(false);
+    }
+  }, [widget?.id]);
+
+  // Track changes to detect unsaved changes
+  useEffect(() => {
+    if (widget && originalSettingsRef.current) {
+      const currentSettings = JSON.stringify({
+        content: widget.content || {},
+        style: widget.style || {},
+        advanced: widget.advanced || {}
+      });
+      currentSettingsRef.current = currentSettings;
+      setHasUnsavedChanges(currentSettings !== originalSettingsRef.current);
+    }
+  }, [widget?.content, widget?.style, widget?.advanced]);
+
+  // ESC key handler
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        handleClose();
+      }
+    };
+
+    // Add event listener to document
+    document.addEventListener('keydown', handleEscKey);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Handle close with confirmation for unsaved changes
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      setShowConfirmDialog(true);
+    } else {
+      closePanel();
+    }
+  };
+
+  // Close panel without confirmation
+  const closePanel = () => {
+    setSelectedWidget(null);
+    setSettingsPanelVisible(false);
+    setShowConfirmDialog(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  // Discard changes and close
+  const discardChanges = () => {
+    if (widget?.id) {
+      // Revert widget to its snapshot state
+      revertWidgetToSnapshot(widget.id);
+      // Clear the snapshot since we're closing
+      clearWidgetSnapshot(widget.id);
+    }
+    closePanel();
+  };
+
+  // Save changes and close
+  const saveAndClose = () => {
+    if (widget?.id) {
+      // Clear the snapshot since we're accepting changes
+      clearWidgetSnapshot(widget.id);
+      // Update original settings reference
+      originalSettingsRef.current = JSON.stringify({
+        content: widget.content || {},
+        style: widget.style || {},
+        advanced: widget.advanced || {}
+      });
+    }
+    setHasUnsavedChanges(false);
+    closePanel();
+  };
 
   if (!widget) {
     return (
@@ -640,12 +740,23 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate }) => {
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900 capitalize">
-          {widget.type === 'section' ? 'Section' : widget.type} Settings
-        </h3>
-        <p className="text-sm text-gray-500 mt-1">
-          Configure the selected {widget.type === 'section' ? 'section' : 'widget'}
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-900 capitalize">
+              {widget.type === 'section' ? 'Section' : widget.type} Settings
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Configure the selected {widget.type === 'section' ? 'section' : 'widget'}
+            </p>
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            title="Close settings panel (ESC)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Only show tabs for widgets, not containers */}
@@ -741,6 +852,46 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate }) => {
           </>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833-.23 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Unsaved Changes</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              You have unsaved changes to this {widget.type === 'section' ? 'section' : 'widget'}. 
+              What would you like to do?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={discardChanges}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+              >
+                Discard Changes
+              </button>
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                Keep Editing
+              </button>
+              <button
+                onClick={saveAndClose}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                Save & Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
