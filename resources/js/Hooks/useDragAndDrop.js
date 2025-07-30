@@ -38,6 +38,11 @@ export const useDragAndDrop = () => {
   const validateDropTarget = (activeData, overData) => {
     if (!activeData || !overData) return false;
 
+    // Section widgets can only be dropped on canvas (root level)
+    if (activeData?.widget?.type === 'section') {
+      return overData?.type === 'canvas';
+    }
+
     // Container widgets can only be dropped on canvas
     if (activeData?.widget?.type === 'container') {
       return overData?.type === 'canvas';
@@ -70,15 +75,22 @@ export const useDragAndDrop = () => {
       const overData = over.data.current;
 
     // Validation Rules
-    // Rule 1: Container widgets cannot be placed inside other containers/columns
+    // Rule 1: Section widgets can only be placed on canvas
+    if (activeData?.widget?.type === 'section' && overData?.type !== 'canvas') {
+      console.warn('Section widgets can only be placed on the main canvas');
+      return;
+    }
+
+    // Rule 2: Container widgets cannot be placed inside other containers/columns
     if (activeData?.widget?.type === 'container' && overData?.type === 'column') {
       console.warn('Cannot place container widget inside another container');
       return;
     }
 
-    // Rule 2: Regular widgets can only be placed in columns, not directly on canvas
+    // Rule 3: Regular widgets can only be placed in columns, not directly on canvas
     if (activeData?.type === 'widget-template' && 
         activeData?.widget?.type !== 'container' && 
+        activeData?.widget?.type !== 'section' && 
         overData?.type === 'canvas') {
       console.warn('Widgets must be placed inside containers/columns, not directly on canvas');
       return;
@@ -87,6 +99,34 @@ export const useDragAndDrop = () => {
     // Handle widget drop from panel to column
     if (activeData?.type === 'widget-template' && overData?.type === 'column') {
       addWidgetToColumn(activeData.widget, overData.columnId, overData.containerId);
+      return;
+    }
+
+    // Handle section widget drop on canvas
+    if (activeData?.type === 'widget-template' && 
+        activeData?.widget?.type === 'section' && 
+        overData?.type === 'canvas') {
+      
+      // Create a new section container
+      const newContainerId = `section-${Date.now()}`;
+      
+      addContainer({
+        id: newContainerId,
+        type: 'section',
+        columns: [{
+          id: `column-${Date.now()}`,
+          width: '100%',
+          widgets: [],
+          settings: {}
+        }],
+        settings: {
+          padding: '40px 20px',
+          margin: '0px',
+          backgroundColor: 'transparent'
+        },
+        widgetType: 'section',
+        widgetSettings: activeData.widget.content || {}
+      });
       return;
     }
 

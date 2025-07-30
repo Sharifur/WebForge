@@ -35,7 +35,7 @@ class LinkWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'external-link';
+        return 'lni-link';
     }
 
     protected function getWidgetDescription(): string

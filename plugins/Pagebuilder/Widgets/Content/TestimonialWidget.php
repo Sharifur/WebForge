@@ -24,7 +24,7 @@ class TestimonialWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'message-circle';
+        return 'lni-quotation';
     }
 
     protected function getWidgetDescription(): string

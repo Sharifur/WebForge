@@ -24,7 +24,7 @@ class IconWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'star';
+        return 'lni-star';
     }
 
     protected function getWidgetDescription(): string

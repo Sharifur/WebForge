@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import widgetService from '@/Services/widgetService';
+import { WidgetIcon } from '@/Components/PageBuilder/Icons/WidgetIcons';
 
 /**
  * PhpWidgetRenderer - Renders PHP-based widgets using server-side rendering
@@ -213,52 +214,42 @@ export const PhpWidgetPreview = ({ widgetType, settings = {}, className = '' }) 
 };
 
 /**
- * PhpWidgetIcon - Renders widget icon using LineIcons
+ * PhpWidgetIcon - Renders widget icon using SVG icons
  */
-export const PhpWidgetIcon = ({ iconName, className = "w-6 h-6" }) => {
-  // Map widget icon names to LineIcon classes
-  const iconMap = {
-    // Basic icons
-    'type': 'lni-text-format',
-    'align-left': 'lni-text-align-left',
-    'list': 'lni-list',
-    'external-link': 'lni-link',
-    'mouse-pointer': 'lni-pointer-up',
-    
-    // Layout icons
-    'minus': 'lni-minus',
-    'move-vertical': 'lni-arrows-vertical',
-    'grid': 'lni-grid-alt',
-    
-    // Media icons
-    'image': 'lni-image',
-    'images': 'lni-gallery',
-    'play': 'lni-play',
-    'star': 'lni-star',
-    
-    // Interactive icons
-    'folder': 'lni-folder',
-    'zap': 'lni-bolt',
-    
-    // Content icons
-    'message-circle': 'lni-bubble',
-    
-    // Advanced icons
-    'code': 'lni-code',
-    
-    // Form icons
-    'mail': 'lni-envelope'
+export const PhpWidgetIcon = ({ iconName, widgetType, className = "w-6 h-6" }) => {
+  // Use SVG icons based on widget type
+  if (widgetType) {
+    return <WidgetIcon type={widgetType} className={className} />;
+  }
+  
+  // Fallback for legacy icon names
+  const iconTypeMap = {
+    'lni-text-format': 'heading',
+    'lni-text-align-left': 'paragraph',
+    'lni-list': 'list',
+    'lni-link': 'link',
+    'lni-hand': 'button',
+    'lni-layout': 'section',
+    'lni-minus': 'divider',
+    'lni-move-vertical': 'spacer',
+    'lni-grid-alt': 'grid',
+    'lni-image': 'image',
+    'lni-video': 'video',
+    'lni-star': 'icon',
+    'lni-gallery': 'image_gallery',
+    'lni-tab': 'tabs',
+    'lni-quotation': 'testimonial',
+    'lni-envelope': 'contact_form',
+    'lni-code': 'code'
   };
 
-  const iconClass = iconMap[iconName] || 'lni-package';
+  const mappedWidgetType = iconTypeMap[iconName];
+  if (mappedWidgetType) {
+    return <WidgetIcon type={mappedWidgetType} className={className} />;
+  }
 
-  return (
-    <i 
-      className={`${iconClass} ${className}`} 
-      title={iconName}
-      style={{ fontSize: 'inherit', lineHeight: 1 }}
-    ></i>
-  );
+  // Final fallback
+  return <WidgetIcon type="section" className={className} />;
 };
 
 export default PhpWidgetRenderer;

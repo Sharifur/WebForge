@@ -24,7 +24,7 @@ class CodeWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'code';
+        return 'lni-code';
     }
 
     protected function getWidgetDescription(): string

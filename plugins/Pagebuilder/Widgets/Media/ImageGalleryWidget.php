@@ -4,6 +4,8 @@ namespace Plugins\Pagebuilder\Widgets\Media;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
+use Plugins\Pagebuilder\Core\ControlManager;
+use Plugins\Pagebuilder\Core\FieldManager;
 
 class ImageGalleryWidget extends BaseWidget
 {
@@ -19,7 +21,7 @@ class ImageGalleryWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'images';
+        return 'lni-gallery';
     }
 
     protected function getWidgetDescription(): string
@@ -44,262 +46,214 @@ class ImageGalleryWidget extends BaseWidget
 
     public function getGeneralFields(): array
     {
-        return [
-            'images' => [
-                'type' => 'group',
-                'label' => 'Images',
-                'fields' => [
-                    'gallery_images' => [
-                        'type' => 'repeater',
-                        'label' => 'Gallery Images',
-                        'min' => 1,
-                        'max' => 50,
-                        'fields' => [
-                            'image' => [
-                                'type' => 'image',
-                                'label' => 'Image',
-                                'required' => true
-                            ],
-                            'alt_text' => [
-                                'type' => 'text',
-                                'label' => 'Alt Text',
-                                'placeholder' => 'Describe the image'
-                            ],
-                            'caption' => [
-                                'type' => 'text',
-                                'label' => 'Caption',
-                                'placeholder' => 'Image caption'
-                            ],
-                            'link' => [
-                                'type' => 'text',
-                                'label' => 'Link URL',
-                                'placeholder' => 'https://example.com'
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            'layout' => [
-                'type' => 'group',
-                'label' => 'Layout',
-                'fields' => [
-                    'layout_type' => [
-                        'type' => 'select',
-                        'label' => 'Layout Type',
-                        'options' => [
-                            'grid' => 'Grid',
-                            'masonry' => 'Masonry',
-                            'carousel' => 'Carousel',
-                            'justified' => 'Justified'
-                        ],
-                        'default' => 'grid'
-                    ],
-                    'columns' => [
-                        'type' => 'responsive_number',
-                        'label' => 'Columns',
-                        'responsive' => true,
-                        'min' => 1,
-                        'max' => 8,
-                        'default' => [
-                            'desktop' => 3,
-                            'tablet' => 2,
-                            'mobile' => 1
-                        ],
-                        'condition' => ['layout_type' => ['grid', 'masonry']]
-                    ],
-                    'gap' => [
-                        'type' => 'number',
-                        'label' => 'Gap Between Images',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 50,
-                        'default' => 15
-                    ]
-                ]
-            ],
-            'behavior' => [
-                'type' => 'group',
-                'label' => 'Behavior',
-                'fields' => [
-                    'enable_lightbox' => [
-                        'type' => 'toggle',
-                        'label' => 'Enable Lightbox',
-                        'default' => true
-                    ],
-                    'show_captions' => [
-                        'type' => 'toggle',
-                        'label' => 'Show Captions',
-                        'default' => true
-                    ],
-                    'lazy_loading' => [
-                        'type' => 'toggle',
-                        'label' => 'Lazy Loading',
-                        'default' => true
-                    ],
-                    'infinite_scroll' => [
-                        'type' => 'toggle',
-                        'label' => 'Infinite Scroll',
-                        'default' => false,
-                        'condition' => ['layout_type' => 'grid']
-                    ]
-                ]
-            ],
-            'carousel_settings' => [
-                'type' => 'group',
-                'label' => 'Carousel Settings',
-                'condition' => ['layout_type' => 'carousel'],
-                'fields' => [
-                    'autoplay' => [
-                        'type' => 'toggle',
-                        'label' => 'Autoplay',
-                        'default' => false
-                    ],
-                    'autoplay_speed' => [
-                        'type' => 'number',
-                        'label' => 'Autoplay Speed (ms)',
-                        'min' => 1000,
-                        'max' => 10000,
-                        'step' => 500,
-                        'default' => 3000,
-                        'condition' => ['autoplay' => true]
-                    ],
-                    'show_arrows' => [
-                        'type' => 'toggle',
-                        'label' => 'Show Navigation Arrows',
-                        'default' => true
-                    ],
-                    'show_dots' => [
-                        'type' => 'toggle',
-                        'label' => 'Show Pagination Dots',
-                        'default' => true
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Images Group
+        $control->addGroup('images', 'Images')
+            ->registerField('gallery_images', FieldManager::REPEATER()
+                ->setLabel('Gallery Images')
+                ->setMin(1)
+                ->setMax(50)
+                ->setFields([
+                    'image' => FieldManager::IMAGE()
+                        ->setLabel('Image')
+                        ->setRequired(true),
+                    'alt_text' => FieldManager::TEXT()
+                        ->setLabel('Alt Text')
+                        ->setPlaceholder('Describe the image'),
+                    'caption' => FieldManager::TEXT()
+                        ->setLabel('Caption')
+                        ->setPlaceholder('Image caption'),
+                    'link' => FieldManager::URL()
+                        ->setLabel('Link URL')
+                        ->setPlaceholder('https://example.com')
+                ])
+            )
+            ->endGroup();
+            
+        // Layout Group
+        $control->addGroup('layout', 'Layout')
+            ->registerField('layout_type', FieldManager::SELECT()
+                ->setLabel('Layout Type')
+                ->setOptions([
+                    'grid' => 'Grid',
+                    'masonry' => 'Masonry',
+                    'carousel' => 'Carousel',
+                    'justified' => 'Justified'
+                ])
+                ->setDefault('grid')
+            )
+            ->registerField('columns', FieldManager::NUMBER()
+                ->setLabel('Columns')
+                ->setResponsive(true)
+                ->setMin(1)
+                ->setMax(8)
+                ->setDefault([
+                    'desktop' => 3,
+                    'tablet' => 2,
+                    'mobile' => 1
+                ])
+                ->setCondition(['layout_type' => ['grid', 'masonry']])
+            )
+            ->registerField('gap', FieldManager::NUMBER()
+                ->setLabel('Gap Between Images')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(50)
+                ->setDefault(15)
+            )
+            ->endGroup();
+            
+        // Behavior Group
+        $control->addGroup('behavior', 'Behavior')
+            ->registerField('enable_lightbox', FieldManager::TOGGLE()
+                ->setLabel('Enable Lightbox')
+                ->setDefault(true)
+            )
+            ->registerField('show_captions', FieldManager::TOGGLE()
+                ->setLabel('Show Captions')
+                ->setDefault(true)
+            )
+            ->registerField('lazy_loading', FieldManager::TOGGLE()
+                ->setLabel('Lazy Loading')
+                ->setDefault(true)
+            )
+            ->registerField('infinite_scroll', FieldManager::TOGGLE()
+                ->setLabel('Infinite Scroll')
+                ->setDefault(false)
+                ->setCondition(['layout_type' => 'grid'])
+            )
+            ->endGroup();
+            
+        // Carousel Settings Group
+        $control->addGroup('carousel_settings', 'Carousel Settings')
+            ->registerField('autoplay', FieldManager::TOGGLE()
+                ->setLabel('Autoplay')
+                ->setDefault(false)
+            )
+            ->registerField('autoplay_speed', FieldManager::NUMBER()
+                ->setLabel('Autoplay Speed (ms)')
+                ->setMin(1000)
+                ->setMax(10000)
+                ->setStep(500)
+                ->setDefault(3000)
+                ->setCondition(['autoplay' => true])
+            )
+            ->registerField('show_arrows', FieldManager::TOGGLE()
+                ->setLabel('Show Navigation Arrows')
+                ->setDefault(true)
+            )
+            ->registerField('show_dots', FieldManager::TOGGLE()
+                ->setLabel('Show Pagination Dots')
+                ->setDefault(true)
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function getStyleFields(): array
     {
-        return [
-            'image_styling' => [
-                'type' => 'group',
-                'label' => 'Image Styling',
-                'fields' => [
-                    'aspect_ratio' => [
-                        'type' => 'select',
-                        'label' => 'Image Aspect Ratio',
-                        'options' => [
-                            'auto' => 'Auto',
-                            '1:1' => 'Square (1:1)',
-                            '4:3' => 'Standard (4:3)',
-                            '16:9' => 'Widescreen (16:9)',
-                            '3:2' => 'Classic (3:2)',
-                            '21:9' => 'Ultrawide (21:9)'
-                        ],
-                        'default' => 'auto'
-                    ],
-                    'image_fit' => [
-                        'type' => 'select',
-                        'label' => 'Image Fit',
-                        'options' => [
-                            'cover' => 'Cover',
-                            'contain' => 'Contain',
-                            'fill' => 'Fill',
-                            'scale-down' => 'Scale Down'
-                        ],
-                        'default' => 'cover',
-                        'condition' => ['aspect_ratio' => ['!=', 'auto']]
-                    ],
-                    'border_radius' => [
-                        'type' => 'number',
-                        'label' => 'Border Radius',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 50,
-                        'default' => 4
-                    ]
-                ]
-            ],
-            'hover_effects' => [
-                'type' => 'group',
-                'label' => 'Hover Effects',
-                'fields' => [
-                    'hover_effect' => [
-                        'type' => 'select',
-                        'label' => 'Hover Effect',
-                        'options' => [
-                            'none' => 'None',
-                            'scale' => 'Scale',
-                            'fade' => 'Fade',
-                            'blur' => 'Blur',
-                            'grayscale' => 'Grayscale',
-                            'overlay' => 'Overlay'
-                        ],
-                        'default' => 'scale'
-                    ],
-                    'overlay_color' => [
-                        'type' => 'color',
-                        'label' => 'Overlay Color',
-                        'default' => 'rgba(0,0,0,0.5)',
-                        'condition' => ['hover_effect' => 'overlay']
-                    ]
-                ]
-            ],
-            'caption_styling' => [
-                'type' => 'group',
-                'label' => 'Caption Styling',
-                'condition' => ['show_captions' => true],
-                'fields' => [
-                    'caption_position' => [
-                        'type' => 'select',
-                        'label' => 'Caption Position',
-                        'options' => [
-                            'bottom' => 'Bottom',
-                            'overlay-bottom' => 'Overlay Bottom',
-                            'overlay-center' => 'Overlay Center',
-                            'overlay-top' => 'Overlay Top'
-                        ],
-                        'default' => 'bottom'
-                    ],
-                    'caption_background' => [
-                        'type' => 'color',
-                        'label' => 'Caption Background',
-                        'default' => 'rgba(0,0,0,0.7)',
-                        'condition' => ['caption_position' => ['overlay-bottom', 'overlay-center', 'overlay-top']]
-                    ],
-                    'caption_text_color' => [
-                        'type' => 'color',
-                        'label' => 'Caption Text Color',
-                        'default' => '#FFFFFF'
-                    ],
-                    'caption_font_size' => [
-                        'type' => 'number',
-                        'label' => 'Caption Font Size',
-                        'unit' => 'px',
-                        'min' => 10,
-                        'max' => 24,
-                        'default' => 14
-                    ]
-                ]
-            ],
-            'lightbox_styling' => [
-                'type' => 'group',
-                'label' => 'Lightbox Styling',
-                'condition' => ['enable_lightbox' => true],
-                'fields' => [
-                    'lightbox_background' => [
-                        'type' => 'color',
-                        'label' => 'Lightbox Background',
-                        'default' => 'rgba(0,0,0,0.9)'
-                    ],
-                    'lightbox_controls_color' => [
-                        'type' => 'color',
-                        'label' => 'Controls Color',
-                        'default' => '#FFFFFF'
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Image Styling Group
+        $control->addGroup('image_styling', 'Image Styling')
+            ->registerField('aspect_ratio', FieldManager::SELECT()
+                ->setLabel('Image Aspect Ratio')
+                ->setOptions([
+                    'auto' => 'Auto',
+                    '1:1' => 'Square (1:1)',
+                    '4:3' => 'Standard (4:3)',
+                    '16:9' => 'Widescreen (16:9)',
+                    '3:2' => 'Classic (3:2)',
+                    '21:9' => 'Ultrawide (21:9)'
+                ])
+                ->setDefault('auto')
+            )
+            ->registerField('image_fit', FieldManager::SELECT()
+                ->setLabel('Image Fit')
+                ->setOptions([
+                    'cover' => 'Cover',
+                    'contain' => 'Contain',
+                    'fill' => 'Fill',
+                    'scale-down' => 'Scale Down'
+                ])
+                ->setDefault('cover')
+                ->setCondition(['aspect_ratio' => ['!=', 'auto']])
+            )
+            ->registerField('border_radius', FieldManager::NUMBER()
+                ->setLabel('Border Radius')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(50)
+                ->setDefault(4)
+            )
+            ->endGroup();
+            
+        // Hover Effects Group
+        $control->addGroup('hover_effects', 'Hover Effects')
+            ->registerField('hover_effect', FieldManager::SELECT()
+                ->setLabel('Hover Effect')
+                ->setOptions([
+                    'none' => 'None',
+                    'scale' => 'Scale',
+                    'fade' => 'Fade',
+                    'blur' => 'Blur',
+                    'grayscale' => 'Grayscale',
+                    'overlay' => 'Overlay'
+                ])
+                ->setDefault('scale')
+            )
+            ->registerField('overlay_color', FieldManager::COLOR()
+                ->setLabel('Overlay Color')
+                ->setDefault('rgba(0,0,0,0.5)')
+                ->setCondition(['hover_effect' => 'overlay'])
+            )
+            ->endGroup();
+            
+        // Caption Styling Group
+        $control->addGroup('caption_styling', 'Caption Styling')
+            ->registerField('caption_position', FieldManager::SELECT()
+                ->setLabel('Caption Position')
+                ->setOptions([
+                    'bottom' => 'Bottom',
+                    'overlay-bottom' => 'Overlay Bottom',
+                    'overlay-center' => 'Overlay Center',
+                    'overlay-top' => 'Overlay Top'
+                ])
+                ->setDefault('bottom')
+            )
+            ->registerField('caption_background', FieldManager::COLOR()
+                ->setLabel('Caption Background')
+                ->setDefault('rgba(0,0,0,0.7)')
+                ->setCondition(['caption_position' => ['overlay-bottom', 'overlay-center', 'overlay-top']])
+            )
+            ->registerField('caption_text_color', FieldManager::COLOR()
+                ->setLabel('Caption Text Color')
+                ->setDefault('#FFFFFF')
+            )
+            ->registerField('caption_font_size', FieldManager::NUMBER()
+                ->setLabel('Caption Font Size')
+                ->setUnit('px')
+                ->setMin(10)
+                ->setMax(24)
+                ->setDefault(14)
+            )
+            ->endGroup();
+            
+        // Lightbox Styling Group  
+        $control->addGroup('lightbox_styling', 'Lightbox Styling')
+            ->registerField('lightbox_background', FieldManager::COLOR()
+                ->setLabel('Lightbox Background')
+                ->setDefault('rgba(0,0,0,0.9)')
+            )
+            ->registerField('lightbox_controls_color', FieldManager::COLOR()
+                ->setLabel('Controls Color')
+                ->setDefault('#FFFFFF')
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function render(array $settings = []): string

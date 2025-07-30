@@ -33,7 +33,7 @@ class SpacerWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'move-vertical';
+        return 'lni-move-vertical';
     }
 
     protected function getWidgetDescription(): string

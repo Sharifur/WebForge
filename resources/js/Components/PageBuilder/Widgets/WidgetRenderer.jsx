@@ -25,6 +25,7 @@ const phpWidgetTypes = [
   'divider',
   'spacer',
   'grid',
+  'section',
   'video',
   'icon',
   'code',

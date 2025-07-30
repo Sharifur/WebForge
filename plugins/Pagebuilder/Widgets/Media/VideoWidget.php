@@ -35,7 +35,7 @@ class VideoWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'play';
+        return 'lni-video';
     }
 
     protected function getWidgetDescription(): string

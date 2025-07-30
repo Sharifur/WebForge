@@ -35,7 +35,7 @@ class ListWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'list';
+        return 'lni-list';
     }
 
     protected function getWidgetDescription(): string

@@ -4,6 +4,8 @@ namespace Plugins\Pagebuilder\Widgets\Form;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
+use Plugins\Pagebuilder\Core\ControlManager;
+use Plugins\Pagebuilder\Core\FieldManager;
 
 class ContactFormWidget extends BaseWidget
 {
@@ -19,7 +21,7 @@ class ContactFormWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'mail';
+        return 'lni-envelope';
     }
 
     protected function getWidgetDescription(): string
@@ -39,362 +41,257 @@ class ContactFormWidget extends BaseWidget
 
     public function getGeneralFields(): array
     {
-        return [
-            'form_settings' => [
-                'type' => 'group',
-                'label' => 'Form Settings',
-                'fields' => [
-                    'form_title' => [
-                        'type' => 'text',
-                        'label' => 'Form Title',
-                        'default' => 'Contact Us',
-                        'placeholder' => 'Enter form title'
-                    ],
-                    'form_description' => [
-                        'type' => 'textarea',
-                        'label' => 'Form Description',
-                        'placeholder' => 'Enter form description',
-                        'rows' => 3
-                    ],
-                    'submit_button_text' => [
-                        'type' => 'text',
-                        'label' => 'Submit Button Text',
-                        'default' => 'Send Message',
-                        'required' => true
-                    ]
-                ]
-            ],
-            'form_fields' => [
-                'type' => 'group',
-                'label' => 'Form Fields',
-                'fields' => [
-                    'fields' => [
-                        'type' => 'repeater',
-                        'label' => 'Form Fields',
-                        'min' => 1,
-                        'max' => 20,
-                        'fields' => [
-                            'field_type' => [
-                                'type' => 'select',
-                                'label' => 'Field Type',
-                                'options' => [
-                                    'text' => 'Text Input',
-                                    'email' => 'Email Input',
-                                    'tel' => 'Phone Input',
-                                    'textarea' => 'Textarea',
-                                    'select' => 'Select Dropdown',
-                                    'checkbox' => 'Checkbox',
-                                    'radio' => 'Radio Buttons',
-                                    'file' => 'File Upload',
-                                    'date' => 'Date Picker',
-                                    'number' => 'Number Input'
-                                ],
-                                'default' => 'text',
-                                'required' => true
-                            ],
-                            'field_label' => [
-                                'type' => 'text',
-                                'label' => 'Field Label',
-                                'required' => true,
-                                'placeholder' => 'Enter field label'
-                            ],
-                            'field_name' => [
-                                'type' => 'text',
-                                'label' => 'Field Name',
-                                'required' => true,
-                                'placeholder' => 'field_name'
-                            ],
-                            'placeholder' => [
-                                'type' => 'text',
-                                'label' => 'Placeholder Text',
-                                'condition' => ['field_type' => ['text', 'email', 'tel', 'textarea', 'number']]
-                            ],
-                            'required' => [
-                                'type' => 'toggle',
-                                'label' => 'Required Field',
-                                'default' => false
-                            ],
-                            'field_options' => [
-                                'type' => 'textarea',
-                                'label' => 'Field Options (one per line)',
-                                'placeholder' => "Option 1\nOption 2\nOption 3",
-                                'condition' => ['field_type' => ['select', 'radio', 'checkbox']],
-                                'rows' => 4
-                            ],
-                            'field_width' => [
-                                'type' => 'select',
-                                'label' => 'Field Width',
-                                'options' => [
-                                    'full' => 'Full Width',
-                                    'half' => 'Half Width',
-                                    'third' => 'One Third',
-                                    'two-thirds' => 'Two Thirds'
-                                ],
-                                'default' => 'full'
-                            ]
-                        ]
-                    ]
-                ]
-            ],
-            'submission' => [
-                'type' => 'group',
-                'label' => 'Form Submission',
-                'fields' => [
-                    'action_type' => [
-                        'type' => 'select',
-                        'label' => 'Submission Action',
-                        'options' => [
-                            'email' => 'Send Email',
-                            'database' => 'Save to Database',
-                            'both' => 'Email & Database',
-                            'webhook' => 'Send to Webhook'
-                        ],
-                        'default' => 'email'
-                    ],
-                    'recipient_email' => [
-                        'type' => 'email',
-                        'label' => 'Recipient Email',
-                        'placeholder' => 'admin@example.com',
-                        'condition' => ['action_type' => ['email', 'both']]
-                    ],
-                    'webhook_url' => [
-                        'type' => 'text',
-                        'label' => 'Webhook URL',
-                        'placeholder' => 'https://example.com/webhook',
-                        'condition' => ['action_type' => 'webhook']
-                    ],
-                    'success_message' => [
-                        'type' => 'textarea',
-                        'label' => 'Success Message',
-                        'default' => 'Thank you for your message! We will get back to you soon.',
-                        'rows' => 2
-                    ],
-                    'redirect_url' => [
-                        'type' => 'text',
-                        'label' => 'Redirect URL (optional)',
-                        'placeholder' => 'https://example.com/thank-you'
-                    ]
-                ]
-            ],
-            'validation' => [
-                'type' => 'group',
-                'label' => 'Validation & Security',
-                'fields' => [
-                    'enable_captcha' => [
-                        'type' => 'toggle',
-                        'label' => 'Enable CAPTCHA',
-                        'default' => true
-                    ],
-                    'captcha_type' => [
-                        'type' => 'select',
-                        'label' => 'CAPTCHA Type',
-                        'options' => [
-                            'recaptcha' => 'Google reCAPTCHA',
-                            'hcaptcha' => 'hCaptcha',
-                            'simple' => 'Simple Math'
-                        ],
-                        'default' => 'recaptcha',
-                        'condition' => ['enable_captcha' => true]
-                    ],
-                    'honeypot' => [
-                        'type' => 'toggle',
-                        'label' => 'Enable Honeypot Protection',
-                        'default' => true
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Form Settings Group
+        $control->addGroup('form_settings', 'Form Settings')
+            ->registerField('form_title', FieldManager::TEXT()
+                ->setLabel('Form Title')
+                ->setDefault('Contact Us')
+                ->setPlaceholder('Enter form title')
+            )
+            ->registerField('form_description', FieldManager::TEXTAREA()
+                ->setLabel('Form Description')
+                ->setPlaceholder('Enter form description')
+                ->setRows(3)
+            )
+            ->registerField('submit_button_text', FieldManager::TEXT()
+                ->setLabel('Submit Button Text')
+                ->setDefault('Send Message')
+                ->setRequired(true)
+            )
+            ->endGroup();
+            
+        // Form Fields Group  
+        $control->addGroup('form_fields', 'Form Fields')
+            ->registerField('fields', FieldManager::REPEATER()
+                ->setLabel('Form Fields')
+                ->setMin(1)
+                ->setMax(20)
+                ->setDefault([
+                    ['field_type' => 'text', 'field_label' => 'Name', 'field_name' => 'name', 'required' => true],
+                    ['field_type' => 'email', 'field_label' => 'Email', 'field_name' => 'email', 'required' => true],
+                    ['field_type' => 'textarea', 'field_label' => 'Message', 'field_name' => 'message', 'required' => true]
+                ])
+                ->setFields([
+                    'field_type' => FieldManager::SELECT()
+                        ->setLabel('Field Type')
+                        ->setOptions([
+                            'text' => 'Text Input',
+                            'email' => 'Email Input',
+                            'tel' => 'Phone Input',
+                            'textarea' => 'Textarea',
+                            'select' => 'Select Dropdown',
+                            'checkbox' => 'Checkbox',
+                            'radio' => 'Radio Buttons',
+                            'date' => 'Date Picker',
+                            'number' => 'Number Input'
+                        ])
+                        ->setDefault('text')
+                        ->setRequired(true),
+                    'field_label' => FieldManager::TEXT()
+                        ->setLabel('Field Label')
+                        ->setRequired(true)
+                        ->setPlaceholder('Enter field label'),
+                    'field_name' => FieldManager::TEXT()
+                        ->setLabel('Field Name')
+                        ->setRequired(true)
+                        ->setPlaceholder('field_name'),
+                    'placeholder' => FieldManager::TEXT()
+                        ->setLabel('Placeholder Text')
+                        ->setCondition(['field_type' => ['text', 'email', 'tel', 'textarea', 'number']]),
+                    'required' => FieldManager::TOGGLE()
+                        ->setLabel('Required Field')
+                        ->setDefault(false),
+                    'field_options' => FieldManager::TEXTAREA()
+                        ->setLabel('Field Options (one per line)')
+                        ->setPlaceholder("Option 1\nOption 2\nOption 3")
+                        ->setCondition(['field_type' => ['select', 'radio', 'checkbox']])
+                        ->setRows(4),
+                    'field_width' => FieldManager::SELECT()
+                        ->setLabel('Field Width')
+                        ->setOptions([
+                            'full' => 'Full Width',
+                            'half' => 'Half Width',
+                            'third' => 'One Third',
+                            'two-thirds' => 'Two Thirds'
+                        ])
+                        ->setDefault('full')
+                ])
+            )
+            ->endGroup();
+            
+        // Form Submission Group
+        $control->addGroup('submission', 'Form Submission')
+            ->registerField('action_type', FieldManager::SELECT()
+                ->setLabel('Submission Action')
+                ->setOptions([
+                    'email' => 'Send Email',
+                    'database' => 'Save to Database',
+                    'both' => 'Email & Database',
+                    'webhook' => 'Send to Webhook'
+                ])
+                ->setDefault('email')
+            )
+            ->registerField('recipient_email', FieldManager::EMAIL()
+                ->setLabel('Recipient Email')
+                ->setPlaceholder('admin@example.com')
+                ->setCondition(['action_type' => ['email', 'both']])
+            )
+            ->registerField('webhook_url', FieldManager::URL()
+                ->setLabel('Webhook URL')
+                ->setPlaceholder('https://example.com/webhook')
+                ->setCondition(['action_type' => 'webhook'])
+            )
+            ->registerField('success_message', FieldManager::TEXTAREA()
+                ->setLabel('Success Message')
+                ->setDefault('Thank you for your message! We will get back to you soon.')
+                ->setRows(3)
+            )
+            ->registerField('redirect_url', FieldManager::URL()
+                ->setLabel('Redirect URL (optional)')
+                ->setPlaceholder('https://example.com/thank-you')
+            )
+            ->endGroup();
+            
+        // Security Group
+        $control->addGroup('security', 'Security')
+            ->registerField('enable_captcha', FieldManager::TOGGLE()
+                ->setLabel('Enable CAPTCHA')
+                ->setDefault(true)
+            )
+            ->registerField('captcha_type', FieldManager::SELECT()
+                ->setLabel('CAPTCHA Type')
+                ->setOptions([
+                    'recaptcha' => 'Google reCAPTCHA',
+                    'hcaptcha' => 'hCaptcha',
+                    'simple' => 'Simple Math'
+                ])
+                ->setDefault('recaptcha')
+                ->setCondition(['enable_captcha' => true])
+            )
+            ->registerField('honeypot', FieldManager::TOGGLE()
+                ->setLabel('Enable Honeypot Protection')
+                ->setDefault(true)
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function getStyleFields(): array
     {
-        return [
-            'form_layout' => [
-                'type' => 'group',
-                'label' => 'Form Layout',
-                'fields' => [
-                    'form_max_width' => [
-                        'type' => 'number',
-                        'label' => 'Max Width',
-                        'unit' => 'px',
-                        'min' => 300,
-                        'max' => 1200,
-                        'default' => 600
-                    ],
-                    'field_spacing' => [
-                        'type' => 'number',
-                        'label' => 'Field Spacing',
-                        'unit' => 'px',
-                        'min' => 5,
-                        'max' => 50,
-                        'default' => 20
-                    ],
-                    'form_alignment' => [
-                        'type' => 'select',
-                        'label' => 'Form Alignment',
-                        'options' => [
-                            'left' => 'Left',
-                            'center' => 'Center',
-                            'right' => 'Right'
-                        ],
-                        'default' => 'left'
-                    ]
-                ]
-            ],
-            'title_styling' => [
-                'type' => 'group',
-                'label' => 'Title Styling',
-                'fields' => [
-                    'title_color' => [
-                        'type' => 'color',
-                        'label' => 'Title Color',
-                        'default' => '#1F2937'
-                    ],
-                    'title_font_size' => [
-                        'type' => 'number',
-                        'label' => 'Title Font Size',
-                        'unit' => 'px',
-                        'min' => 16,
-                        'max' => 48,
-                        'default' => 24
-                    ],
-                    'title_font_weight' => [
-                        'type' => 'select',
-                        'label' => 'Title Font Weight',
-                        'options' => [
-                            '400' => 'Normal',
-                            '500' => 'Medium',
-                            '600' => 'Semi Bold',
-                            '700' => 'Bold'
-                        ],
-                        'default' => '600'
-                    ]
-                ]
-            ],
-            'field_styling' => [
-                'type' => 'group',
-                'label' => 'Field Styling',
-                'fields' => [
-                    'label_color' => [
-                        'type' => 'color',
-                        'label' => 'Label Color',
-                        'default' => '#374151'
-                    ],
-                    'label_font_size' => [
-                        'type' => 'number',
-                        'label' => 'Label Font Size',
-                        'unit' => 'px',
-                        'min' => 12,
-                        'max' => 20,
-                        'default' => 14
-                    ],
-                    'input_background' => [
-                        'type' => 'color',
-                        'label' => 'Input Background',
-                        'default' => '#FFFFFF'
-                    ],
-                    'input_border_color' => [
-                        'type' => 'color',
-                        'label' => 'Input Border Color',
-                        'default' => '#D1D5DB'
-                    ],
-                    'input_border_radius' => [
-                        'type' => 'number',
-                        'label' => 'Input Border Radius',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 20,
-                        'default' => 6
-                    ],
-                    'input_padding' => [
-                        'type' => 'number',
-                        'label' => 'Input Padding',
-                        'unit' => 'px',
-                        'min' => 8,
-                        'max' => 20,
-                        'default' => 12
-                    ],
-                    'focus_border_color' => [
-                        'type' => 'color',
-                        'label' => 'Focus Border Color',
-                        'default' => '#3B82F6'
-                    ]
-                ]
-            ],
-            'button_styling' => [
-                'type' => 'group',
-                'label' => 'Submit Button',
-                'fields' => [
-                    'button_background' => [
-                        'type' => 'color',
-                        'label' => 'Button Background',
-                        'default' => '#3B82F6'
-                    ],
-                    'button_text_color' => [
-                        'type' => 'color',
-                        'label' => 'Button Text Color',
-                        'default' => '#FFFFFF'
-                    ],
-                    'button_hover_background' => [
-                        'type' => 'color',
-                        'label' => 'Button Hover Background',
-                        'default' => '#2563EB'
-                    ],
-                    'button_font_size' => [
-                        'type' => 'number',
-                        'label' => 'Button Font Size',
-                        'unit' => 'px',
-                        'min' => 14,
-                        'max' => 20,
-                        'default' => 16
-                    ],
-                    'button_padding' => [
-                        'type' => 'spacing',
-                        'label' => 'Button Padding',
-                        'default' => '12px 24px'
-                    ],
-                    'button_border_radius' => [
-                        'type' => 'number',
-                        'label' => 'Button Border Radius',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 20,
-                        'default' => 6
-                    ],
-                    'button_width' => [
-                        'type' => 'select',
-                        'label' => 'Button Width',
-                        'options' => [
-                            'auto' => 'Auto',
-                            'full' => 'Full Width',
-                            'half' => 'Half Width'
-                        ],
-                        'default' => 'auto'
-                    ]
-                ]
-            ],
-            'messages' => [
-                'type' => 'group',
-                'label' => 'Messages',
-                'fields' => [
-                    'success_color' => [
-                        'type' => 'color',
-                        'label' => 'Success Message Color',
-                        'default' => '#10B981'
-                    ],
-                    'error_color' => [
-                        'type' => 'color',
-                        'label' => 'Error Message Color',
-                        'default' => '#EF4444'
-                    ],
-                    'message_background' => [
-                        'type' => 'color',
-                        'label' => 'Message Background',
-                        'default' => '#F9FAFB'
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Form Layout Group
+        $control->addGroup('form_layout', 'Form Layout')
+            ->registerField('form_max_width', FieldManager::NUMBER()
+                ->setLabel('Max Width')
+                ->setUnit('px')
+                ->setMin(300)
+                ->setMax(1200)
+                ->setDefault(600)
+            )
+            ->registerField('field_spacing', FieldManager::NUMBER()
+                ->setLabel('Field Spacing')
+                ->setUnit('px')
+                ->setMin(5)
+                ->setMax(50)
+                ->setDefault(20)
+            )
+            ->registerField('form_alignment', FieldManager::SELECT()
+                ->setLabel('Form Alignment')
+                ->setOptions([
+                    'left' => 'Left',
+                    'center' => 'Center',
+                    'right' => 'Right'
+                ])
+                ->setDefault('left')
+            )
+            ->endGroup();
+            
+        // Title Styling Group
+        $control->addGroup('title_styling', 'Title Styling')
+            ->registerField('title_color', FieldManager::COLOR()
+                ->setLabel('Title Color')
+                ->setDefault('#1F2937')
+            )
+            ->registerField('title_font_size', FieldManager::NUMBER()
+                ->setLabel('Title Font Size')
+                ->setUnit('px')
+                ->setMin(16)
+                ->setMax(48)
+                ->setDefault(24)
+            )
+            ->registerField('title_font_weight', FieldManager::SELECT()
+                ->setLabel('Title Font Weight')
+                ->setOptions([
+                    '400' => 'Normal',
+                    '500' => 'Medium',
+                    '600' => 'Semi Bold',
+                    '700' => 'Bold'
+                ])
+                ->setDefault('600')
+            )
+            ->endGroup();
+            
+        // Field Styling Group
+        $control->addGroup('field_styling', 'Field Styling')
+            ->registerField('label_color', FieldManager::COLOR()
+                ->setLabel('Label Color')
+                ->setDefault('#374151')
+            )
+            ->registerField('input_background', FieldManager::COLOR()
+                ->setLabel('Input Background')
+                ->setDefault('#FFFFFF')
+            )
+            ->registerField('input_border_color', FieldManager::COLOR()
+                ->setLabel('Input Border Color')
+                ->setDefault('#D1D5DB')
+            )
+            ->registerField('input_border_radius', FieldManager::NUMBER()
+                ->setLabel('Input Border Radius')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(20)
+                ->setDefault(6)
+            )
+            ->registerField('input_padding', FieldManager::DIMENSION()
+                ->setLabel('Input Padding')
+                ->setDefault(['top' => 12, 'right' => 16, 'bottom' => 12, 'left' => 16])
+                ->setUnits(['px', 'em'])
+            )
+            ->endGroup();
+            
+        // Button Styling Group
+        $control->addGroup('button_styling', 'Button Styling')
+            ->registerField('button_background', FieldManager::COLOR()
+                ->setLabel('Button Background')
+                ->setDefault('#3B82F6')
+            )
+            ->registerField('button_text_color', FieldManager::COLOR()
+                ->setLabel('Button Text Color')
+                ->setDefault('#FFFFFF')
+            )
+            ->registerField('button_hover_background', FieldManager::COLOR()
+                ->setLabel('Button Hover Background')
+                ->setDefault('#2563EB')
+            )
+            ->registerField('button_border_radius', FieldManager::NUMBER()
+                ->setLabel('Button Border Radius')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(20)
+                ->setDefault(6)
+            )
+            ->registerField('button_padding', FieldManager::DIMENSION()
+                ->setLabel('Button Padding')
+                ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
+                ->setUnits(['px', 'em'])
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function render(array $settings = []): string
@@ -402,79 +299,40 @@ class ContactFormWidget extends BaseWidget
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
         
-        $formTitle = $general['form_settings']['form_title'] ?? 'Contact Us';
-        $formDescription = $general['form_settings']['form_description'] ?? '';
-        $submitButtonText = $general['form_settings']['submit_button_text'] ?? 'Send Message';
-        $fields = $general['form_fields']['fields'] ?? [];
+        $formSettings = $general['form_settings'] ?? [];
+        $formTitle = $formSettings['form_title'] ?? 'Contact Us';
+        $formDescription = $formSettings['form_description'] ?? '';
+        $submitButtonText = $formSettings['submit_button_text'] ?? 'Send Message';
         
-        if (empty($fields)) {
-            return '<div class="form-placeholder">Add form fields to display contact form</div>';
+        $fields = $general['form_fields']['fields'] ?? [
+            ['field_type' => 'text', 'field_label' => 'Name', 'field_name' => 'name', 'required' => true],
+            ['field_type' => 'email', 'field_label' => 'Email', 'field_name' => 'email', 'required' => true],
+            ['field_type' => 'textarea', 'field_label' => 'Message', 'field_name' => 'message', 'required' => true]
+        ];
+        
+        $html = '<div class="widget-contact-form">';
+        
+        // Form title
+        if (!empty($formTitle)) {
+            $html .= '<h3 class="form-title">' . htmlspecialchars($formTitle) . '</h3>';
         }
         
-        $classes = ['widget-contact-form'];
-        $classString = implode(' ', $classes);
-        
-        $styles = [];
-        if (isset($style['form_layout']['form_max_width'])) {
-            $styles[] = 'max-width: ' . $style['form_layout']['form_max_width'] . 'px';
-        }
-        if (isset($style['form_layout']['form_alignment'])) {
-            $alignment = $style['form_layout']['form_alignment'];
-            if ($alignment === 'center') {
-                $styles[] = 'margin: 0 auto';
-            } elseif ($alignment === 'right') {
-                $styles[] = 'margin-left: auto';
-            }
+        // Form description
+        if (!empty($formDescription)) {
+            $html .= '<p class="form-description">' . htmlspecialchars($formDescription) . '</p>';
         }
         
-        $styleString = !empty($styles) ? 'style="' . implode('; ', $styles) . '"' : '';
+        $html .= '<form class="contact-form" method="POST" action="#">';
         
-        $html = "<div class=\"{$classString}\" {$styleString}>";
-        
-        if ($formTitle) {
-            $titleStyles = [];
-            if (isset($style['title_styling']['title_color'])) {
-                $titleStyles[] = 'color: ' . $style['title_styling']['title_color'];
-            }
-            if (isset($style['title_styling']['title_font_size'])) {
-                $titleStyles[] = 'font-size: ' . $style['title_styling']['title_font_size'] . 'px';
-            }
-            
-            $titleStyleString = !empty($titleStyles) ? 'style="' . implode('; ', $titleStyles) . '"' : '';
-            $html .= "<h2 class=\"form-title\" {$titleStyleString}>{$formTitle}</h2>";
-        }
-        
-        if ($formDescription) {
-            $html .= "<p class=\"form-description\">{$formDescription}</p>";
-        }
-        
-        $html .= '<form class="contact-form" method="POST" action="/api/forms/submit">';
-        
+        // Render form fields
         foreach ($fields as $field) {
-            $html .= $this->renderField($field, $style);
-        }
-        
-        // Add CAPTCHA if enabled
-        if ($general['validation']['enable_captcha'] ?? true) {
-            $html .= '<div class="form-field captcha-field">';
-            $html .= '<div class="captcha-placeholder">CAPTCHA verification</div>';
-            $html .= '</div>';
+            $html .= $this->renderFormField($field);
         }
         
         // Submit button
-        $buttonStyles = [];
-        if (isset($style['button_styling']['button_background'])) {
-            $buttonStyles[] = 'background-color: ' . $style['button_styling']['button_background'];
-        }
-        if (isset($style['button_styling']['button_text_color'])) {
-            $buttonStyles[] = 'color: ' . $style['button_styling']['button_text_color'];
-        }
-        
-        $buttonStyleString = !empty($buttonStyles) ? 'style="' . implode('; ', $buttonStyles) . '"' : '';
-        
-        $html .= "<div class=\"form-field submit-field\">";
-        $html .= "<button type=\"submit\" class=\"submit-button\" {$buttonStyleString}>{$submitButtonText}</button>";
-        $html .= "</div>";
+        $html .= '<div class="form-field">';
+        $html .= '<button type="submit" class="submit-button">' . htmlspecialchars($submitButtonText) . '</button>';
+        $html .= '</div>';
         
         $html .= '</form>';
         $html .= '</div>';
@@ -482,7 +340,7 @@ class ContactFormWidget extends BaseWidget
         return $html;
     }
     
-    private function renderField(array $field, array $style): string
+    private function renderFormField(array $field): string
     {
         $fieldType = $field['field_type'] ?? 'text';
         $fieldLabel = $field['field_label'] ?? '';
@@ -491,44 +349,37 @@ class ContactFormWidget extends BaseWidget
         $required = $field['required'] ?? false;
         $fieldWidth = $field['field_width'] ?? 'full';
         
-        $fieldClasses = ['form-field', "field-width-{$fieldWidth}"];
-        if ($required) {
-            $fieldClasses[] = 'required';
-        }
+        $requiredAttr = $required ? 'required' : '';
+        $requiredMark = $required ? '<span class="required">*</span>' : '';
         
-        $fieldClassString = implode(' ', $fieldClasses);
+        $html = '<div class="form-field field-width-' . $fieldWidth . '">';
         
-        $html = "<div class=\"{$fieldClassString}\">";
-        
-        if ($fieldLabel) {
-            $requiredMark = $required ? ' <span class="required-mark">*</span>' : '';
-            $html .= "<label for=\"{$fieldName}\">{$fieldLabel}{$requiredMark}</label>";
+        if (!empty($fieldLabel)) {
+            $html .= '<label for="' . htmlspecialchars($fieldName) . '">' . htmlspecialchars($fieldLabel) . $requiredMark . '</label>';
         }
         
         switch ($fieldType) {
             case 'textarea':
-                $html .= "<textarea id=\"{$fieldName}\" name=\"{$fieldName}\" placeholder=\"{$placeholder}\"" . 
-                        ($required ? ' required' : '') . "></textarea>";
+                $html .= '<textarea name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldName) . '" placeholder="' . htmlspecialchars($placeholder) . '" ' . $requiredAttr . ' rows="5"></textarea>';
                 break;
             case 'select':
                 $options = explode("\n", $field['field_options'] ?? '');
-                $html .= "<select id=\"{$fieldName}\" name=\"{$fieldName}\"" . ($required ? ' required' : '') . ">";
-                $html .= "<option value=\"\">Choose an option...</option>";
+                $html .= '<select name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldName) . '" ' . $requiredAttr . '>';
+                $html .= '<option value="">Choose an option</option>';
                 foreach ($options as $option) {
                     $option = trim($option);
-                    if ($option) {
-                        $html .= "<option value=\"{$option}\">{$option}</option>";
+                    if (!empty($option)) {
+                        $html .= '<option value="' . htmlspecialchars($option) . '">' . htmlspecialchars($option) . '</option>';
                     }
                 }
-                $html .= "</select>";
+                $html .= '</select>';
                 break;
             default:
-                $html .= "<input type=\"{$fieldType}\" id=\"{$fieldName}\" name=\"{$fieldName}\" " .
-                        "placeholder=\"{$placeholder}\"" . ($required ? ' required' : '') . ">";
+                $html .= '<input type="' . htmlspecialchars($fieldType) . '" name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldName) . '" placeholder="' . htmlspecialchars($placeholder) . '" ' . $requiredAttr . '>';
                 break;
         }
         
-        $html .= "</div>";
+        $html .= '</div>';
         
         return $html;
     }

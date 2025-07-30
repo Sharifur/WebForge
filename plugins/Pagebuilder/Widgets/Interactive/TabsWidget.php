@@ -24,7 +24,7 @@ class TabsWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'folder';
+        return 'lni-tab';
     }
 
     protected function getWidgetDescription(): string

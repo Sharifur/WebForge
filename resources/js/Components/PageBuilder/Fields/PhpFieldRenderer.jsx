@@ -1,8 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { Monitor, Tablet, Smartphone, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Copy } from 'lucide-react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
+import { Monitor, Tablet, Smartphone, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Copy, Loader } from 'lucide-react';
 import { DndContext, closestCenter, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+// Lazy load the WYSIWYG editor to reduce initial bundle size
+const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
 
 /**
  * PhpFieldRenderer - Renders dynamic PHP widget fields
@@ -196,6 +199,170 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
           </div>
         );
 
+      case 'multiselect':
+        return (
+          <select
+            multiple
+            value={value || defaultValue || []}
+            onChange={(e) => {
+              const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+              onChange(selectedOptions);
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required={required}
+            size={5}
+          >
+            {options && Object.entries(options).map(([optionValue, optionLabel]) => (
+              <option key={optionValue} value={optionValue}>
+                {optionLabel}
+              </option>
+            ))}
+          </select>
+        );
+      
+      case 'email':
+        return (
+          <input
+            type="email"
+            value={value || defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder={placeholder || 'email@example.com'}
+            required={required}
+          />
+        );
+      
+      case 'password':
+        return (
+          <input
+            type="password"
+            value={value || defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder={placeholder || 'Enter password'}
+            required={required}
+          />
+        );
+      
+      case 'radio':
+        return (
+          <div className="space-y-2">
+            {options && Object.entries(options).map(([optionValue, optionLabel]) => (
+              <label key={optionValue} className="flex items-center">
+                <input
+                  type="radio"
+                  name={fieldKey}
+                  value={optionValue}
+                  checked={(value || defaultValue) === optionValue}
+                  onChange={(e) => onChange(e.target.value)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  required={required}
+                />
+                <span className="ml-2 text-sm text-gray-700">{optionLabel}</span>
+              </label>
+            ))}
+          </div>
+        );
+      
+      case 'date':
+        return (
+          <input
+            type="date"
+            value={value || defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required={required}
+            min={min}
+            max={max}
+          />
+        );
+      
+      case 'time':
+        return (
+          <input
+            type="time"
+            value={value || defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required={required}
+            min={min}
+            max={max}
+          />
+        );
+      
+      case 'datetime':
+        return (
+          <input
+            type="datetime-local"
+            value={value || defaultValue || ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required={required}
+            min={min}
+            max={max}
+          />
+        );
+      
+      case 'divider':
+        return (
+          <div className="py-2">
+            <div className="border-t border-gray-200"></div>
+            {label && (
+              <div className="relative -mt-3">
+                <span className="bg-white px-2 text-xs text-gray-500 mx-auto block w-fit">{label}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'heading':
+        const HeadingTag = fieldConfig.size || 'h3';
+        return (
+          <HeadingTag className="text-lg font-semibold text-gray-900 mb-2">
+            {label}
+          </HeadingTag>
+        );
+      
+      case 'code':
+        return (
+          <div className="space-y-2">
+            <textarea
+              value={value || defaultValue || ''}
+              onChange={(e) => onChange(e.target.value)}
+              rows={rows || 10}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={placeholder || 'Enter code...'}
+              required={required}
+              spellCheck="false"
+            />
+            {fieldConfig.language && (
+              <p className="text-xs text-gray-500">Language: {fieldConfig.language}</p>
+            )}
+          </div>
+        );
+
+      case 'wysiwyg':
+        return (
+          <div className="space-y-2">
+            <Suspense fallback={
+              <div className="flex items-center justify-center min-h-[200px] border border-gray-300 rounded-md">
+                <Loader className="w-5 h-5 animate-spin text-gray-400" />
+                <span className="ml-2 text-sm text-gray-500">Loading editor...</span>
+              </div>
+            }>
+              <WysiwygEditor
+                value={value || defaultValue || ''}
+                onChange={onChange}
+                placeholder={placeholder || 'Enter content...'}
+                toolbar={fieldConfig.toolbar}
+              />
+            </Suspense>
+            {description && (
+              <p className="text-xs text-gray-500">{description}</p>
+            )}
+          </div>
+        );
+
       case 'dimension':
         const dimensionValue = value || defaultValue || { top: 0, right: 0, bottom: 0, left: 0 };
         return (
@@ -260,8 +427,8 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
     }
   };
 
-  // For checkbox, toggle, and repeater fields, the label is rendered inside the field
-  if (type === 'checkbox' || type === 'toggle' || type === 'repeater') {
+  // For checkbox, toggle, repeater, divider, and heading fields, the label is rendered inside the field
+  if (type === 'checkbox' || type === 'toggle' || type === 'repeater' || type === 'divider' || type === 'heading') {
     return (
       <div>
         {renderField()}

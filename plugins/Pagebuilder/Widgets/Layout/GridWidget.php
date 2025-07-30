@@ -35,7 +35,7 @@ class GridWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'grid';
+        return 'lni-grid-alt';
     }
 
     protected function getWidgetDescription(): string

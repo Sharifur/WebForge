@@ -36,6 +36,9 @@ class WidgetLoader
         // Advanced Widgets (Category: ADVANCED)
         self::registerAdvancedWidgets();
         
+        // Form Widgets (Category: FORM)
+        self::registerFormWidgets();
+        
         // Cache the registry for better performance
         WidgetRegistry::cache();
     }
@@ -50,6 +53,7 @@ class WidgetLoader
             \Plugins\Pagebuilder\Widgets\Basic\ParagraphWidget::class,
             \Plugins\Pagebuilder\Widgets\Basic\ListWidget::class,
             \Plugins\Pagebuilder\Widgets\Basic\LinkWidget::class,
+            \Plugins\Pagebuilder\Widgets\Basic\ButtonWidget::class,
         ];
 
         WidgetRegistry::registerMultiple($basicWidgets);
@@ -61,6 +65,7 @@ class WidgetLoader
     private static function registerLayoutWidgets(): void
     {
         $layoutWidgets = [
+            \Plugins\Pagebuilder\Widgets\Layout\SectionWidget::class,
             \Plugins\Pagebuilder\Widgets\Layout\DividerWidget::class,
             \Plugins\Pagebuilder\Widgets\Layout\SpacerWidget::class,
             \Plugins\Pagebuilder\Widgets\Layout\GridWidget::class,
@@ -78,6 +83,7 @@ class WidgetLoader
             \Plugins\Pagebuilder\Widgets\Media\ImageWidget::class,
             \Plugins\Pagebuilder\Widgets\Media\VideoWidget::class,
             \Plugins\Pagebuilder\Widgets\Media\IconWidget::class,
+            \Plugins\Pagebuilder\Widgets\Media\ImageGalleryWidget::class,
         ];
 
         WidgetRegistry::registerMultiple($mediaWidgets);
@@ -117,6 +123,18 @@ class WidgetLoader
         ];
 
         WidgetRegistry::registerMultiple($advancedWidgets);
+    }
+
+    /**
+     * Register form widgets
+     */
+    private static function registerFormWidgets(): void
+    {
+        $formWidgets = [
+            \Plugins\Pagebuilder\Widgets\Form\ContactFormWidget::class,
+        ];
+
+        WidgetRegistry::registerMultiple($formWidgets);
     }
 
     /**

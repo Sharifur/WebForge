@@ -4,6 +4,8 @@ namespace Plugins\Pagebuilder\Widgets\Basic;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
+use Plugins\Pagebuilder\Core\ControlManager;
+use Plugins\Pagebuilder\Core\FieldManager;
 
 class ButtonWidget extends BaseWidget
 {
@@ -19,7 +21,7 @@ class ButtonWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'mouse-pointer';
+        return 'lni-hand';
     }
 
     protected function getWidgetDescription(): string
@@ -39,214 +41,180 @@ class ButtonWidget extends BaseWidget
 
     public function getGeneralFields(): array
     {
-        return [
-            'content' => [
-                'type' => 'group',
-                'label' => 'Content',
-                'fields' => [
-                    'text' => [
-                        'type' => 'text',
-                        'label' => 'Button Text',
-                        'default' => 'Click me',
-                        'required' => true
-                    ],
-                    'url' => [
-                        'type' => 'url',
-                        'label' => 'Button URL',
-                        'placeholder' => 'https://example.com',
-                        'default' => '#'
-                    ],
-                    'target' => [
-                        'type' => 'select',
-                        'label' => 'Link Target',
-                        'options' => [
-                            '_self' => 'Same window',
-                            '_blank' => 'New window',
-                            '_parent' => 'Parent frame',
-                            '_top' => 'Top frame'
-                        ],
-                        'default' => '_self'
-                    ]
-                ]
-            ],
-            'icon' => [
-                'type' => 'group',
-                'label' => 'Icon',
-                'fields' => [
-                    'show_icon' => [
-                        'type' => 'toggle',
-                        'label' => 'Show Icon',
-                        'default' => false
-                    ],
-                    'icon_name' => [
-                        'type' => 'icon',
-                        'label' => 'Icon',
-                        'default' => 'arrow-right',
-                        'condition' => ['show_icon' => true]
-                    ],
-                    'icon_position' => [
-                        'type' => 'select',
-                        'label' => 'Icon Position',
-                        'options' => [
-                            'left' => 'Left',
-                            'right' => 'Right'
-                        ],
-                        'default' => 'right',
-                        'condition' => ['show_icon' => true]
-                    ]
-                ]
-            ],
-            'behavior' => [
-                'type' => 'group',
-                'label' => 'Behavior',
-                'fields' => [
-                    'full_width' => [
-                        'type' => 'toggle',
-                        'label' => 'Full Width',
-                        'default' => false
-                    ],
-                    'disabled' => [
-                        'type' => 'toggle',
-                        'label' => 'Disabled',
-                        'default' => false
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Content Group
+        $control->addGroup('content', 'Content')
+            ->registerField('text', FieldManager::TEXT()
+                ->setLabel('Button Text')
+                ->setDefault('Click me')
+                ->setRequired(true)
+            )
+            ->registerField('url', FieldManager::URL()
+                ->setLabel('Button URL')
+                ->setPlaceholder('https://example.com')
+                ->setDefault('#')
+            )
+            ->registerField('target', FieldManager::SELECT()
+                ->setLabel('Link Target')
+                ->setOptions([
+                    '_self' => 'Same window',
+                    '_blank' => 'New window',
+                    '_parent' => 'Parent frame',
+                    '_top' => 'Top frame'
+                ])
+                ->setDefault('_self')
+            )
+            ->endGroup();
+            
+        // Icon Group
+        $control->addGroup('icon', 'Icon')
+            ->registerField('show_icon', FieldManager::TOGGLE()
+                ->setLabel('Show Icon')
+                ->setDefault(false)
+            )
+            ->registerField('icon_name', FieldManager::ICON()
+                ->setLabel('Icon')
+                ->setDefault('arrow-right')
+                ->setCondition(['show_icon' => true])
+            )
+            ->registerField('icon_position', FieldManager::SELECT()
+                ->setLabel('Icon Position')
+                ->setOptions([
+                    'left' => 'Left',
+                    'right' => 'Right'
+                ])
+                ->setDefault('right')
+                ->setCondition(['show_icon' => true])
+            )
+            ->endGroup();
+            
+        // Behavior Group
+        $control->addGroup('behavior', 'Behavior')
+            ->registerField('full_width', FieldManager::TOGGLE()
+                ->setLabel('Full Width')
+                ->setDefault(false)
+            )
+            ->registerField('disabled', FieldManager::TOGGLE()
+                ->setLabel('Disabled')
+                ->setDefault(false)
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function getStyleFields(): array
     {
-        return [
-            'appearance' => [
-                'type' => 'group',
-                'label' => 'Appearance',
-                'fields' => [
-                    'button_style' => [
-                        'type' => 'select',
-                        'label' => 'Button Style',
-                        'options' => [
-                            'solid' => 'Solid',
-                            'outline' => 'Outline',
-                            'ghost' => 'Ghost',
-                            'link' => 'Link'
-                        ],
-                        'default' => 'solid'
-                    ],
-                    'size' => [
-                        'type' => 'select',
-                        'label' => 'Size',
-                        'options' => [
-                            'sm' => 'Small',
-                            'md' => 'Medium',
-                            'lg' => 'Large',
-                            'xl' => 'Extra Large'
-                        ],
-                        'default' => 'md'
-                    ]
-                ]
-            ],
-            'colors' => [
-                'type' => 'group',
-                'label' => 'Colors',
-                'fields' => [
-                    'background_color' => [
-                        'type' => 'color',
-                        'label' => 'Background Color',
-                        'default' => '#3B82F6'
-                    ],
-                    'text_color' => [
-                        'type' => 'color',
-                        'label' => 'Text Color',
-                        'default' => '#FFFFFF'
-                    ],
-                    'hover_background_color' => [
-                        'type' => 'color',
-                        'label' => 'Hover Background Color',
-                        'default' => '#2563EB'
-                    ],
-                    'hover_text_color' => [
-                        'type' => 'color',
-                        'label' => 'Hover Text Color',
-                        'default' => '#FFFFFF'
-                    ]
-                ]
-            ],
-            'typography' => [
-                'type' => 'group',
-                'label' => 'Typography',
-                'fields' => [
-                    'font_size' => [
-                        'type' => 'number',
-                        'label' => 'Font Size',
-                        'unit' => 'px',
-                        'min' => 10,
-                        'max' => 72,
-                        'default' => 16
-                    ],
-                    'font_weight' => [
-                        'type' => 'select',
-                        'label' => 'Font Weight',
-                        'options' => [
-                            '300' => 'Light',
-                            '400' => 'Normal',
-                            '500' => 'Medium',
-                            '600' => 'Semi Bold',
-                            '700' => 'Bold',
-                            '800' => 'Extra Bold'
-                        ],
-                        'default' => '500'
-                    ],
-                    'text_transform' => [
-                        'type' => 'select',
-                        'label' => 'Text Transform',
-                        'options' => [
-                            'none' => 'None',
-                            'uppercase' => 'Uppercase',
-                            'lowercase' => 'Lowercase',
-                            'capitalize' => 'Capitalize'
-                        ],
-                        'default' => 'none'
-                    ]
-                ]
-            ],
-            'spacing' => [
-                'type' => 'group',
-                'label' => 'Spacing',
-                'fields' => [
-                    'padding_horizontal' => [
-                        'type' => 'number',
-                        'label' => 'Horizontal Padding',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 100,
-                        'default' => 24
-                    ],
-                    'padding_vertical' => [
-                        'type' => 'number',
-                        'label' => 'Vertical Padding',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 50,
-                        'default' => 12
-                    ]
-                ]
-            ],
-            'border' => [
-                'type' => 'group',
-                'label' => 'Border',
-                'fields' => [
-                    'border_radius' => [
-                        'type' => 'number',
-                        'label' => 'Border Radius',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 50,
-                        'default' => 6
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+        
+        // Appearance Group
+        $control->addGroup('appearance', 'Appearance')
+            ->registerField('button_style', FieldManager::SELECT()
+                ->setLabel('Button Style')
+                ->setOptions([
+                    'solid' => 'Solid',
+                    'outline' => 'Outline', 
+                    'ghost' => 'Ghost',
+                    'link' => 'Link'
+                ])
+                ->setDefault('solid')
+            )
+            ->registerField('size', FieldManager::SELECT()
+                ->setLabel('Size')
+                ->setOptions([
+                    'sm' => 'Small',
+                    'md' => 'Medium',
+                    'lg' => 'Large',
+                    'xl' => 'Extra Large'
+                ])
+                ->setDefault('md')
+            )
+            ->endGroup();
+            
+        // Colors Group
+        $control->addGroup('colors', 'Colors')
+            ->registerField('background_color', FieldManager::COLOR()
+                ->setLabel('Background Color')
+                ->setDefault('#3B82F6')
+            )
+            ->registerField('text_color', FieldManager::COLOR()
+                ->setLabel('Text Color')
+                ->setDefault('#FFFFFF')
+            )
+            ->registerField('hover_background_color', FieldManager::COLOR()
+                ->setLabel('Hover Background Color')
+                ->setDefault('#2563EB')
+            )
+            ->registerField('hover_text_color', FieldManager::COLOR()
+                ->setLabel('Hover Text Color')
+                ->setDefault('#FFFFFF')
+            )
+            ->endGroup();
+            
+        // Typography Group
+        $control->addGroup('typography', 'Typography')
+            ->registerField('font_size', FieldManager::NUMBER()
+                ->setLabel('Font Size')
+                ->setUnit('px')
+                ->setMin(10)
+                ->setMax(72)
+                ->setDefault(16)
+            )
+            ->registerField('font_weight', FieldManager::SELECT()
+                ->setLabel('Font Weight')
+                ->setOptions([
+                    '300' => 'Light',
+                    '400' => 'Normal',
+                    '500' => 'Medium',
+                    '600' => 'Semi Bold',
+                    '700' => 'Bold',
+                    '800' => 'Extra Bold'
+                ])
+                ->setDefault('500')
+            )
+            ->registerField('text_transform', FieldManager::SELECT()
+                ->setLabel('Text Transform')
+                ->setOptions([
+                    'none' => 'None',
+                    'uppercase' => 'Uppercase',
+                    'lowercase' => 'Lowercase',
+                    'capitalize' => 'Capitalize'
+                ])
+                ->setDefault('none')
+            )
+            ->endGroup();
+            
+        // Spacing Group
+        $control->addGroup('spacing', 'Spacing')
+            ->registerField('padding_horizontal', FieldManager::NUMBER()
+                ->setLabel('Horizontal Padding')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(100)
+                ->setDefault(24)
+            )
+            ->registerField('padding_vertical', FieldManager::NUMBER()
+                ->setLabel('Vertical Padding')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(50)
+                ->setDefault(12)
+            )
+            ->endGroup();
+            
+        // Border Group
+        $control->addGroup('border', 'Border')
+            ->registerField('border_radius', FieldManager::NUMBER()
+                ->setLabel('Border Radius')
+                ->setUnit('px')
+                ->setMin(0)
+                ->setMax(50)
+                ->setDefault(6)
+            )
+            ->endGroup();
+            
+        return $control->getFields();
     }
 
     public function render(array $settings = []): string

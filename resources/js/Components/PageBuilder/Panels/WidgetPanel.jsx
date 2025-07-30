@@ -379,7 +379,7 @@ const DraggablePhpWidget = ({ widget }) => {
         </div>
       )}
       <div className="flex flex-col items-center text-center space-y-2">
-        <PhpWidgetIcon iconName={widget.icon} className="w-6 h-6" />
+        <PhpWidgetIcon iconName={widget.icon} widgetType={widget.type} className="w-6 h-6" />
         <span className="text-xs font-medium text-gray-700">{widget.name}</span>
       </div>
     </div>

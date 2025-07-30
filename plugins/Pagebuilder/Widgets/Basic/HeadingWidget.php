@@ -34,7 +34,7 @@ class HeadingWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'type';
+        return 'lni-text-format';
     }
 
     protected function getWidgetDescription(): string

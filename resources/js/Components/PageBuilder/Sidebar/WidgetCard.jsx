@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Star, Crown, Grip, Info } from 'lucide-react';
+import { WidgetIcon as SVGWidgetIcon } from '@/Components/PageBuilder/Icons/WidgetIcons';
 
 const WidgetCard = ({ 
   widget, 
@@ -83,7 +84,7 @@ const WidgetCard = ({
             className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white"
             style={{ backgroundColor: getCategoryColor(widget.category) }}
           >
-            <WidgetIcon icon={widget.icon} className="w-5 h-5" />
+            <WidgetIcon icon={widget.icon} type={widget.type} className="w-5 h-5" />
           </div>
           
           <div className="flex-1 min-w-0">
@@ -199,10 +200,14 @@ const getCategoryColor = (category) => {
   return colors[category] || '#6B7280';
 };
 
-// Widget icon component
-const WidgetIcon = ({ icon, className = "w-5 h-5" }) => {
-  // This would map icon names to actual icon components
-  // For now, using a simple text representation
+// Widget icon component using SVG icons
+const WidgetIcon = ({ icon, type, className = "w-5 h-5" }) => {
+  // Use SVG icons based on widget type
+  if (type) {
+    return <SVGWidgetIcon type={type} className={className} />;
+  }
+  
+  // Fallback for legacy icon names
   return (
     <div className={`${className} flex items-center justify-center text-xs font-bold`}>
       {icon ? icon.charAt(0).toUpperCase() : 'W'}

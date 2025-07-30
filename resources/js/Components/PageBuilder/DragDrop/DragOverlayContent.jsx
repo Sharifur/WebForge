@@ -60,7 +60,7 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
           phpWidget.is_pro ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white' : ''
         }`}>
           <div className="flex items-center space-x-3">
-            <PhpWidgetIcon iconName={phpWidget.icon} className="w-5 h-5 text-gray-600" />
+            <PhpWidgetIcon iconName={phpWidget.icon} widgetType={phpWidget.type} className="w-5 h-5 text-gray-600" />
             <div>
               <span className="text-sm font-medium text-gray-700">{phpWidget.name}</span>
               {phpWidget.is_pro && (
