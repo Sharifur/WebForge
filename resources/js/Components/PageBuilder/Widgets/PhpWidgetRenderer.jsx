@@ -40,19 +40,14 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
       };
 
       // Merge widget content with defaults in the exact format PHP expects
-      // The defaults now have the proper nested structure (e.g., general.content, general.type, etc.)
+      // Widget content should be merged directly into the general settings, not nested under content
       const settings = {
         general: {
           // Start with all default groups
           ...safeDefaults.general,
-          // Then merge widget content into the content group specifically
-          ...(safeDefaults.general.content && widget.content ? {
-            content: {
-              ...safeDefaults.general.content,
-              ...(widget.content || {})
-            }
-          } : {}),
-          // Also merge any other general settings from the widget
+          // Merge widget content directly into general settings (not nested under content)
+          ...(widget.content || {}),
+          // Then merge any other general settings from the widget
           ...(widget.general || {})
         },
         style: {

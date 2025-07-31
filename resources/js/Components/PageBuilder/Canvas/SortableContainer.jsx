@@ -121,7 +121,12 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
           padding: container.settings?.padding || '20px',
           margin: container.settings?.margin || '0',
           backgroundColor: container.settings?.backgroundColor || '#ffffff',
-          ...container.settings
+          // Only spread CSS-related properties, filter out internal settings
+          ...Object.fromEntries(
+            Object.entries(container.settings || {}).filter(([key]) => 
+              !['columnCount', 'gridTemplate', 'gap'].includes(key)
+            )
+          )
         }}
       >
         <div 

@@ -9,7 +9,8 @@ export const useDragAndDrop = () => {
     addContainer,
     reorderWidgets,
     reorderContainers,
-    updateWidget
+    updateWidget,
+    moveWidgetBetweenColumns
   } = usePageBuilderStore();
 
   const handleDragStart = (event) => {
@@ -202,14 +203,43 @@ export const useDragAndDrop = () => {
     // Handle widget drop to different column
     if (activeData?.type === 'widget' && overData?.type === 'column') {
       if (activeData.columnId !== overData.columnId) {
-        // Move widget to different column
-        moveWidgetToColumn(
+        console.log('[DragAndDrop] Moving widget between columns:', {
+          widgetId: activeData.widget.id,
+          fromColumn: activeData.columnId,
+          toColumn: overData.columnId,
+          fromContainer: activeData.containerId,
+          toContainer: overData.containerId
+        });
+        
+        // Move widget to different column using store method
+        moveWidgetBetweenColumns(
           activeData.widget.id, 
           activeData.columnId, 
           overData.columnId,
           overData.containerId
         );
       }
+      return;
+    }
+    
+    // Handle widget drop on another widget (for reordering between columns)
+    if (activeData?.type === 'widget' && overData?.type === 'widget' && 
+        activeData.columnId !== overData.columnId) {
+      console.log('[DragAndDrop] Moving widget via widget drop:', {
+        widgetId: activeData.widget.id,
+        fromColumn: activeData.columnId,
+        toColumn: overData.columnId,
+        fromContainer: activeData.containerId,
+        toContainer: overData.containerId
+      });
+      
+      // Move widget to the same column as the target widget
+      moveWidgetBetweenColumns(
+        activeData.widget.id,
+        activeData.columnId,
+        overData.columnId,
+        overData.containerId
+      );
       return;
     }
 
@@ -228,51 +258,6 @@ export const useDragAndDrop = () => {
       console.error('Error in handleDragEnd:', error);
       console.error('Active data:', active.data.current);
       console.error('Over data:', over?.data?.current);
-    }
-  };
-
-  const moveWidgetToColumn = (widgetId, fromColumnId, toColumnId, toContainerId) => {
-    const { pageContent, setPageContent } = usePageBuilderStore.getState();
-    
-    // Find the widget to move
-    let widgetToMove = null;
-    const updatedContainers = pageContent.containers.map(container => ({
-      ...container,
-      columns: container.columns.map(column => {
-        if (column.id === fromColumnId) {
-          // Remove widget from source column
-          const widgetIndex = column.widgets.findIndex(w => w.id === widgetId);
-          if (widgetIndex !== -1) {
-            widgetToMove = column.widgets[widgetIndex];
-            return {
-              ...column,
-              widgets: column.widgets.filter(w => w.id !== widgetId)
-            };
-          }
-        }
-        return column;
-      })
-    }));
-
-    if (widgetToMove) {
-      // Add widget to destination column
-      const finalContainers = updatedContainers.map(container => ({
-        ...container,
-        columns: container.columns.map(column => {
-          if (column.id === toColumnId) {
-            return {
-              ...column,
-              widgets: [...column.widgets, widgetToMove]
-            };
-          }
-          return column;
-        })
-      }));
-
-      setPageContent({
-        ...pageContent,
-        containers: finalContainers
-      });
     }
   };
 

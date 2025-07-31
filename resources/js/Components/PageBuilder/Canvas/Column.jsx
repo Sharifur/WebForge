@@ -36,7 +36,12 @@ const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, se
         flexGrow: column.width ? 0 : 1,
         flexShrink: 0,
         padding: column.settings?.padding || '10px',
-        ...column.settings
+        // Only spread CSS-related properties, filter out internal settings
+        ...Object.fromEntries(
+          Object.entries(column.settings || {}).filter(([key]) => 
+            !['padding'].includes(key) // Filter out properties already handled
+          )
+        )
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

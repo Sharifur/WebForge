@@ -261,6 +261,82 @@ const usePageBuilderStore = create((set, get) => ({
     isDirty: true
   })),
   
+  moveWidgetBetweenColumns: (widgetId, fromColumnId, toColumnId, toContainerId) => set(state => {
+    console.log('[Store] moveWidgetBetweenColumns called:', {
+      widgetId,
+      fromColumnId,
+      toColumnId,
+      toContainerId
+    });
+    
+    let widgetToMove = null;
+    let sourceContainerId = null;
+    
+    // First pass: find and remove the widget from source column
+    const containersAfterRemoval = state.pageContent.containers.map(container => {
+      const hasSourceColumn = container.columns.some(col => col.id === fromColumnId);
+      if (hasSourceColumn) {
+        sourceContainerId = container.id;
+      }
+      
+      return {
+        ...container,
+        columns: container.columns.map(column => {
+          if (column.id === fromColumnId) {
+            const widget = column.widgets.find(w => w.id === widgetId);
+            if (widget) {
+              widgetToMove = widget;
+              console.log('[Store] Found widget to move:', widget);
+              return {
+                ...column,
+                widgets: column.widgets.filter(w => w.id !== widgetId)
+              };
+            }
+          }
+          return column;
+        })
+      };
+    });
+    
+    // Second pass: add widget to destination column
+    if (widgetToMove) {
+      const finalContainers = containersAfterRemoval.map(container => {
+        // Check if this container contains the destination column
+        const hasDestColumn = container.columns.some(col => col.id === toColumnId);
+        
+        if (hasDestColumn || container.id === toContainerId) {
+          console.log('[Store] Adding widget to container:', container.id);
+          return {
+            ...container,
+            columns: container.columns.map(column => {
+              if (column.id === toColumnId) {
+                console.log('[Store] Adding widget to column:', column.id);
+                return {
+                  ...column,
+                  widgets: [...column.widgets, widgetToMove]
+                };
+              }
+              return column;
+            })
+          };
+        }
+        return container;
+      });
+      
+      return {
+        pageContent: {
+          ...state.pageContent,
+          containers: finalContainers
+        },
+        isDirty: true
+      };
+    } else {
+      console.warn('[Store] Widget not found for move:', widgetId);
+    }
+    
+    return state;
+  }),
+  
   // Container Actions
   updateContainer: (containerId, updates) => set(state => ({
     pageContent: {
