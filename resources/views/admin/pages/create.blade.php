@@ -99,6 +99,24 @@
                         </label>
                     </x-admin.form-group>
                 </div>
+
+                <div class="border-t pt-4">
+                    <x-admin.form-group>
+                        <label class="flex items-center space-x-2">
+                            <input 
+                                type="checkbox" 
+                                name="use_page_builder" 
+                                id="use_page_builder"
+                                value="1" 
+                                {{ old('use_page_builder') ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                onchange="toggleContentEditor()"
+                            >
+                            <span class="text-sm font-medium text-gray-700">Use Page Builder</span>
+                        </label>
+                        <p class="mt-1 text-sm text-gray-500">Enable visual page builder instead of plain text editor</p>
+                    </x-admin.form-group>
+                </div>
             </div>
         </x-admin.card>
 
@@ -501,9 +519,41 @@ document.getElementById('title').addEventListener('input', function() {
     }
 });
 
+// Toggle content editor based on page builder checkbox
+function toggleContentEditor() {
+    const usePageBuilder = document.getElementById('use_page_builder').checked;
+    const contentGroup = document.getElementById('content').closest('.form-group');
+    
+    if (usePageBuilder) {
+        contentGroup.style.display = 'none';
+        // Show a notice about page builder
+        const notice = document.getElementById('page-builder-notice');
+        if (!notice) {
+            const noticeDiv = document.createElement('div');
+            noticeDiv.id = 'page-builder-notice';
+            noticeDiv.className = 'p-4 bg-blue-50 border border-blue-200 rounded-md';
+            noticeDiv.innerHTML = `
+                <p class="text-sm text-blue-600">
+                    <strong>Page Builder Enabled:</strong> You'll be able to design your page visually after creating it. 
+                    Click "Create Page" to proceed to the page builder interface.
+                </p>
+            `;
+            contentGroup.parentNode.insertBefore(noticeDiv, contentGroup);
+        }
+    } else {
+        contentGroup.style.display = 'block';
+        const notice = document.getElementById('page-builder-notice');
+        if (notice) {
+            notice.remove();
+        }
+    }
+}
+
 // Initialize with first tab active
 document.addEventListener('DOMContentLoaded', function() {
     showTab('basic-seo');
+    // Check initial state of page builder checkbox
+    toggleContentEditor();
 });
 </script>
 @endsection

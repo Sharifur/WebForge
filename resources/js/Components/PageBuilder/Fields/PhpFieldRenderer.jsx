@@ -669,88 +669,59 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
         </button>
       </div>
 
-      {/* Dimension inputs */}
-      {isLinked && allSidesEqual ? (
-        <div className="flex items-center space-x-2">
-          <input
-            type="number"
-            value={currentValues.top}
-            onChange={(e) => handleDimensionChange('top', e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="All sides"
-            min="0"
-          />
-          <select
-            value={currentValues.unit || 'px'}
-            onChange={(e) => handleUnitChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="px">px</option>
-            <option value="%">%</option>
-            <option value="em">em</option>
-            <option value="rem">rem</option>
-            <option value="vw">vw</option>
-            <option value="vh">vh</option>
-          </select>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500 w-12">Top</span>
-              <input
-                type="number"
-                value={currentValues.top}
-                onChange={(e) => handleDimensionChange('top', e.target.value)}
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                min="0"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500 w-12">Right</span>
-              <input
-                type="number"
-                value={currentValues.right}
-                onChange={(e) => handleDimensionChange('right', e.target.value)}
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                min="0"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500 w-12">Bottom</span>
-              <input
-                type="number"
-                value={currentValues.bottom}
-                onChange={(e) => handleDimensionChange('bottom', e.target.value)}
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                min="0"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500 w-12">Left</span>
-              <input
-                type="number"
-                value={currentValues.left}
-                onChange={(e) => handleDimensionChange('left', e.target.value)}
-                className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                min="0"
-              />
-            </div>
-          </div>
-          <select
-            value={currentValues.unit || 'px'}
-            onChange={(e) => handleUnitChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="px">px</option>
-            <option value="%">%</option>
-            <option value="em">em</option>
-            <option value="rem">rem</option>
-            <option value="vw">vw</option>
-            <option value="vh">vh</option>
-          </select>
-        </div>
-      )}
+      {/* Dimension inputs - Always show 4 fields in one row */}
+      <div className="flex items-center space-x-2">
+        <input
+          type="number"
+          value={currentValues.top}
+          onChange={(e) => handleDimensionChange('top', e.target.value)}
+          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="0"
+          min="0"
+        />
+        <input
+          type="number"
+          value={currentValues.right}
+          onChange={(e) => handleDimensionChange('right', e.target.value)}
+          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="0"
+          min="0"
+          disabled={isLinked}
+          style={{ opacity: isLinked ? 0.5 : 1 }}
+        />
+        <input
+          type="number"
+          value={currentValues.bottom}
+          onChange={(e) => handleDimensionChange('bottom', e.target.value)}
+          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="0"
+          min="0"
+          disabled={isLinked}
+          style={{ opacity: isLinked ? 0.5 : 1 }}
+        />
+        <input
+          type="number"
+          value={currentValues.left}
+          onChange={(e) => handleDimensionChange('left', e.target.value)}
+          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="0"
+          min="0"
+          disabled={isLinked}
+          style={{ opacity: isLinked ? 0.5 : 1 }}
+        />
+        <select
+          value={currentValues.unit || 'px'}
+          onChange={(e) => handleUnitChange(e.target.value)}
+          className="px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="px">px</option>
+          <option value="%">%</option>
+          <option value="em">em</option>
+          <option value="rem">rem</option>
+          <option value="vw">vw</option>
+          <option value="vh">vh</option>
+        </select>
+      </div>
       
       <p className="text-xs text-gray-500">
         Set different values for each device breakpoint

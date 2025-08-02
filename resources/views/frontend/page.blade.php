@@ -31,8 +31,14 @@
     </header>
 
     <!-- Page Content -->
-    <article class="prose prose-lg max-w-none">
-        {!! $page->content !!}
+    <article class="max-w-none">
+        @if(!empty($renderedContent))
+            {!! $renderedContent !!}
+        @else
+            <div class="prose prose-lg">
+                {!! $page->content !!}
+            </div>
+        @endif
     </article>
 
     <!-- Page Meta Info (for debugging - remove in production) -->

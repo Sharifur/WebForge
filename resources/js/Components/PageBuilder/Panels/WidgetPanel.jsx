@@ -20,7 +20,7 @@ import {
   Loader
 } from 'lucide-react';
 import widgetService from '@/Services/widgetService';
-import { PhpWidgetIcon } from '@/Components/PageBuilder/Widgets/PhpWidgetRenderer';
+import UniversalIcon from '@/Components/PageBuilder/Icons/UniversalIcon';
 
 const WidgetPanel = ({ widgets, sections, templates, activeTab, onTabChange }) => {
   const [phpWidgets, setPhpWidgets] = useState({});
@@ -379,7 +379,7 @@ const DraggablePhpWidget = ({ widget }) => {
         </div>
       )}
       <div className="flex flex-col items-center text-center space-y-2">
-        <PhpWidgetIcon iconName={widget.icon} widgetType={widget.type} className="w-6 h-6" />
+        <UniversalIcon icon={widget.icon} type={widget.type} className="w-6 h-6" />
         <span className="text-xs font-medium text-gray-700">{widget.name}</span>
       </div>
     </div>

@@ -6,6 +6,7 @@ use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
 use Plugins\Pagebuilder\Core\ControlManager;
 use Plugins\Pagebuilder\Core\FieldManager;
+use Plugins\Pagebuilder\Core\BladeRenderable;
 
 /**
  * HeadingWidget - Provides heading elements (H1-H6) with advanced typography controls
@@ -22,6 +23,7 @@ use Plugins\Pagebuilder\Core\FieldManager;
  */
 class HeadingWidget extends BaseWidget
 {
+    use BladeRenderable;
     protected function getWidgetType(): string
     {
         return 'heading';
@@ -423,6 +425,21 @@ class HeadingWidget extends BaseWidget
      */
     public function render(array $settings = []): string
     {
+        // Try Blade template first if available
+        if ($this->hasBladeTemplate()) {
+            $templateData = $this->prepareTemplateData($settings);
+            return $this->renderBladeTemplate($this->getDefaultTemplatePath(), $templateData);
+        }
+        
+        // Fallback to manual HTML generation
+        return $this->renderManually($settings);
+    }
+    
+    /**
+     * Manual HTML rendering (fallback when no Blade template is available)
+     */
+    private function renderManually(array $settings): string
+    {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
         
@@ -439,7 +456,7 @@ class HeadingWidget extends BaseWidget
         $linkTarget = $link['link_target'] ?? '_self';
         $linkNofollow = $link['link_nofollow'] ?? false;
         
-        $classes = ['heading-element', 'heading-' . $level];
+        $classes = ['heading-element', 'heading-' . $level, 'pagebuilder-heading'];
         
         // Add alignment class
         if ($align !== 'left') {
@@ -448,8 +465,9 @@ class HeadingWidget extends BaseWidget
         
         $classString = implode(' ', $classes);
         
-        // Build attributes
-        $attributes = ['class' => $classString];
+        // Build inline styles for immediate effect
+        $inlineStyles = $this->buildInlineStyles($style, $general);
+        $styleAttr = !empty($inlineStyles) ? ' style="' . $inlineStyles . '"' : '';
         
         if ($enableLink) {
             $linkAttributes = [
@@ -466,10 +484,156 @@ class HeadingWidget extends BaseWidget
                 $linkAttrs .= ' ' . $attr . '="' . $value . '"';
             }
             
-            return "<{$level} class=\"{$classString}\"><a{$linkAttrs}>{$text}</a></{$level}>";
+            return "<{$level} class=\"{$classString}\"{$styleAttr}><a{$linkAttrs}>{$text}</a></{$level}>";
         } else {
-            return "<{$level} class=\"{$classString}\">{$text}</{$level}>";
+            return "<{$level} class=\"{$classString}\"{$styleAttr}>{$text}</{$level}>";
         }
+    }
+
+    /**
+     * Build inline styles for immediate preview effect
+     */
+    private function buildInlineStyles(array $style, array $general = []): string
+    {
+        $styles = [];
+        
+        // Typography styles
+        $typography = $style['typography'] ?? [];
+        
+        // Font size - use heading level defaults when font size is default value (32px) or not set
+        $content = $general['content'] ?? [];
+        $headingLevel = $content['heading_level'] ?? 'h2';
+        
+        if (isset($typography['font_size']) && $typography['font_size'] != 32) {
+            // Use custom font size if it's different from the default
+            $styles[] = 'font-size: ' . $typography['font_size'] . 'px';
+        } else {
+            // Apply heading level specific font sizes
+            $defaultFontSize = $this->getDefaultFontSize($headingLevel);
+            $styles[] = 'font-size: ' . $defaultFontSize;
+        }
+        if (isset($typography['font_weight'])) {
+            $styles[] = 'font-weight: ' . $typography['font_weight'];
+        }
+        if (isset($typography['line_height'])) {
+            $styles[] = 'line-height: ' . $typography['line_height'];
+        }
+        if (isset($typography['letter_spacing'])) {
+            $styles[] = 'letter-spacing: ' . $typography['letter_spacing'] . 'px';
+        }
+        if (isset($typography['text_transform'])) {
+            $styles[] = 'text-transform: ' . $typography['text_transform'];
+        }
+        if (isset($typography['font_style'])) {
+            $styles[] = 'font-style: ' . $typography['font_style'];
+        }
+        if (isset($typography['font_family'])) {
+            $styles[] = 'font-family: ' . $typography['font_family'];
+        }
+        
+        // Color styles
+        $colors = $style['colors'] ?? [];
+        if (isset($colors['text_color'])) {
+            $styles[] = 'color: ' . $colors['text_color'];
+        }
+        
+        // Background styles
+        $background = $style['background'] ?? [];
+        if (isset($background['background_color']) && !empty($background['background_color'])) {
+            $styles[] = 'background-color: ' . $background['background_color'];
+        }
+        
+        // Spacing styles
+        $spacing = $style['spacing'] ?? [];
+        if (isset($spacing['margin'])) {
+            $margin = $spacing['margin'];
+            if (is_array($margin)) {
+                $marginStr = ($margin['top'] ?? 0) . 'px ' . 
+                           ($margin['right'] ?? 0) . 'px ' . 
+                           ($margin['bottom'] ?? 0) . 'px ' . 
+                           ($margin['left'] ?? 0) . 'px';
+                $styles[] = 'margin: ' . $marginStr;
+            }
+        }
+        if (isset($spacing['padding'])) {
+            $padding = $spacing['padding'];
+            if (is_array($padding)) {
+                $paddingStr = ($padding['top'] ?? 0) . 'px ' . 
+                            ($padding['right'] ?? 0) . 'px ' . 
+                            ($padding['bottom'] ?? 0) . 'px ' . 
+                            ($padding['left'] ?? 0) . 'px';
+                $styles[] = 'padding: ' . $paddingStr;
+            }
+        }
+        
+        // Border styles
+        $border = $style['border'] ?? [];
+        if (isset($border['border_width']) && $border['border_width'] > 0) {
+            $styles[] = 'border: ' . $border['border_width'] . 'px solid ' . ($border['border_color'] ?? '#000000');
+        }
+        if (isset($border['border_radius'])) {
+            $borderRadius = $border['border_radius'];
+            if (is_array($borderRadius)) {
+                $radiusStr = ($borderRadius['top'] ?? 0) . 'px ' . 
+                           ($borderRadius['right'] ?? 0) . 'px ' . 
+                           ($borderRadius['bottom'] ?? 0) . 'px ' . 
+                           ($borderRadius['left'] ?? 0) . 'px';
+                $styles[] = 'border-radius: ' . $radiusStr;
+            }
+        }
+        
+        // Effects styles
+        $effects = $style['effects'] ?? [];
+        if (isset($effects['text_shadow']) && $effects['text_shadow'] !== 'none') {
+            $styles[] = 'text-shadow: ' . $effects['text_shadow'];
+        }
+        if (isset($effects['text_decoration'])) {
+            $styles[] = 'text-decoration: ' . $effects['text_decoration'];
+        }
+        
+        return implode('; ', $styles);
+    }
+
+    /**
+     * Get default font size for heading levels
+     */
+    private function getDefaultFontSize(string $headingLevel): string
+    {
+        $defaultSizes = [
+            'h1' => '2.5rem',    // 40px
+            'h2' => '2rem',      // 32px
+            'h3' => '1.75rem',   // 28px
+            'h4' => '1.5rem',    // 24px
+            'h5' => '1.25rem',   // 20px
+            'h6' => '1rem'       // 16px
+        ];
+        
+        return $defaultSizes[$headingLevel] ?? $defaultSizes['h2'];
+    }
+
+    /**
+     * Override prepareTemplateData to use correct buildInlineStyles signature
+     */
+    protected function prepareTemplateData(array $settings): array
+    {
+        $general = $settings['general'] ?? [];
+        $style = $settings['style'] ?? [];
+        $advanced = $settings['advanced'] ?? [];
+        
+        return [
+            'settings' => $settings,
+            'general' => $general,
+            'style' => $style,
+            'advanced' => $advanced,
+            'widget' => [
+                'type' => $this->getWidgetType(),
+                'name' => $this->getWidgetName(),
+                'icon' => $this->getWidgetIcon(),
+                'description' => $this->getWidgetDescription()
+            ],
+            'css_classes' => $this->buildCssClasses($settings),
+            'inline_styles' => $this->buildInlineStyles($style, $general)
+        ];
     }
 
     /**
@@ -482,7 +646,88 @@ class HeadingWidget extends BaseWidget
         // Register style fields for CSS generation
         $this->registerStyleFields($styleControl);
         
-        return $styleControl->generateCSS($widgetId, $settings['style'] ?? []);
+        $generatedCSS = $styleControl->generateCSS($widgetId, $settings['style'] ?? []);
+        
+        // Add default heading styles
+        $defaultCSS = $this->getDefaultCSS($widgetId);
+        
+        return $defaultCSS . "\n" . $generatedCSS;
+    }
+
+    /**
+     * Get default CSS styles for headings
+     */
+    private function getDefaultCSS(string $widgetId): string
+    {
+        return "
+/* Default Heading Styles for {$widgetId} */
+#{$widgetId} .pagebuilder-heading {
+    margin: 0 0 20px 0;
+    font-family: inherit;
+    line-height: 1.2;
+    color: inherit;
+    display: block;
+    font-weight: 600;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.875rem;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h4 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 0.625rem;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h5 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+#{$widgetId} .pagebuilder-heading.heading-h6 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+#{$widgetId} .pagebuilder-heading.text-center {
+    text-align: center;
+}
+
+#{$widgetId} .pagebuilder-heading.text-right {
+    text-align: right;
+}
+
+#{$widgetId} .pagebuilder-heading.text-justify {
+    text-align: justify;
+}
+
+#{$widgetId} .pagebuilder-heading a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+#{$widgetId} .pagebuilder-heading a:hover {
+    opacity: 0.8;
+}
+";
     }
 
     /**

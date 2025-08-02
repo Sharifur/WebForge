@@ -15,6 +15,7 @@ class Page extends Model
         'slug', 
         'content',
         'show_breadcrumb',
+        'use_page_builder',
         'status',
         'created_by',
         'updated_by'
@@ -24,6 +25,8 @@ class Page extends Model
     {
         return [
             'show_breadcrumb' => 'boolean',
+            'use_page_builder' => 'boolean',
+            'content' => 'json',
         ];
     }
 

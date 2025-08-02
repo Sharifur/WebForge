@@ -47,15 +47,21 @@ class PageController extends Controller
     public function store(StorePageRequest $request)
     {
         $pageData = $request->only([
-            'title', 'slug', 'content', 'status', 'show_breadcrumb'
+            'title', 'slug', 'content', 'status', 'show_breadcrumb', 'use_page_builder'
         ]);
 
         // Sanitize inputs for security
         $pageData['title'] = strip_tags($pageData['title']);
-        $pageData['content'] = $this->sanitizeContent($pageData['content']);
         
-        // Handle boolean conversion for checkbox
+        // Only sanitize content if it's not JSON (i.e., if not using page builder)
+        if (!$request->has('use_page_builder') || !$pageData['use_page_builder']) {
+            $pageData['content'] = $this->sanitizeContent($pageData['content']);
+        }
+        // JSON content from page builder is stored as-is since it's structured data
+        
+        // Handle boolean conversion for checkboxes
         $pageData['show_breadcrumb'] = $request->has('show_breadcrumb') ? true : false;
+        $pageData['use_page_builder'] = $request->has('use_page_builder') ? true : false;
 
         $page = new Page($pageData);
 
@@ -126,7 +132,7 @@ class PageController extends Controller
     public function update(UpdatePageRequest $request, Page $page)
     {
         $page->fill($request->only([
-            'title', 'slug', 'content', 'status', 'show_breadcrumb'
+            'title', 'slug', 'content', 'status', 'show_breadcrumb', 'use_page_builder'
         ]));
 
         // Always ensure slug is properly formatted

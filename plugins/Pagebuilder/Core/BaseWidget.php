@@ -8,7 +8,7 @@ abstract class BaseWidget
 {
     protected string $widget_type;
     protected string $widget_name;
-    protected string $widget_icon;
+    protected string|array $widget_icon;
     protected string $widget_category;
     protected string $widget_description;
     protected array $widget_tags = [];
@@ -21,7 +21,7 @@ abstract class BaseWidget
     {
         $this->widget_type = $this->getWidgetType();
         $this->widget_name = $this->getWidgetName();
-        $this->widget_icon = $this->getWidgetIcon();
+        $this->widget_icon = $this->normalizeIcon($this->getWidgetIcon());
         $this->widget_category = $this->getCategory();
         $this->widget_description = $this->getWidgetDescription();
         $this->widget_tags = $this->getWidgetTags();
@@ -31,7 +31,16 @@ abstract class BaseWidget
     // Abstract methods that must be implemented by child classes
     abstract protected function getWidgetType(): string;
     abstract protected function getWidgetName(): string;
-    abstract protected function getWidgetIcon(): string;
+    /**
+     * Get widget icon.
+     * Can return:
+     * - String: 'lni-text-format' (Lineicons)
+     * - String: 'la-heading' (Line Awesome)
+     * - Array: ['type' => 'svg', 'content' => '<svg>...</svg>']
+     * - Array: ['type' => 'lineicons', 'icon' => 'lni-text-format']
+     * - Array: ['type' => 'line-awesome', 'icon' => 'la-heading']
+     */
+    abstract protected function getWidgetIcon(): string|array;
     abstract protected function getWidgetDescription(): string;
     abstract protected function getCategory(): string;
     abstract public function getGeneralFields(): array;
@@ -246,6 +255,56 @@ abstract class BaseWidget
         ];
     }
 
+    /**
+     * Normalize icon data to consistent format
+     */
+    protected function normalizeIcon($icon): array
+    {
+        // If it's already an array with correct format, return as is
+        if (is_array($icon) && isset($icon['type'])) {
+            return $icon;
+        }
+        
+        // If it's a string, detect the icon type
+        if (is_string($icon)) {
+            // Line Awesome icons start with 'la-'
+            if (str_starts_with($icon, 'la-')) {
+                return [
+                    'type' => 'line-awesome',
+                    'icon' => $icon
+                ];
+            }
+            
+            // Lineicons start with 'lni-'
+            if (str_starts_with($icon, 'lni-')) {
+                return [
+                    'type' => 'lineicons',
+                    'icon' => $icon
+                ];
+            }
+            
+            // If it looks like SVG content
+            if (str_contains($icon, '<svg')) {
+                return [
+                    'type' => 'svg',
+                    'content' => $icon
+                ];
+            }
+            
+            // Default to lineicons for backward compatibility
+            return [
+                'type' => 'lineicons',
+                'icon' => $icon
+            ];
+        }
+        
+        // Fallback
+        return [
+            'type' => 'lineicons',
+            'icon' => 'lni-layout'
+        ];
+    }
+
     // Public getters
     public function getWidgetConfig(): array
     {
@@ -290,6 +349,17 @@ abstract class BaseWidget
     public function render(array $settings = []): string
     {
         return '<div class="widget-placeholder">Widget: ' . $this->widget_name . '</div>';
+    }
+
+    /**
+     * Generate CSS for this widget instance
+     * Override this method in child classes to provide CSS generation
+     */
+    public function generateCSS(string $widgetId, array $settings): string
+    {
+        // Default implementation returns empty CSS
+        // Child classes that need CSS generation should override this method
+        return '';
     }
 
     // Validation method for widget settings

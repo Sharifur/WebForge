@@ -239,32 +239,42 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
         {/* Spacing */}
         <div>
           <h4 className="font-medium text-gray-900 mb-3">Spacing</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Margin
-              </label>
-              <input
-                type="text"
-                value={widget.style?.margin || '0'}
-                onChange={(e) => updateStyle('margin', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0px"
-              />
-            </div>
+          <div className="space-y-4">
+            <PhpFieldRenderer
+              fieldKey="padding"
+              fieldConfig={{
+                type: 'spacing',
+                label: 'Padding',
+                responsive: true,
+                default: '0px 0px 0px 0px',
+                units: ['px', 'em', 'rem', '%'],
+                linked: false,
+                sides: ['top', 'right', 'bottom', 'left'],
+                min: 0,
+                max: 1000,
+                step: 1
+              }}
+              value={widget.style?.padding || '0px 0px 0px 0px'}
+              onChange={(value) => updateStyle('padding', value)}
+            />
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Padding
-              </label>
-              <input
-                type="text"
-                value={widget.style?.padding || '0'}
-                onChange={(e) => updateStyle('padding', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0px"
-              />
-            </div>
+            <PhpFieldRenderer
+              fieldKey="margin"
+              fieldConfig={{
+                type: 'spacing',
+                label: 'Margin',
+                responsive: true,
+                default: '0px 0px 0px 0px',
+                units: ['px', 'em', 'rem', '%'],
+                linked: false,
+                sides: ['top', 'right', 'bottom', 'left'],
+                min: 0,
+                max: 1000,
+                step: 1
+              }}
+              value={widget.style?.margin || '0px 0px 0px 0px'}
+              onChange={(value) => updateStyle('margin', value)}
+            />
           </div>
         </div>
 

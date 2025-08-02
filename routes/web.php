@@ -12,9 +12,6 @@ Route::get('/', function () {
     return view('home');
 });
 
-// Frontend Routes
-Route::get('/page/{page}', [PageController::class, 'show'])->name('page.show');
-
 // Admin Authentication Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -43,3 +40,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/users/{user}/change-password', [UserController::class, 'changePassword'])->name('users.change-password');
     });
 });
+
+// Frontend Routes - Page URLs without /page/ prefix for better SEO
+// This must be at the end to avoid conflicts with other routes
+Route::get('/{page}', [PageController::class, 'show'])
+    ->name('page.show')
+    ->where('page', '^(?!admin|api|storage|_debugbar).*$'); // Exclude system routes

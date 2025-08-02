@@ -101,6 +101,35 @@
                         </label>
                     </x-admin.form-group>
                 </div>
+
+                <div class="border-t pt-4">
+                    <x-admin.form-group>
+                        <label class="flex items-center space-x-2">
+                            <input 
+                                type="checkbox" 
+                                name="use_page_builder" 
+                                id="use_page_builder"
+                                value="1" 
+                                {{ old('use_page_builder', $page->use_page_builder) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                onchange="toggleContentEditor()"
+                            >
+                            <span class="text-sm font-medium text-gray-700">Use Page Builder</span>
+                        </label>
+                        <p class="mt-1 text-sm text-gray-500">Enable visual page builder instead of plain text editor</p>
+                        @if($page->use_page_builder)
+                            <div class="mt-2">
+                                <a href="{{ route('admin.pages.builder', $page) }}" 
+                                   class="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                                    </svg>
+                                    Open Page Builder
+                                </a>
+                            </div>
+                        @endif
+                    </x-admin.form-group>
+                </div>
             </div>
         </x-admin.card>
 
@@ -482,9 +511,41 @@ function toggleSlugEdit() {
     }
 }
 
+// Toggle content editor based on page builder checkbox
+function toggleContentEditor() {
+    const usePageBuilder = document.getElementById('use_page_builder').checked;
+    const contentGroup = document.getElementById('content').closest('.form-group');
+    
+    if (usePageBuilder) {
+        contentGroup.style.display = 'none';
+        // Show a notice about page builder
+        let notice = document.getElementById('page-builder-notice');
+        if (!notice) {
+            const noticeDiv = document.createElement('div');
+            noticeDiv.id = 'page-builder-notice';
+            noticeDiv.className = 'p-4 bg-blue-50 border border-blue-200 rounded-md mt-4';
+            noticeDiv.innerHTML = `
+                <p class="text-sm text-blue-600">
+                    <strong>Page Builder Enabled:</strong> Content will be managed through the page builder interface. 
+                    Use the "Open Page Builder" button above to edit the page visually.
+                </p>
+            `;
+            contentGroup.parentNode.insertBefore(noticeDiv, contentGroup);
+        }
+    } else {
+        contentGroup.style.display = 'block';
+        const notice = document.getElementById('page-builder-notice');
+        if (notice) {
+            notice.remove();
+        }
+    }
+}
+
 // Initialize with first tab active
 document.addEventListener('DOMContentLoaded', function() {
     showTab('basic-seo');
+    // Check initial state of page builder checkbox
+    toggleContentEditor();
 });
 </script>
 @endsection

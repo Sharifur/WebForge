@@ -31,9 +31,10 @@ class UpdatePageRequest extends FormRequest
                 'max:255',
                 Rule::unique('pages', 'slug')->ignore($this->route('page'))
             ],
-            'content' => 'required|string',
+            'content' => 'required', // Can be string or JSON
             'status' => 'required|in:draft,published',
             'show_breadcrumb' => 'nullable|boolean',
+            'use_page_builder' => 'nullable|boolean',
 
             // Basic Meta Fields
             'meta_title' => 'nullable|string|max:60',
