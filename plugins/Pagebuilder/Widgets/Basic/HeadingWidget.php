@@ -171,7 +171,7 @@ class HeadingWidget extends BaseWidget
                 ->setSelectors([
                     '{{WRAPPER}} .heading-element' => 'font-size: {{VALUE}}{{UNIT}};'
                 ])
-                ->setDescription('Set the heading font size')
+                ->setDescription('Set custom font size. Leave at default (32px) to use heading level sizes automatically (H1: 40px, H2: 32px, H3: 28px, H4: 24px, H5: 20px, H6: 16px)')
             )
             ->registerField('font_weight', FieldManager::SELECT()
                 ->setLabel('Font Weight')
@@ -447,13 +447,19 @@ class HeadingWidget extends BaseWidget
         $content = $general['content'] ?? [];
         $link = $general['link'] ?? [];
         
-        $text = htmlspecialchars($content['heading_text'] ?? 'Your Heading Text', ENT_QUOTES, 'UTF-8');
-        $level = $content['heading_level'] ?? 'h2';
-        $align = $content['text_align'] ?? 'left';
+        $text = $this->sanitizeInput($content['heading_text'] ?? 'Your Heading Text', 'text');
+        $level = in_array($content['heading_level'] ?? 'h2', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) 
+            ? $content['heading_level'] 
+            : 'h2';
+        $align = in_array($content['text_align'] ?? 'left', ['left', 'center', 'right', 'justify']) 
+            ? $content['text_align'] 
+            : 'left';
         
         $enableLink = $link['enable_link'] ?? false;
-        $linkUrl = $link['link_url'] ?? '#';
-        $linkTarget = $link['link_target'] ?? '_self';
+        $linkUrl = $this->sanitizeInput($link['link_url'] ?? '#', 'url');
+        $linkTarget = in_array($link['link_target'] ?? '_self', ['_self', '_blank', '_parent', '_top']) 
+            ? $link['link_target'] 
+            : '_self';
         $linkNofollow = $link['link_nofollow'] ?? false;
         
         $classes = ['heading-element', 'heading-' . $level, 'pagebuilder-heading'];
@@ -469,9 +475,9 @@ class HeadingWidget extends BaseWidget
         $inlineStyles = $this->buildInlineStyles($style, $general);
         $styleAttr = !empty($inlineStyles) ? ' style="' . $inlineStyles . '"' : '';
         
-        if ($enableLink) {
+        if ($enableLink && !empty($linkUrl)) {
             $linkAttributes = [
-                'href' => htmlspecialchars($linkUrl, ENT_QUOTES, 'UTF-8'),
+                'href' => $linkUrl,
                 'target' => $linkTarget
             ];
             
@@ -479,12 +485,9 @@ class HeadingWidget extends BaseWidget
                 $linkAttributes['rel'] = 'nofollow';
             }
             
-            $linkAttrs = '';
-            foreach ($linkAttributes as $attr => $value) {
-                $linkAttrs .= ' ' . $attr . '="' . $value . '"';
-            }
+            $linkAttrs = $this->buildSecureAttributes($linkAttributes);
             
-            return "<{$level} class=\"{$classString}\"{$styleAttr}><a{$linkAttrs}>{$text}</a></{$level}>";
+            return "<{$level} class=\"{$classString}\"{$styleAttr}><a {$linkAttrs}>{$text}</a></{$level}>";
         } else {
             return "<{$level} class=\"{$classString}\"{$styleAttr}>{$text}</{$level}>";
         }

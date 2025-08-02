@@ -140,6 +140,70 @@ class FieldManager
     }
 
     /**
+     * Create an enhanced URL field with all link options
+     * This combines URL input, target, rel, accessibility, and tracking options
+     *
+     * @return UrlField
+     */
+    public static function ENHANCED_URL(): UrlField
+    {
+        return (new UrlField())
+            ->setShowTargetOptions(true)
+            ->setShowRelOptions(true)
+            ->setEnableAccessibility(true);
+    }
+
+    /**
+     * Create a web link field (external links)
+     *
+     * @return UrlField
+     */
+    public static function WEB_LINK(): UrlField
+    {
+        return (new UrlField())->asWebLink();
+    }
+
+    /**
+     * Create an email link field
+     *
+     * @return UrlField
+     */
+    public static function EMAIL_LINK(): UrlField
+    {
+        return (new UrlField())->asEmailLink();
+    }
+
+    /**
+     * Create a phone link field
+     *
+     * @return UrlField
+     */
+    public static function PHONE_LINK(): UrlField
+    {
+        return (new UrlField())->asPhoneLink();
+    }
+
+    /**
+     * Create a download link field
+     *
+     * @return UrlField
+     */
+    public static function DOWNLOAD_LINK(): UrlField
+    {
+        return (new UrlField())->asDownloadLink();
+    }
+
+    /**
+     * Create an internal navigation link field
+     *
+     * @return UrlField
+     */
+    public static function INTERNAL_LINK(): UrlField
+    {
+        return (new UrlField())->asInternalLink();
+    }
+
+    /**
      * Create an email input field
      *
      * @return EmailField

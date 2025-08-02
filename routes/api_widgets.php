@@ -185,6 +185,26 @@ Route::prefix('widget-analytics')->middleware(['auth:sanctum', 'admin'])->group(
 
 /*
 |--------------------------------------------------------------------------
+| Page Rendering Routes
+|--------------------------------------------------------------------------
+|
+| These routes handle page rendering with consolidated CSS management
+|
+*/
+
+Route::prefix('page-render')->group(function () {
+    Route::post('/render', [App\Http\Controllers\Api\PageRenderController::class, 'renderPage'])
+        ->name('api.page-render.render');
+    
+    Route::get('/css', [App\Http\Controllers\Api\PageRenderController::class, 'getPageCSS'])
+        ->name('api.page-render.css');
+    
+    Route::get('/demo', [App\Http\Controllers\Api\PageRenderController::class, 'demoMultipleWidgets'])
+        ->name('api.page-render.demo');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Fallback Route Documentation
 |--------------------------------------------------------------------------
 |

@@ -3,9 +3,13 @@
 namespace Plugins\Pagebuilder\Core;
 
 use Plugins\Pagebuilder\Core\WidgetCategory;
+use Plugins\Pagebuilder\Core\CSSManager;
+use App\Utils\XSSProtection;
 
 abstract class BaseWidget
 {
+    use AutoStyleGenerator;
+    use WidgetWrapper;
     protected string $widget_type;
     protected string $widget_name;
     protected string|array $widget_icon;
@@ -427,5 +431,155 @@ abstract class BaseWidget
         }
         
         return $errors;
+    }
+    
+    /**
+     * Sanitize widget settings to prevent XSS attacks
+     * 
+     * @param array $settings Raw widget settings
+     * @return array Sanitized settings
+     */
+    protected function sanitizeSettings(array $settings): array
+    {
+        $sanitized = [];
+        
+        foreach ($settings as $section => $sectionData) {
+            if (is_array($sectionData)) {
+                $sanitized[$section] = XSSProtection::sanitizeWidgetContent($sectionData);
+            } else {
+                $sanitized[$section] = XSSProtection::sanitizeText($sectionData);
+            }
+        }
+        
+        return $sanitized;
+    }
+    
+    /**
+     * Sanitize user input for specific field types
+     * 
+     * @param string $value Raw input value
+     * @param string $fieldType Field type (text, html, url, etc.)
+     * @return string Sanitized value
+     */
+    protected function sanitizeInput(string $value, string $fieldType = 'text'): string
+    {
+        switch ($fieldType) {
+            case 'html':
+            case 'rich_text':
+                return XSSProtection::sanitizeHTML($value, 'widget');
+                
+            case 'url':
+                $sanitized = XSSProtection::sanitizeURL($value);
+                return $sanitized ?? '';
+                
+            case 'css':
+                return XSSProtection::sanitizeCSS($value);
+                
+            case 'text':
+            default:
+                return XSSProtection::sanitizeText($value);
+        }
+    }
+    
+    /**
+     * Override render method to include automatic XSS protection
+     * 
+     * @param array $settings Widget settings
+     * @return string Rendered widget HTML
+     */
+    public function renderSafely(array $settings = []): string
+    {
+        // Sanitize all input settings first
+        $safeSettings = $this->sanitizeSettings($settings);
+        
+        // Detect potential threats
+        $threats = $this->detectContentThreats($settings);
+        if (!empty($threats)) {
+            \Log::warning('XSS threats detected in widget', [
+                'widget_type' => $this->getWidgetType(),
+                'threats' => $threats,
+                'settings' => $settings
+            ]);
+        }
+        
+        // Call the widget's render method with sanitized settings
+        return $this->render($safeSettings);
+    }
+    
+    /**
+     * Detect security threats in widget content
+     * 
+     * @param array $settings Widget settings to analyze
+     * @return array Array of detected threats
+     */
+    protected function detectContentThreats(array $settings): array
+    {
+        $allThreats = [];
+        
+        foreach ($settings as $section => $sectionData) {
+            if (is_array($sectionData)) {
+                foreach ($sectionData as $group => $groupData) {
+                    if (is_array($groupData)) {
+                        foreach ($groupData as $field => $value) {
+                            if (is_string($value)) {
+                                $threats = XSSProtection::detectThreats($value);
+                                if (!empty($threats)) {
+                                    $allThreats["{$section}.{$group}.{$field}"] = $threats;
+                                }
+                            }
+                        }
+                    } elseif (is_string($groupData)) {
+                        $threats = XSSProtection::detectThreats($groupData);
+                        if (!empty($threats)) {
+                            $allThreats["{$section}.{$group}"] = $threats;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return $allThreats;
+    }
+    
+    /**
+     * Generate secure widget attributes for HTML output
+     * 
+     * @param array $attributes Raw attributes
+     * @return string Safe HTML attributes string
+     */
+    protected function buildSecureAttributes(array $attributes): string
+    {
+        $safeAttrs = [];
+        
+        foreach ($attributes as $name => $value) {
+            // Sanitize attribute name
+            $safeName = preg_replace('/[^\w\-]/', '', $name);
+            
+            // Sanitize attribute value based on type
+            if ($safeName === 'href') {
+                $safeValue = XSSProtection::sanitizeURL($value);
+                if ($safeValue) {
+                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
+                }
+            } elseif ($safeName === 'style') {
+                $safeValue = XSSProtection::sanitizeCSS($value);
+                if ($safeValue) {
+                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
+                }
+            } elseif (in_array($safeName, ['class', 'id', 'data-widget-type', 'data-widget-id'])) {
+                $safeValue = preg_replace('/[^\w\s\-_]/', '', $value);
+                if ($safeValue) {
+                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
+                }
+            } else {
+                // Default text sanitization
+                $safeValue = XSSProtection::sanitizeText($value);
+                if ($safeValue) {
+                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
+                }
+            }
+        }
+        
+        return implode(' ', $safeAttrs);
     }
 }

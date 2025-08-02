@@ -6,6 +6,7 @@ use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
 use Plugins\Pagebuilder\Core\ControlManager;
 use Plugins\Pagebuilder\Core\FieldManager;
+use App\Utils\URLHandler;
 
 class ButtonWidget extends BaseWidget
 {
@@ -50,20 +51,14 @@ class ButtonWidget extends BaseWidget
                 ->setDefault('Click me')
                 ->setRequired(true)
             )
-            ->registerField('url', FieldManager::URL()
-                ->setLabel('Button URL')
+            ->registerField('url_settings', FieldManager::ENHANCED_URL()
+                ->setLabel('Button Link')
                 ->setPlaceholder('https://example.com')
-                ->setDefault('#')
-            )
-            ->registerField('target', FieldManager::SELECT()
-                ->setLabel('Link Target')
-                ->setOptions([
-                    '_self' => 'Same window',
-                    '_blank' => 'New window',
-                    '_parent' => 'Parent frame',
-                    '_top' => 'Top frame'
-                ])
-                ->setDefault('_self')
+                ->setDefault(['url' => '#', 'target' => '_self'])
+                ->setShowTargetOptions(true)
+                ->setShowRelOptions(true)
+                ->setEnableAccessibility(true)
+                ->setDescription('Complete URL configuration with target, rel, and accessibility options')
             )
             ->endGroup();
             
@@ -401,42 +396,89 @@ class ButtonWidget extends BaseWidget
         return $control->generateCSS($widgetId, $settings['style'] ?? []);
     }
 
+    /**
+     * Render the button HTML with automatic style generation and wrapper
+     */
     public function render(array $settings = []): string
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
         
-        // Safely access nested content
+        // Extract content settings
         $content = $general['content'] ?? [];
         $text = $content['text'] ?? 'Click me';
-        $url = $content['url'] ?? '#';
-        $target = $content['target'] ?? '_self';
+        $urlSettings = $content['url_settings'] ?? ['url' => '#', 'target' => '_self'];
         
-        // Safely access nested style
+        // Extract appearance settings
         $appearance = $style['appearance'] ?? [];
         $buttonStyle = $appearance['button_style'] ?? 'solid';
         $size = $appearance['size'] ?? 'md';
         
-        // Base classes for proper button styling
-        $classes = ['widget-button'];
+        // Extract behavior settings
+        $behavior = $general['behavior'] ?? [];
+        $fullWidth = $behavior['full_width'] ?? false;
+        $disabled = $behavior['disabled'] ?? false;
         
-        // Add size classes
-        switch ($size) {
-            case 'sm':
-                $classes[] = 'px-3 py-1.5 text-sm';
-                break;
-            case 'lg':
-                $classes[] = 'px-8 py-3 text-lg';
-                break;
-            case 'xl':
-                $classes[] = 'px-10 py-4 text-xl';
-                break;
-            default: // md
-                $classes[] = 'px-6 py-2 text-base';
-                break;
+        // Build button classes automatically
+        $buttonClasses = $this->buildButtonClasses($buttonStyle, $size, $fullWidth, $disabled);
+        
+        // Generate inline styles automatically from field definitions
+        $inlineStyles = $this->generateInlineStyles($settings);
+        
+        // Use URLHandler to render the button link with all URL features
+        $buttonOptions = [
+            'link_class' => implode(' ', $buttonClasses),
+            'escape_text' => true,
+            'enable_xss_protection' => true,
+            'fallback_href' => '#'
+        ];
+        
+        // Add inline styles if present
+        if (!empty($inlineStyles)) {
+            $urlSettings['style'] = $inlineStyles;
         }
         
-        // Add style classes
+        // Handle disabled state
+        if ($disabled) {
+            $urlSettings['custom_attributes'] = array_merge(
+                $urlSettings['custom_attributes'] ?? [],
+                [
+                    ['attribute_name' => 'disabled', 'attribute_value' => 'disabled'],
+                    ['attribute_name' => 'aria-disabled', 'attribute_value' => 'true']
+                ]
+            );
+        }
+        
+        // Build button content with icon support
+        $buttonContent = $this->buildButtonContent($text, $general['icon'] ?? []);
+        
+        // Generate button HTML using URLHandler
+        $buttonHTML = URLHandler::renderButton($urlSettings, $buttonContent, $buttonOptions);
+        
+        // Wrap with container div for advanced settings
+        return $this->wrapWidget($buttonHTML, $settings);
+    }
+    
+    /**
+     * Build button CSS classes based on settings
+     */
+    private function buildButtonClasses(string $buttonStyle, string $size, bool $fullWidth, bool $disabled): array
+    {
+        $classes = ['widget-button', 'xgp_button'];
+        
+        // Base button styling
+        $classes[] = 'inline-flex items-center justify-center font-medium rounded-md transition-all duration-200 no-underline';
+        
+        // Size classes
+        $sizeClasses = [
+            'sm' => 'px-3 py-1.5 text-sm',
+            'md' => 'px-6 py-2 text-base',
+            'lg' => 'px-8 py-3 text-lg',
+            'xl' => 'px-10 py-4 text-xl'
+        ];
+        $classes[] = $sizeClasses[$size] ?? $sizeClasses['md'];
+        
+        // Style classes
         switch ($buttonStyle) {
             case 'outline':
                 $classes[] = 'bg-transparent border-2 border-current';
@@ -452,91 +494,54 @@ class ButtonWidget extends BaseWidget
                 break;
         }
         
-        // Safely access nested behavior
-        $behavior = $general['behavior'] ?? [];
-        if ($behavior['full_width'] ?? false) {
+        // Behavior classes
+        if ($fullWidth) {
             $classes[] = 'w-full block text-center';
-        } else {
-            $classes[] = 'inline-flex items-center justify-center';
         }
         
-        if ($behavior['disabled'] ?? false) {
+        if ($disabled) {
             $classes[] = 'opacity-50 cursor-not-allowed pointer-events-none';
         } else {
             $classes[] = 'cursor-pointer';
         }
         
-        // Add base styling for proper button appearance
-        $classes[] = 'font-medium rounded-md transition-all duration-200 no-underline';
+        return $classes;
+    }
+    
+    /**
+     * Build button content with icon support and XSS protection
+     */
+    private function buildButtonContent(string $text, array $iconSettings): string
+    {
+        // Sanitize text content
+        $safeText = $this->sanitizeInput($text, 'text');
         
-        $classString = implode(' ', $classes);
-        
-        // Build inline styles
-        $styles = [];
-        
-        // Safely access nested colors and other styles
-        $colors = $style['colors'] ?? [];
-        $typography = $style['typography'] ?? [];
-        $spacing = $style['spacing'] ?? [];
-        $border = $style['border'] ?? [];
-        
-        // Background color
-        if (isset($colors['background_color'])) {
-            $styles[] = 'background-color: ' . $colors['background_color'];
+        if (!($iconSettings['show_icon'] ?? false)) {
+            return $safeText;
         }
         
-        // Text color
-        if (isset($colors['text_color'])) {
-            $styles[] = 'color: ' . $colors['text_color'];
-        }
+        // Sanitize icon settings
+        $iconName = $this->sanitizeInput($iconSettings['icon_name'] ?? 'arrow-right', 'text');
+        $iconPosition = in_array($iconSettings['icon_position'] ?? 'right', ['left', 'right']) 
+            ? $iconSettings['icon_position'] 
+            : 'right';
         
-        // Typography
-        if (isset($typography['font_size'])) {
-            $styles[] = 'font-size: ' . $typography['font_size'] . 'px';
-        }
-        if (isset($typography['font_weight'])) {
-            $styles[] = 'font-weight: ' . $typography['font_weight'];
-        }
-        if (isset($typography['text_transform'])) {
-            $styles[] = 'text-transform: ' . $typography['text_transform'];
-        }
+        $iconClass = $iconPosition === 'left' ? 'mr-2' : 'ml-2';
         
-        // Spacing
-        if (isset($spacing['padding_horizontal'])) {
-            $styles[] = 'padding-left: ' . $spacing['padding_horizontal'] . 'px';
-            $styles[] = 'padding-right: ' . $spacing['padding_horizontal'] . 'px';
-        }
-        if (isset($spacing['padding_vertical'])) {
-            $styles[] = 'padding-top: ' . $spacing['padding_vertical'] . 'px';
-            $styles[] = 'padding-bottom: ' . $spacing['padding_vertical'] . 'px';
-        }
+        // Build safe icon HTML
+        $icon = "<i class=\"icon icon-{$iconName} {$iconClass}\"></i>";
         
-        // Border radius
-        if (isset($border['border_radius'])) {
-            $styles[] = 'border-radius: ' . $border['border_radius'] . 'px';
-        }
+        return $iconPosition === 'left' ? $icon . $safeText : $safeText . $icon;
+    }
+    
+    /**
+     * Build button HTML from attributes and content with XSS protection
+     */
+    private function buildButtonHTML(array $attributes, string $content): string
+    {
+        // Use secure attribute building from BaseWidget
+        $safeAttributes = $this->buildSecureAttributes($attributes);
         
-        $styleString = !empty($styles) ? 'style="' . implode('; ', $styles) . '"' : '';
-        
-        // Safely access nested icon settings
-        $iconSettings = $general['icon'] ?? [];
-        $icon = '';
-        if ($iconSettings['show_icon'] ?? false) {
-            $iconName = $iconSettings['icon_name'] ?? 'arrow-right';
-            $iconPosition = $iconSettings['icon_position'] ?? 'right';
-            $iconClass = $iconPosition === 'left' ? 'mr-2' : 'ml-2';
-            $icon = "<i class=\"icon icon-{$iconName} {$iconClass}\"></i>";
-        }
-        
-        $contentText = '';
-        if ($icon && ($iconSettings['icon_position'] ?? 'right') === 'left') {
-            $contentText = $icon . $text;
-        } else if ($icon) {
-            $contentText = $text . $icon;
-        } else {
-            $contentText = $text;
-        }
-        
-        return "<a href=\"{$url}\" target=\"{$target}\" class=\"{$classString}\" {$styleString}>{$contentText}</a>";
+        return "<a {$safeAttributes}>{$content}</a>";
     }
 }
