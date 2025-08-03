@@ -433,153 +433,125 @@ abstract class BaseWidget
         return $errors;
     }
     
+    
     /**
-     * Sanitize widget settings to prevent XSS attacks
+     * Get sanitized text content
+     * Escapes HTML entities to prevent XSS
      * 
-     * @param array $settings Raw widget settings
-     * @return array Sanitized settings
+     * @param string $text Raw text content
+     * @param bool $preserveLineBreaks Convert line breaks to <br> tags
+     * @return string Sanitized text
      */
-    protected function sanitizeSettings(array $settings): array
+    protected function sanitizeText(string $text, bool $preserveLineBreaks = false): string
     {
-        $sanitized = [];
-        
-        foreach ($settings as $section => $sectionData) {
-            if (is_array($sectionData)) {
-                $sanitized[$section] = XSSProtection::sanitizeWidgetContent($sectionData);
-            } else {
-                $sanitized[$section] = XSSProtection::sanitizeText($sectionData);
-            }
-        }
-        
-        return $sanitized;
+        return XSSProtection::sanitizeText($text, $preserveLineBreaks);
     }
     
     /**
-     * Sanitize user input for specific field types
+     * Get sanitized HTML content with configurable security level
+     * Allows safe HTML tags while removing dangerous elements
      * 
-     * @param string $value Raw input value
-     * @param string $fieldType Field type (text, html, url, etc.)
-     * @return string Sanitized value
+     * @param string $content Raw HTML content
+     * @param string $level Security level: 'minimal', 'basic', 'rich', 'widget'
+     * @param array $customOptions Custom sanitization options
+     * @return string Sanitized HTML content
      */
-    protected function sanitizeInput(string $value, string $fieldType = 'text'): string
+    protected function sanitizeHTML(string $content, string $level = 'widget', array $customOptions = []): string
     {
-        switch ($fieldType) {
-            case 'html':
-            case 'rich_text':
-                return XSSProtection::sanitizeHTML($value, 'widget');
-                
-            case 'url':
-                $sanitized = XSSProtection::sanitizeURL($value);
-                return $sanitized ?? '';
-                
-            case 'css':
-                return XSSProtection::sanitizeCSS($value);
-                
-            case 'text':
-            default:
-                return XSSProtection::sanitizeText($value);
-        }
+        return XSSProtection::sanitizeHTML($content, $level, $customOptions);
     }
     
     /**
-     * Override render method to include automatic XSS protection
+     * Get sanitized URL
+     * Validates and sanitizes URLs, blocking dangerous protocols
      * 
-     * @param array $settings Widget settings
-     * @return string Rendered widget HTML
+     * @param string $url Raw URL
+     * @param array $allowedSchemes Allowed URL schemes (default: http, https, mailto, tel)
+     * @return string|null Sanitized URL or empty string if invalid
      */
-    public function renderSafely(array $settings = []): string
+    protected function sanitizeURL(string $url, array $allowedSchemes = ['http', 'https', 'mailto', 'tel']): string
     {
-        // Sanitize all input settings first
-        $safeSettings = $this->sanitizeSettings($settings);
-        
-        // Detect potential threats
-        $threats = $this->detectContentThreats($settings);
-        if (!empty($threats)) {
-            \Log::warning('XSS threats detected in widget', [
-                'widget_type' => $this->getWidgetType(),
-                'threats' => $threats,
-                'settings' => $settings
-            ]);
-        }
-        
-        // Call the widget's render method with sanitized settings
-        return $this->render($safeSettings);
+        return XSSProtection::sanitizeURL($url, $allowedSchemes) ?? '';
     }
     
     /**
-     * Detect security threats in widget content
+     * Get sanitized CSS properties and values
+     * Removes dangerous CSS expressions and imports
      * 
-     * @param array $settings Widget settings to analyze
-     * @return array Array of detected threats
+     * @param string $css Raw CSS content
+     * @return string Sanitized CSS
      */
-    protected function detectContentThreats(array $settings): array
+    protected function sanitizeCSS(string $css): string
     {
-        $allThreats = [];
-        
-        foreach ($settings as $section => $sectionData) {
-            if (is_array($sectionData)) {
-                foreach ($sectionData as $group => $groupData) {
-                    if (is_array($groupData)) {
-                        foreach ($groupData as $field => $value) {
-                            if (is_string($value)) {
-                                $threats = XSSProtection::detectThreats($value);
-                                if (!empty($threats)) {
-                                    $allThreats["{$section}.{$group}.{$field}"] = $threats;
-                                }
-                            }
-                        }
-                    } elseif (is_string($groupData)) {
-                        $threats = XSSProtection::detectThreats($groupData);
-                        if (!empty($threats)) {
-                            $allThreats["{$section}.{$group}"] = $threats;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return $allThreats;
+        return XSSProtection::sanitizeCSS($css);
     }
     
     /**
-     * Generate secure widget attributes for HTML output
+     * Get sanitized HTML attributes for safe output
+     * Properly escapes attribute values based on context
      * 
-     * @param array $attributes Raw attributes
+     * @param string $name Attribute name
+     * @param string $value Attribute value
+     * @return string Escaped attribute value safe for HTML output
+     */
+    protected function sanitizeAttribute(string $name, string $value): string
+    {
+        // Special handling for specific attributes
+        if ($name === 'href' || $name === 'src') {
+            return htmlspecialchars($this->sanitizeURL($value), ENT_QUOTES, 'UTF-8');
+        } elseif ($name === 'style') {
+            return htmlspecialchars($this->sanitizeCSS($value), ENT_QUOTES, 'UTF-8');
+        }
+        
+        // Default HTML entity encoding
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+    
+    /**
+     * Check content for security threats
+     * Utility method for developers to detect potential XSS patterns
+     * 
+     * @param string $content Content to check
+     * @return array Array of detected threat types
+     */
+    protected function detectThreats(string $content): array
+    {
+        return XSSProtection::detectThreats($content);
+    }
+    
+    /**
+     * Build HTML attributes string with proper escaping
+     * Utility method for developers to safely generate HTML attributes
+     * 
+     * @param array $attributes Key-value pairs of attributes
+     * @param bool $sanitize Whether to sanitize attribute values (default: true)
      * @return string Safe HTML attributes string
      */
-    protected function buildSecureAttributes(array $attributes): string
+    protected function buildAttributes(array $attributes, bool $sanitize = true): string
     {
-        $safeAttrs = [];
+        $attrs = [];
         
         foreach ($attributes as $name => $value) {
-            // Sanitize attribute name
-            $safeName = preg_replace('/[^\w\-]/', '', $name);
-            
-            // Sanitize attribute value based on type
-            if ($safeName === 'href') {
-                $safeValue = XSSProtection::sanitizeURL($value);
-                if ($safeValue) {
-                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
-                }
-            } elseif ($safeName === 'style') {
-                $safeValue = XSSProtection::sanitizeCSS($value);
-                if ($safeValue) {
-                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
-                }
-            } elseif (in_array($safeName, ['class', 'id', 'data-widget-type', 'data-widget-id'])) {
-                $safeValue = preg_replace('/[^\w\s\-_]/', '', $value);
-                if ($safeValue) {
-                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
-                }
-            } else {
-                // Default text sanitization
-                $safeValue = XSSProtection::sanitizeText($value);
-                if ($safeValue) {
-                    $safeAttrs[] = $safeName . '="' . htmlspecialchars($safeValue, ENT_QUOTES) . '"';
-                }
+            if ($value === null || $value === false) {
+                continue;
             }
+            
+            // Boolean attributes
+            if ($value === true) {
+                $attrs[] = $name;
+                continue;
+            }
+            
+            // Sanitize if requested
+            if ($sanitize) {
+                $value = $this->sanitizeAttribute($name, (string)$value);
+            } else {
+                $value = htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+            }
+            
+            $attrs[] = $name . '="' . $value . '"';
         }
         
-        return implode(' ', $safeAttrs);
+        return implode(' ', $attrs);
     }
 }

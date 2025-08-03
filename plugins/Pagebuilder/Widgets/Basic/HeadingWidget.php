@@ -447,7 +447,7 @@ class HeadingWidget extends BaseWidget
         $content = $general['content'] ?? [];
         $link = $general['link'] ?? [];
         
-        $text = $this->sanitizeInput($content['heading_text'] ?? 'Your Heading Text', 'text');
+        $text = $this->sanitizeText($content['heading_text'] ?? 'Your Heading Text');
         $level = in_array($content['heading_level'] ?? 'h2', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) 
             ? $content['heading_level'] 
             : 'h2';
@@ -456,7 +456,7 @@ class HeadingWidget extends BaseWidget
             : 'left';
         
         $enableLink = $link['enable_link'] ?? false;
-        $linkUrl = $this->sanitizeInput($link['link_url'] ?? '#', 'url');
+        $linkUrl = $this->sanitizeURL($link['link_url'] ?? '#');
         $linkTarget = in_array($link['link_target'] ?? '_self', ['_self', '_blank', '_parent', '_top']) 
             ? $link['link_target'] 
             : '_self';
@@ -485,7 +485,7 @@ class HeadingWidget extends BaseWidget
                 $linkAttributes['rel'] = 'nofollow';
             }
             
-            $linkAttrs = $this->buildSecureAttributes($linkAttributes);
+            $linkAttrs = $this->buildAttributes($linkAttributes);
             
             return "<{$level} class=\"{$classString}\"{$styleAttr}><a {$linkAttrs}>{$text}</a></{$level}>";
         } else {
@@ -634,7 +634,7 @@ class HeadingWidget extends BaseWidget
                 'icon' => $this->getWidgetIcon(),
                 'description' => $this->getWidgetDescription()
             ],
-            'css_classes' => $this->buildCssClasses($settings),
+            'css_classes' => $this->buildCssClassesFromSettings($settings),
             'inline_styles' => $this->buildInlineStyles($style, $general)
         ];
     }
@@ -740,5 +740,36 @@ class HeadingWidget extends BaseWidget
     {
         // Re-register fields from getStyleFields() for CSS generation
         $this->getStyleFields();
+    }
+    
+    /**
+     * Build CSS classes from widget settings
+     */
+    private function buildCssClassesFromSettings(array $settings): array
+    {
+        $classes = ['heading-element', 'pagebuilder-heading'];
+        
+        $general = $settings['general'] ?? [];
+        $content = $general['content'] ?? [];
+        
+        // Add heading level class
+        $level = $content['heading_level'] ?? 'h2';
+        $classes[] = 'heading-' . $level;
+        
+        // Add alignment class
+        $align = $content['text_align'] ?? 'left';
+        if ($align !== 'left') {
+            $classes[] = 'text-' . $align;
+        }
+        
+        // Add custom classes from advanced settings
+        $advanced = $settings['advanced'] ?? [];
+        $custom = $advanced['custom'] ?? [];
+        if (!empty($custom['custom_css_class'])) {
+            $customClasses = explode(' ', $custom['custom_css_class']);
+            $classes = array_merge($classes, $customClasses);
+        }
+        
+        return $classes;
     }
 }

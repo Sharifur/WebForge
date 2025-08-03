@@ -74,14 +74,14 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
       clearTimeout(debounceTimeoutRef.current);
     }
     
-    // Set new timeout for 1 second delay
+    // Set new timeout for 500ms delay
     debounceTimeoutRef.current = setTimeout(() => {
       // Update the widget in the store
       updateWidget(widget.id, updatedWidget);
       
       // Update the selected widget
       onWidgetUpdate(updatedWidget);
-    }, 1000);
+    }, 500);
   }, [widget.id, updateWidget, onWidgetUpdate]);
 
   // Cleanup timeout on unmount

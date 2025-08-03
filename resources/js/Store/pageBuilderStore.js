@@ -369,19 +369,106 @@ const usePageBuilderStore = create((set, get) => ({
   savePage: async (pageId) => {
     const { pageContent } = get();
     try {
-      await router.put(route('admin.pages.update', pageId), { 
-        content: pageContent 
-      }, {
-        preserveScroll: true,
-        onSuccess: () => {
-          set({ 
-            isDirty: false,
-            originalContent: pageContent
-          });
-        }
+      // Use the new page builder API endpoint
+      const response = await fetch(`/api/page-builder/pages/${pageId}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          content: pageContent,
+          is_published: false, // Save as draft by default
+          version: '1.0'
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        set({ 
+          isDirty: false,
+          originalContent: pageContent
+        });
+        
+        // Show success message (you can use a toast library here)
+        console.log('Page saved successfully:', data.message);
+        
+        return data;
+      } else {
+        throw new Error(data.message || 'Save failed');
+      }
     } catch (error) {
       console.error('Save failed:', error);
+      throw error;
+    }
+  },
+
+  // Load page content from the new API
+  loadPageContent: async (pageId) => {
+    try {
+      const response = await fetch(`/api/page-builder/pages/${pageId}/content`, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        const content = data.data.content || { containers: [] };
+        set({
+          pageContent: content,
+          originalContent: content,
+          isDirty: false
+        });
+        
+        return data.data;
+      } else {
+        throw new Error(data.message || 'Failed to load content');
+      }
+    } catch (error) {
+      console.error('Load content failed:', error);
+      throw error;
+    }
+  },
+
+  // Publish page content
+  publishPage: async (pageId) => {
+    try {
+      const response = await fetch(`/api/page-builder/pages/${pageId}/publish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Page published successfully:', data.message);
+        return data;
+      } else {
+        throw new Error(data.message || 'Publish failed');
+      }
+    } catch (error) {
+      console.error('Publish failed:', error);
+      throw error;
     }
   },
   

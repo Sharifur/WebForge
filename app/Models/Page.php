@@ -34,6 +34,16 @@ class Page extends Model
     {
         return $this->morphOne(MetaInformation::class, 'metable');
     }
+    
+    public function pageBuilderContent()
+    {
+        return $this->hasOne(PageBuilderContent::class);
+    }
+    
+    public function getPageBuilderContentAttribute()
+    {
+        return $this->pageBuilderContent()->latest()->first();
+    }
 
     public function creator()
     {

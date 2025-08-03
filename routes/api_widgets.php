@@ -56,6 +56,38 @@ Route::prefix('pagebuilder/widgets')->group(function () {
         ->name('api.widgets.preview')
         ->where('type', '[a-z_]+');
     
+    // Button Preset Management
+    Route::prefix('button-presets')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\ButtonPresetController::class, 'index'])
+            ->name('api.button-presets.index');
+        
+        Route::get('/popular', [App\Http\Controllers\Api\ButtonPresetController::class, 'popular'])
+            ->name('api.button-presets.popular');
+        
+        Route::get('/recent', [App\Http\Controllers\Api\ButtonPresetController::class, 'recent'])
+            ->name('api.button-presets.recent');
+        
+        Route::get('/categories', [App\Http\Controllers\Api\ButtonPresetController::class, 'categories'])
+            ->name('api.button-presets.categories');
+        
+        Route::post('/{presetId}/apply', [App\Http\Controllers\Api\ButtonPresetController::class, 'apply'])
+            ->name('api.button-presets.apply');
+        
+        Route::middleware(['admin'])->group(function () {
+            Route::post('/', [App\Http\Controllers\Api\ButtonPresetController::class, 'store'])
+                ->name('api.button-presets.store');
+            
+            Route::get('/{preset}', [App\Http\Controllers\Api\ButtonPresetController::class, 'show'])
+                ->name('api.button-presets.show');
+            
+            Route::put('/{preset}', [App\Http\Controllers\Api\ButtonPresetController::class, 'update'])
+                ->name('api.button-presets.update');
+            
+            Route::delete('/{preset}', [App\Http\Controllers\Api\ButtonPresetController::class, 'destroy'])
+                ->name('api.button-presets.destroy');
+        });
+    });
+    
     // Widget Settings Management
     Route::post('/validate-settings', [WidgetController::class, 'validateSettings'])
         ->name('api.widgets.validate-settings');
@@ -64,7 +96,7 @@ Route::prefix('pagebuilder/widgets')->group(function () {
         ->name('api.widgets.save-settings');
     
     // Registry Management (Admin only)
-    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::middleware(['admin'])->group(function () {
         Route::get('/stats', [WidgetController::class, 'stats'])
             ->name('api.widgets.stats');
         
@@ -182,6 +214,35 @@ Route::prefix('widget-analytics')->middleware(['auth:sanctum', 'admin'])->group(
         ->name('api.widget-analytics.performance-metrics');
 });
 */
+
+/*
+|--------------------------------------------------------------------------
+| Page Builder Routes
+|--------------------------------------------------------------------------
+|
+| These routes handle page builder content saving and management
+|
+*/
+
+Route::prefix('page-builder')->middleware(['admin'])->group(function () {
+    Route::post('/pages/{page}/save', [App\Http\Controllers\Api\PageBuilderController::class, 'saveContent'])
+        ->name('api.page-builder.save-content');
+    
+    Route::get('/pages/{page}/content', [App\Http\Controllers\Api\PageBuilderController::class, 'getContent'])
+        ->name('api.page-builder.get-content');
+    
+    Route::post('/pages/{page}/publish', [App\Http\Controllers\Api\PageBuilderController::class, 'publish'])
+        ->name('api.page-builder.publish');
+    
+    Route::post('/pages/{page}/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
+        ->name('api.page-builder.unpublish');
+    
+    Route::get('/pages/{page}/history', [App\Http\Controllers\Api\PageBuilderController::class, 'getHistory'])
+        ->name('api.page-builder.history');
+    
+    Route::get('/pages/{page}/widgets/{widgetId}', [App\Http\Controllers\Api\PageBuilderController::class, 'getWidgetData'])
+        ->name('api.page-builder.widget-data');
+});
 
 /*
 |--------------------------------------------------------------------------

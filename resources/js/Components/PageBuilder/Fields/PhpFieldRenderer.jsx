@@ -3,6 +3,7 @@ import { Monitor, Tablet, Smartphone, Plus, Trash2, GripVertical, ChevronDown, C
 import { DndContext, closestCenter, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ButtonPresetSelector from './ButtonPresetSelector';
 
 // Lazy load the WYSIWYG editor to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
@@ -117,6 +118,109 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             placeholder={placeholder || 'https://example.com'}
             required={required}
           />
+        );
+      
+      case 'enhanced_url':
+        // Enhanced URL field with sub-fields
+        const urlValue = value || defaultValue || { url: '', target: '_self' };
+        const subFields = fieldConfig.sub_fields || {};
+        
+        return (
+          <div className="space-y-3">
+            {/* Main URL input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL
+              </label>
+              <input
+                type="url"
+                value={urlValue.url || ''}
+                onChange={(e) => onChange({ ...urlValue, url: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={placeholder || 'https://example.com'}
+                required={required}
+              />
+            </div>
+            
+            {/* Target options */}
+            {fieldConfig.show_target_options && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link Target
+                </label>
+                <select
+                  value={urlValue.target || '_self'}
+                  onChange={(e) => onChange({ ...urlValue, target: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="_self">Same Window</option>
+                  <option value="_blank">New Window/Tab</option>
+                  <option value="_parent">Parent Frame</option>
+                  <option value="_top">Top Frame</option>
+                </select>
+              </div>
+            )}
+            
+            {/* Rel options */}
+            {fieldConfig.show_rel_options && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link Relationship
+                </label>
+                <div className="space-y-2">
+                  {['nofollow', 'sponsored', 'ugc', 'noopener', 'noreferrer', 'external'].map(rel => (
+                    <label key={rel} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={(urlValue.rel || []).includes(rel)}
+                        onChange={(e) => {
+                          const currentRel = urlValue.rel || [];
+                          const newRel = e.target.checked 
+                            ? [...currentRel, rel]
+                            : currentRel.filter(r => r !== rel);
+                          onChange({ ...urlValue, rel: newRel });
+                        }}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">
+                        {rel.charAt(0).toUpperCase() + rel.slice(1)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Accessibility options */}
+            {fieldConfig.enable_accessibility && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ARIA Label
+                  </label>
+                  <input
+                    type="text"
+                    value={urlValue.aria_label || ''}
+                    onChange={(e) => onChange({ ...urlValue, aria_label: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Descriptive label for screen readers"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link Title
+                  </label>
+                  <input
+                    type="text"
+                    value={urlValue.title || ''}
+                    onChange={(e) => onChange({ ...urlValue, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Tooltip text"
+                  />
+                </div>
+              </>
+            )}
+          </div>
         );
       
       case 'color':
@@ -417,6 +521,22 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
       case 'group':
         // Group fields should not be rendered directly - they are handled by the parent component
         return null;
+      
+      case 'preset_selector':
+        return (
+          <ButtonPresetSelector
+            value={value || defaultValue}
+            onChange={onChange}
+            onPresetApply={(newSettings) => {
+              // Callback to apply preset settings to the entire widget
+              if (fieldConfig.onPresetApply) {
+                fieldConfig.onPresetApply(newSettings);
+              }
+            }}
+            currentSettings={fieldConfig.currentSettings || {}}
+            className="w-full"
+          />
+        );
       
       default:
         return (

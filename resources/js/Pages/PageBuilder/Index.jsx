@@ -21,36 +21,68 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
     setPageContent,
     setSelectedWidget,
     setActivePanel,
-    initializePageContent
+    initializePageContent,
+    loadPageContent
   } = usePageBuilderStore();
 
   const { handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop();
 
   // Initialize page content on mount
   React.useEffect(() => {
-    if (page?.content && page.content.containers && page.content.containers.length > 0) {
-      initializePageContent(page.content);
-    } else {
-      // Create default container with one column
-      const defaultContainer = {
-        id: `container-${Date.now()}`,
-        type: 'section',
-        columns: [{
-          id: `column-${Date.now()}`,
-          width: '100%',
-          widgets: [],
-          settings: {}
-        }],
-        settings: {
-          padding: '40px 20px',
-          margin: '0px',
-          backgroundColor: '#ffffff'
+    const initContent = async () => {
+      try {
+        // First try to load from the page builder API
+        if (page?.use_page_builder) {
+          await loadPageContent(page.id);
+        } else if (page?.content && page.content.containers && page.content.containers.length > 0) {
+          // Fallback to legacy content format
+          initializePageContent(page.content);
+        } else {
+          // Create default container with one column
+          const defaultContainer = {
+            id: `container-${Date.now()}`,
+            type: 'section',
+            columns: [{
+              id: `column-${Date.now()}`,
+              width: '100%',
+              widgets: [],
+              settings: {}
+            }],
+            settings: {
+              padding: '40px 20px',
+              margin: '0px',
+              backgroundColor: '#ffffff'
+            }
+          };
+          
+          initializePageContent({ containers: [defaultContainer] });
         }
-      };
-      
-      initializePageContent({ containers: [defaultContainer] });
-    }
-  }, [page, initializePageContent]);
+      } catch (error) {
+        console.error('Failed to load page content:', error);
+        
+        // Fallback to default content if API fails
+        const defaultContainer = {
+          id: `container-${Date.now()}`,
+          type: 'section',
+          columns: [{
+            id: `column-${Date.now()}`,
+            width: '100%',
+            widgets: [],
+            settings: {}
+          }],
+          settings: {
+            padding: '40px 20px',
+            margin: '0px',
+            backgroundColor: '#ffffff'
+          }
+        };
+        
+        initializePageContent({ containers: [defaultContainer] });
+      }
+    };
+
+    initContent();
+  }, [page, initializePageContent, loadPageContent]);
 
   return (
     <>

@@ -33,8 +33,8 @@ const WidgetSidebar = ({ onWidgetDrag, onWidgetSelect, selectedWidget }) => {
     try {
       // Fetch categories and widgets in parallel
       const [categoriesResponse, widgetsResponse] = await Promise.all([
-        fetch('/api/widgets/categories'),
-        fetch('/api/widgets')
+        fetch('/api/pagebuilder/widgets/categories'),
+        fetch('/api/pagebuilder/widgets')
       ]);
 
       if (!categoriesResponse.ok || !widgetsResponse.ok) {
@@ -101,16 +101,20 @@ const WidgetSidebar = ({ onWidgetDrag, onWidgetSelect, selectedWidget }) => {
     
     if (query.trim()) {
       try {
-        const response = await fetch(`/api/widgets/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/pagebuilder/widgets/search?q=${encodeURIComponent(query)}`);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
+            // For search results, we update the widgets list
             setWidgets(data.data);
           }
         }
       } catch (err) {
         console.error('Search failed:', err);
       }
+    } else {
+      // If search is cleared, reload all widgets
+      fetchInitialData();
     }
   };
 
