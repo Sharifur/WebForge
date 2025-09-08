@@ -25,20 +25,14 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
     return val;
   };
 
-  // Initialize local value from props
+  // Initialize local value from props or with defaults
   useEffect(() => {
-    if (!localValue && value) {
-      setLocalValue(parseTypographyValue(value));
-    }
-  }, [value, localValue]);
+    const initialValue = parseTypographyValue(value);
+    setLocalValue(initialValue);
+  }, [value]);
 
-  // Use local value if available, otherwise parse from props
-  const typographyValue = useMemo(() => {
-    if (localValue) {
-      return localValue;
-    }
-    return parseTypographyValue(value);
-  }, [localValue, value]);
+  // Use local value (always initialized)
+  const typographyValue = localValue || parseTypographyValue(null);
 
   // Debounced update to parent
   const debouncedOnChange = useCallback((newValue) => {
@@ -84,15 +78,15 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
 
   // Font weights
   const fontWeights = useMemo(() => [
-    { value: '100', label: '100 - Thin' },
-    { value: '200', label: '200 - Extra Light' },
-    { value: '300', label: '300 - Light' },
-    { value: '400', label: '400 - Normal' },
-    { value: '500', label: '500 - Medium' },
-    { value: '600', label: '600 - Semi Bold' },
-    { value: '700', label: '700 - Bold' },
-    { value: '800', label: '800 - Extra Bold' },
-    { value: '900', label: '900 - Black' }
+    { value: '100', label: 'Thin' },
+    { value: '200', label: 'Extra Light' },
+    { value: '300', label: 'Light' },
+    { value: '400', label: 'Normal' },
+    { value: '500', label: 'Medium' },
+    { value: '600', label: 'Semi Bold' },
+    { value: '700', label: 'Bold' },
+    { value: '800', label: 'Extra Bold' },
+    { value: '900', label: 'Black' }
   ], []);
 
   // Text transforms
@@ -150,7 +144,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
           <select
             value={typographyValue.font_family}
             onChange={(e) => updateProperty('font_family', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {fontFamilies.map(font => (
               <option key={font.value} value={font.value}>{font.label}</option>
@@ -166,18 +160,18 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
               type="number"
               value={typographyValue.font_size.value}
               onChange={(e) => updateSizeProperty('font_size', 'value', parseInt(e.target.value) || 16)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               min="8"
               max="200"
             />
             <select
               value={typographyValue.font_size.unit}
               onChange={(e) => updateSizeProperty('font_size', 'unit', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="px">px</option>
               <option value="em">em</option>
-              <option value="rem">rem</option>
+              <option value="rem">rm</option>
               <option value="%">%</option>
             </select>
           </div>
@@ -192,7 +186,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
           <select
             value={typographyValue.font_weight}
             onChange={(e) => updateProperty('font_weight', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {fontWeights.map(weight => (
               <option key={weight.value} value={weight.value}>{weight.label}</option>
@@ -209,7 +203,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
           <select
             value={typographyValue.font_style}
             onChange={(e) => updateProperty('font_style', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {fontStyles.map(style => (
               <option key={style.value} value={style.value}>{style.label}</option>
@@ -223,7 +217,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
           <select
             value={typographyValue.text_transform}
             onChange={(e) => updateProperty('text_transform', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {textTransforms.map(transform => (
               <option key={transform.value} value={transform.value}>{transform.label}</option>
@@ -240,7 +234,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
           <select
             value={typographyValue.text_decoration}
             onChange={(e) => updateProperty('text_decoration', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {textDecorations.map(decoration => (
               <option key={decoration.value} value={decoration.value}>{decoration.label}</option>
@@ -249,7 +243,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
         </div>
 
         {/* Line Height */}
-        <div>
+        <div className="block">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
             <AlignLeft className="w-4 h-4" />
             LINE HEIGHT
@@ -259,7 +253,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
               type="number"
               value={typographyValue.line_height.value}
               onChange={(e) => updateSizeProperty('line_height', 'value', parseFloat(e.target.value) || 1.4)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-[5px] w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               min="0.5"
               max="5"
               step="0.1"
@@ -267,7 +261,7 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
             <select
               value={typographyValue.line_height.unit}
               onChange={(e) => updateSizeProperty('line_height', 'unit', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-[50px] h-[30px] size-[10px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="em">em</option>
               <option value="px">px</option>
@@ -275,55 +269,80 @@ const EnhancedTypographyPicker = React.memo(({ value, onChange }) => {
             </select>
           </div>
         </div>
-
-        {/* Letter Spacing */}
-        <div>
+      </div>
+       {/* Letter Spacing */}
+       <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">LETTER SPACING</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={typographyValue.letter_spacing.value}
-              onChange={(e) => updateSizeProperty('letter_spacing', 'value', parseFloat(e.target.value) || 0)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="-10"
-              max="10"
-              step="0.1"
-            />
-            <select
-              value={typographyValue.letter_spacing.unit}
-              onChange={(e) => updateSizeProperty('letter_spacing', 'unit', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="px">px</option>
-              <option value="em">em</option>
-            </select>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                value={typographyValue.letter_spacing.value}
+                onChange={(e) => updateSizeProperty('letter_spacing', 'value', parseFloat(e.target.value) || 0)}
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                min="-10"
+                max="10"
+                step="0.1"
+              />
+              <div className="flex items-center gap-1 min-w-[70px]">
+                <input
+                  type="number"
+                  value={typographyValue.letter_spacing.value}
+                  onChange={(e) => updateSizeProperty('letter_spacing', 'value', parseFloat(e.target.value) || 0)}
+                  className="w-[45px] px-1 h-[25px] text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  min="-10"
+                  max="10"
+                  step="0.1"
+                />
+                <select
+                  value={typographyValue.letter_spacing.unit}
+                  onChange={(e) => updateSizeProperty('letter_spacing', 'unit', e.target.value)}
+                  className="w-[45px] h-[25px] text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="px">px</option>
+                  <option value="em">em</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Word Spacing */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">WORD SPACING</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={typographyValue.word_spacing.value}
-              onChange={(e) => updateSizeProperty('word_spacing', 'value', parseFloat(e.target.value) || 0)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="-10"
-              max="20"
-              step="0.1"
-            />
-            <select
-              value={typographyValue.word_spacing.unit}
-              onChange={(e) => updateSizeProperty('word_spacing', 'unit', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="px">px</option>
-              <option value="em">em</option>
-            </select>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                value={typographyValue.word_spacing.value}
+                onChange={(e) => updateSizeProperty('word_spacing', 'value', parseFloat(e.target.value) || 0)}
+                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                min="-10"
+                max="20"
+                step="0.1"
+              />
+              <div className="flex items-center gap-1 min-w-[70px]">
+                <input
+                  type="number"
+                  value={typographyValue.word_spacing.value}
+                  onChange={(e) => updateSizeProperty('word_spacing', 'value', parseFloat(e.target.value) || 0)}
+                  className="w-[45px] px-1 h-[25px] text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  min="-10"
+                  max="20"
+                  step="0.1"
+                />
+                <select
+                  value={typographyValue.word_spacing.unit}
+                  onChange={(e) => updateSizeProperty('word_spacing', 'unit', e.target.value)}
+                  className="w-[45px] h-[25px] text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="px">px</option>
+                  <option value="em">em</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Reset Button */}
       <button

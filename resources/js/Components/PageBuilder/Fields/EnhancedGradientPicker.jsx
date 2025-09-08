@@ -273,7 +273,7 @@ const EnhancedGradientPicker = React.memo(({ value, onChange }) => {
           <select
             value={gradientValue.type}
             onChange={(e) => handleChange({ type: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="linear">Linear</option>
             <option value="radial">Radial</option>
@@ -288,7 +288,7 @@ const EnhancedGradientPicker = React.memo(({ value, onChange }) => {
               type="number"
               value={gradientValue.angle}
               onChange={(e) => handleChange({ angle: parseInt(e.target.value) || 0 })}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               min="0"
               max="360"
               disabled={gradientValue.type === 'radial'}
@@ -298,7 +298,7 @@ const EnhancedGradientPicker = React.memo(({ value, onChange }) => {
             {gradientValue.type === 'linear' && (
               <div 
                 ref={anglePickerRef}
-                className="relative w-8 h-8 border-2 border-gray-300 rounded-full bg-white cursor-pointer"
+                className="relative w-[30px] h-[30px] border-2 border-gray-300 rounded-full bg-white cursor-pointer"
                 onMouseDown={handleAngleMouseDown}
               >
                 <div

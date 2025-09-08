@@ -187,7 +187,7 @@ const EnhancedBackgroundPicker = React.memo(({ value, onChange }) => {
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-50 transition-colors"
+            className="w-full w-[45px] px-1 h-[25px] size-[12px] text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900">{currentTypeLabel}</span>
@@ -206,7 +206,7 @@ const EnhancedBackgroundPicker = React.memo(({ value, onChange }) => {
                   key={type.value}
                   type="button"
                   onClick={() => handleTypeChange(type.value)}
-                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-md last:rounded-b-md transition-colors ${
+                  className={`w-full w-[45px] px-1 h-[25px] size-[12px] text-left text-sm hover:bg-gray-50 first:rounded-t-md last:rounded-b-md transition-colors ${
                     backgroundValue.type === type.value
                       ? 'bg-blue-50 text-blue-700 font-medium'
                       : 'text-gray-700'
@@ -257,7 +257,7 @@ const EnhancedBackgroundPicker = React.memo(({ value, onChange }) => {
         <button
           type="button"
           onClick={() => handleTypeChange('none')}
-          className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 rounded-md transition-colors"
+          className="w-full py-2 size-[10px] text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 rounded-md transition-colors"
         >
           Clear Background
         </button>
@@ -351,7 +351,7 @@ const ImagePickerContent = React.memo(({ image, onImageChange }) => (
         value={image.url}
         onChange={(e) => onImageChange('url', e.target.value)}
         placeholder="https://example.com/image.jpg"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
 
@@ -379,7 +379,7 @@ const ImagePickerContent = React.memo(({ image, onImageChange }) => (
         <select
           value={image.size}
           onChange={(e) => onImageChange('size', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="cover">Cover</option>
           <option value="contain">Contain</option>
@@ -394,7 +394,7 @@ const ImagePickerContent = React.memo(({ image, onImageChange }) => (
         <select
           value={image.position}
           onChange={(e) => onImageChange('position', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="center center">Center</option>
           <option value="top left">Top Left</option>
@@ -414,7 +414,7 @@ const ImagePickerContent = React.memo(({ image, onImageChange }) => (
         <select
           value={image.repeat}
           onChange={(e) => onImageChange('repeat', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="no-repeat">No Repeat</option>
           <option value="repeat">Repeat</option>
@@ -429,7 +429,7 @@ const ImagePickerContent = React.memo(({ image, onImageChange }) => (
         <select
           value={image.attachment}
           onChange={(e) => onImageChange('attachment', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full w-[45px] px-1 h-[25px] size-[12px] border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="scroll">Scroll</option>
           <option value="fixed">Fixed</option>
