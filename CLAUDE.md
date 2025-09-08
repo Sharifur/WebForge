@@ -245,6 +245,49 @@ class YourWidget extends BaseWidget
 - **Automatic integration**: Typography and background controls work automatically
 - **Template flexibility**: Blade templates with automatic data injection
 
+### Field System - Icon-Based Alignment Controls
+
+The page builder now features a modern icon-based alignment field system that replaces traditional dropdown menus with visual controls.
+
+#### AlignmentField Features
+- **Visual Interface**: Icon-based buttons instead of text dropdowns
+- **Flexible Configuration**: Supports different alignment types (text-align, flex, etc.)
+- **Preset Methods**: Built-in presets for common use cases
+- **Modular Design**: Separate React component for maintainability
+
+#### Usage in Widgets
+```php
+// In your widget's getGeneralFields() or getStyleFields()
+->registerField('text_align', FieldManager::ALIGNMENT()
+    ->setLabel('Text Alignment')
+    ->asTextAlign()                    // Preset for text-align CSS property
+    ->setShowNone(false)               // Hide 'none' option
+    ->setShowJustify(true)             // Show 'justify' option
+    ->setDefault('left')
+    ->setResponsive(true)
+    ->setDescription('Set text alignment')
+)
+```
+
+#### Available Presets
+- **asTextAlign()**: For CSS text-align (left, center, right, justify)
+- **asFlexAlign()**: For flexbox justify-content (flex-start, center, flex-end)
+- **asElementAlign()**: For flexbox align-items (flex-start, center, flex-end)
+
+#### React Component
+- **Location**: `resources/js/Components/PageBuilder/Fields/AlignmentField.jsx`
+- **Props**: value, onChange, alignments, defaultValue, className, size
+- **Icons**: Uses Lucide React icons (AlignLeft, AlignCenter, AlignRight, etc.)
+- **Accessibility**: Full ARIA support with proper button states
+
+#### Replaced Fields
+The alignment field system has replaced SELECT-based alignment fields across:
+- ButtonWidget (button alignment)
+- HeadingWidget (text alignment)
+- ParagraphWidget (text alignment)  
+- GridWidget (item text alignment)
+- ImageWidget (image alignment)
+
 ## Page Builder Architecture Summary
 - **Enhanced Developer Experience**: Minimal code required for new widgets
 - **BaseWidget Automation**: Universal methods for common widget patterns
@@ -261,6 +304,7 @@ class YourWidget extends BaseWidget
 ✅ **ENHANCED** Widget development with minimal boilerplate (579→327 lines)
 ✅ **NEW** BaseWidget automation: CSS classes, template data, inline styles
 ✅ **NEW** Automatic CSS generation from TYPOGRAPHY_GROUP and BACKGROUND_GROUP
+✅ **NEW** Icon-based alignment field system replacing dropdown menus
 ✅ Widget template system with Blade rendering and automatic data injection
 ✅ Centralized PHP field rendering system
 ✅ Traditional PHP form handling (no AJAX)  
