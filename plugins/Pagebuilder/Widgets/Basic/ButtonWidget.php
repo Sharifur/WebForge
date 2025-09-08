@@ -135,13 +135,6 @@ class ButtonWidget extends BaseWidget
 
         // Colors Group
         $control->addGroup('colors', 'Colors')
-            ->registerField('background_color', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#3B82F6')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'background-color: {{VALUE}};'
-                ])
-            )
             ->registerField('text_color', FieldManager::COLOR()
                 ->setLabel('Text Color')
                 ->setDefault('#FFFFFF')
@@ -155,6 +148,21 @@ class ButtonWidget extends BaseWidget
                 ->setSelectors([
                     '{{WRAPPER}} .simple-button' => 'border-color: {{VALUE}};'
                 ])
+            )
+            ->endGroup();
+
+        // Background Group - Enhanced control
+        $control->addGroup('background', 'Background')
+            ->registerField('button_background', FieldManager::BACKGROUND_GROUP()
+                ->setLabel('Background')
+                ->setAllowedTypes(['none', 'color', 'gradient'])
+                ->setDefaultType('color')
+                ->setDefaultColor('#3B82F6')
+                ->setEnableHover(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'background: {{VALUE}};'
+                ])
+                ->setDescription('Configure button background with color, gradient or none')
             )
             ->endGroup();
 

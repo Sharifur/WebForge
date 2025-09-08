@@ -203,34 +203,67 @@ FieldManager::COLOR()
     ->addBrandSwatches(['#1234AB', '#5678CD'])
 ```
 
-### Dimension Fields
+### Enhanced Dimension Fields
+
+The unified dimension field system provides comprehensive multi-directional controls with an ultra-compact UI.
 
 ```php
-// Padding with all sides
+// Enhanced padding with responsive support
 FieldManager::DIMENSION()
     ->setLabel('Padding')
     ->setDefault(['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 20])
     ->setUnits(['px', 'em', 'rem', '%'])
     ->setMin(0)
     ->setMax(100)
+    ->setResponsive(true)
+    ->setAllowNegative(false)
+    ->setDescription('Set internal spacing for all sides')
     ->setSelectors([
         '{{WRAPPER}} .element' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
     ])
 
-// Margin with negative values
+// Enhanced margin with negative values
 FieldManager::DIMENSION()
     ->setLabel('Margin')
-    ->asMargin() // Preset for margin
+    ->asMargin() // Preset: negative values, wider range
+    ->setResponsive(true)
+    ->setDescription('Set external spacing around element')
     ->setSelectors([
         '{{WRAPPER}} .element' => 'margin: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
     ])
 
-// Border radius
+// Enhanced border radius with linking
 FieldManager::DIMENSION()
     ->setLabel('Border Radius')
-    ->asBorderRadius() // Preset for border radius
+    ->asBorderRadius() // Preset: 0-100px range
     ->setLinked(true)
+    ->setResponsive(true)
+    ->setDescription('Set corner roundness for each corner')
+    ->setSelectors([
+        '{{WRAPPER}} .element' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+    ])
+
+// Custom dimension configuration
+FieldManager::DIMENSION()
+    ->setLabel('Shadow Spread')
+    ->setSides(['all']) // Single value mode
+    ->setUnits(['px', 'em'])
+    ->setMin(-20)
+    ->setMax(20)
+    ->setStep(0.5)
+    ->setResponsive(true)
+    ->setShowLabels(false)
 ```
+
+#### Dimension Field Features
+
+- **Two-row compact layout**: Controls on top row, T/R/B/L inputs below
+- **Link/unlink functionality**: Sync all values or control individually
+- **Responsive breakpoints**: Desktop, tablet, mobile support
+- **Multiple units**: px, em, rem, %, vh, vw support
+- **Preset configurations**: asPadding(), asMargin(), asBorderRadius()
+- **Negative values**: Optional support for margin use cases
+- **Enhanced UI**: Professional design-tool aesthetic
 
 ### Media Fields
 

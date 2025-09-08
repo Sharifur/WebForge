@@ -122,79 +122,23 @@ class ParagraphWidget extends BaseWidget
     {
         $control = new ControlManager();
 
-        // Typography Group
+        // Typography Group - Enhanced unified control
         $control->addGroup('typography', 'Typography')
-            ->registerField('font_family', FieldManager::SELECT()
-                ->setLabel('Font Family')
-                ->setDefault('inherit')
-                ->setOptions([
-                    'inherit' => 'Inherit',
-                    'Arial, sans-serif' => 'Arial',
-                    'Helvetica, sans-serif' => 'Helvetica',
-                    'Georgia, serif' => 'Georgia',
-                    'Times New Roman, serif' => 'Times New Roman',
-                    'Courier New, monospace' => 'Courier New',
-                    'Verdana, sans-serif' => 'Verdana',
-                    'Tahoma, sans-serif' => 'Tahoma',
-                    'Trebuchet MS, sans-serif' => 'Trebuchet MS'
+            ->registerField('paragraph_typography', FieldManager::TYPOGRAPHY_GROUP()
+                ->setLabel('Typography')
+                ->setDefaultTypography([
+                    'font_family' => 'inherit',
+                    'font_size' => ['value' => 16, 'unit' => 'px'],
+                    'font_weight' => '400',
+                    'line_height' => ['value' => 1.6, 'unit' => 'em'],
+                    'letter_spacing' => ['value' => 0, 'unit' => 'px'],
+                    'word_spacing' => ['value' => 0, 'unit' => 'px']
                 ])
+                ->setEnableResponsive(true)
                 ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'font-family: {{VALUE}};'
+                    '{{WRAPPER}} .paragraph-element' => 'font-family: {{FONT_FAMILY}}; font-size: {{FONT_SIZE}}; font-weight: {{FONT_WEIGHT}}; line-height: {{LINE_HEIGHT}}; letter-spacing: {{LETTER_SPACING}}; word-spacing: {{WORD_SPACING}};'
                 ])
-            )
-            ->registerField('font_size', FieldManager::NUMBER()
-                ->setLabel('Font Size')
-                ->setDefault(16)
-                ->setMin(10)
-                ->setMax(32)
-                ->setUnit('px')
-                ->setResponsive(true)
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'font-size: {{VALUE}}{{UNIT}};'
-                ])
-                ->setDescription('Set the paragraph font size')
-            )
-            ->registerField('font_weight', FieldManager::SELECT()
-                ->setLabel('Font Weight')
-                ->setDefault('400')
-                ->addFontWeightOptions()
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'font-weight: {{VALUE}};'
-                ])
-            )
-            ->registerField('line_height', FieldManager::NUMBER()
-                ->setLabel('Line Height')
-                ->setDefault(1.6)
-                ->setMin(1)
-                ->setMax(3)
-                ->setStep(0.1)
-                ->setUnit('em')
-                ->setResponsive(true)
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'line-height: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->registerField('letter_spacing', FieldManager::NUMBER()
-                ->setLabel('Letter Spacing')
-                ->setDefault(0)
-                ->setMin(-2)
-                ->setMax(5)
-                ->setStep(0.1)
-                ->setUnit('px')
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'letter-spacing: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->registerField('word_spacing', FieldManager::NUMBER()
-                ->setLabel('Word Spacing')
-                ->setDefault(0)
-                ->setMin(-5)
-                ->setMax(20)
-                ->setStep(1)
-                ->setUnit('px')
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'word-spacing: {{VALUE}}{{UNIT}};'
-                ])
+                ->setDescription('Configure all typography settings for the paragraph')
             )
             ->registerField('text_transform', FieldManager::SELECT()
                 ->setLabel('Text Transform')
@@ -344,14 +288,18 @@ class ParagraphWidget extends BaseWidget
             )
             ->endGroup();
 
-        // Background Group
+        // Background Group - Enhanced control
         $control->addGroup('background', 'Background')
-            ->registerField('background_color', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('')
+            ->registerField('paragraph_background', FieldManager::BACKGROUND_GROUP()
+                ->setLabel('Background')
+                ->setAllowedTypes(['none', 'color', 'gradient', 'image'])
+                ->setDefaultType('none')
+                ->setEnableImage(true)
+                ->setEnableHover(false)
                 ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'background-color: {{VALUE}};'
+                    '{{WRAPPER}} .paragraph-element' => 'background: {{VALUE}};'
                 ])
+                ->setDescription('Configure paragraph background with color, gradient, image or none')
             )
             ->endGroup();
 
