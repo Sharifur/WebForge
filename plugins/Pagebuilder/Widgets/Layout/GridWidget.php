@@ -155,14 +155,12 @@ class GridWidget extends BaseWidget
                         ->setLabel('Item Background')
                         ->setDefault('')
                         ->setDescription('Background color for this item'),
-                    'text_align' => FieldManager::SELECT()
+                    'text_align' => FieldManager::ALIGNMENT()
                         ->setLabel('Text Alignment')
+                        ->asTextAlign()
+                        ->setShowNone(false)
+                        ->setShowJustify(false)
                         ->setDefault('left')
-                        ->setOptions([
-                            'left' => 'Left',
-                            'center' => 'Center',
-                            'right' => 'Right'
-                        ])
                 ])
                 ->setDescription('Configure individual grid items')
             )

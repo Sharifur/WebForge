@@ -28,6 +28,7 @@ use Plugins\Pagebuilder\Core\Fields\CodeField;
 use Plugins\Pagebuilder\Core\Fields\WysiwygField;
 use Plugins\Pagebuilder\Core\Fields\DimensionField;
 use Plugins\Pagebuilder\Core\Fields\GradientField;
+use Plugins\Pagebuilder\Core\Fields\AlignmentField;
 use Plugins\Pagebuilder\Core\Fields\BackgroundField;
 use Plugins\Pagebuilder\Core\Fields\TypographyField;
 
@@ -364,6 +365,16 @@ class FieldManager
     public static function GRADIENT(): GradientField
     {
         return new GradientField();
+    }
+
+    /**
+     * Create an alignment field with icon-based controls
+     *
+     * @return AlignmentField
+     */
+    public static function ALIGNMENT(): AlignmentField
+    {
+        return new AlignmentField();
     }
 
     /**

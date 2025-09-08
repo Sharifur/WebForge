@@ -28,6 +28,7 @@ class FieldTypeRegistry
         self::register(new ImageField());
         self::register(new RepeaterField());
         self::register(new GroupField());
+        self::register(new AlignmentField());
 
         self::$initialized = true;
     }

@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import ButtonPresetSelector from './ButtonPresetSelector';
 import EnhancedGradientPicker from './EnhancedGradientPicker';
+import AlignmentField from './AlignmentField';
 
 // Lazy load heavy components to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
@@ -81,7 +82,6 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
         );
 
       case 'checkbox':
-      case 'toggle':
         return (
           <div className="flex items-center">
             <input
@@ -94,6 +94,32 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             <label htmlFor={fieldKey} className="ml-2 block text-sm text-gray-700">
               {label}
             </label>
+          </div>
+        );
+
+      case 'toggle':
+        const isToggled = value !== undefined ? value : (defaultValue || false);
+        return (
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">{label}</span>
+            <button
+              type="button"
+              onClick={() => onChange(!isToggled)}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                ${isToggled ? 'bg-blue-600' : 'bg-gray-200'}
+              `}
+              role="switch"
+              aria-checked={isToggled}
+              aria-labelledby={`${fieldKey}-label`}
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+                  ${isToggled ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
           </div>
         );
 
@@ -228,6 +254,16 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
               <p className="text-xs text-gray-500">{description}</p>
             )}
           </div>
+        );
+
+      case 'alignment':
+        return (
+          <AlignmentField
+            value={value}
+            onChange={onChange}
+            alignments={fieldConfig.alignments || ['none', 'left', 'center', 'right']}
+            defaultValue={defaultValue}
+          />
         );
 
       default:

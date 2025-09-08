@@ -414,7 +414,8 @@ const usePageBuilderStore = create((set, get) => ({
     try {
       const response = await fetch(`/api/page-builder/pages/${pageId}/content`, {
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         }
       });
 

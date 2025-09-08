@@ -107,14 +107,13 @@ class ButtonWidget extends BaseWidget
             
         // Layout Group
         $control->addGroup('layout', 'Layout')
-            ->registerField('alignment', FieldManager::SELECT()
+            ->registerField('alignment', FieldManager::ALIGNMENT()
                 ->setLabel('Alignment')
-                ->setOptions([
-                    'left' => 'Left',
-                    'center' => 'Center',
-                    'right' => 'Right'
-                ])
+                ->asTextAlign()
+                ->setShowNone(false)
+                ->setShowJustify(false)
                 ->setDefault('left')
+                ->setDescription('Set button alignment within container')
             )
             ->registerField('width', FieldManager::SELECT()
                 ->setLabel('Width')
@@ -157,7 +156,7 @@ class ButtonWidget extends BaseWidget
                 ->setLabel('Background')
                 ->setAllowedTypes(['none', 'color', 'gradient'])
                 ->setDefaultType('color')
-                ->setDefaultColor('#3B82F6')
+                ->setDefaultBackground(['color' => '#3B82F6'])
                 ->setEnableHover(true)
                 ->setSelectors([
                     '{{WRAPPER}} .simple-button' => 'background: {{VALUE}};'

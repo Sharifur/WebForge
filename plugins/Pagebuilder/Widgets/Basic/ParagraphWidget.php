@@ -69,15 +69,12 @@ class ParagraphWidget extends BaseWidget
                 ->setPlaceholder('Enter your paragraph content here...')
                 ->setDescription('The main text content of the paragraph. HTML tags are supported.')
             )
-            ->registerField('text_align', FieldManager::SELECT()
+            ->registerField('text_align', FieldManager::ALIGNMENT()
                 ->setLabel('Text Alignment')
+                ->asTextAlign()
+                ->setShowNone(false)
+                ->setShowJustify(true)
                 ->setDefault('left')
-                ->setOptions([
-                    'left' => 'Left',
-                    'center' => 'Center',
-                    'right' => 'Right',
-                    'justify' => 'Justify'
-                ])
                 ->setResponsive(true)
                 ->setDescription('Set text alignment')
             )
@@ -132,38 +129,15 @@ class ParagraphWidget extends BaseWidget
                     'font_weight' => '400',
                     'line_height' => ['value' => 1.6, 'unit' => 'em'],
                     'letter_spacing' => ['value' => 0, 'unit' => 'px'],
-                    'word_spacing' => ['value' => 0, 'unit' => 'px']
+                    'word_spacing' => ['value' => 0, 'unit' => 'px'],
+                    'text_transform' => 'none',
+                    'font_style' => 'normal'
                 ])
                 ->setEnableResponsive(true)
                 ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'font-family: {{FONT_FAMILY}}; font-size: {{FONT_SIZE}}; font-weight: {{FONT_WEIGHT}}; line-height: {{LINE_HEIGHT}}; letter-spacing: {{LETTER_SPACING}}; word-spacing: {{WORD_SPACING}};'
+                    '{{WRAPPER}} .paragraph-element' => 'font-family: {{FONT_FAMILY}}; font-size: {{FONT_SIZE}}; font-weight: {{FONT_WEIGHT}}; line-height: {{LINE_HEIGHT}}; letter-spacing: {{LETTER_SPACING}}; word-spacing: {{WORD_SPACING}}; text-transform: {{TEXT_TRANSFORM}}; font-style: {{FONT_STYLE}};'
                 ])
                 ->setDescription('Configure all typography settings for the paragraph')
-            )
-            ->registerField('text_transform', FieldManager::SELECT()
-                ->setLabel('Text Transform')
-                ->setDefault('none')
-                ->setOptions([
-                    'none' => 'None',
-                    'uppercase' => 'Uppercase',
-                    'lowercase' => 'Lowercase',
-                    'capitalize' => 'Capitalize'
-                ])
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'text-transform: {{VALUE}};'
-                ])
-            )
-            ->registerField('font_style', FieldManager::SELECT()
-                ->setLabel('Font Style')
-                ->setDefault('normal')
-                ->setOptions([
-                    'normal' => 'Normal',
-                    'italic' => 'Italic',
-                    'oblique' => 'Oblique'
-                ])
-                ->setSelectors([
-                    '{{WRAPPER}} .paragraph-element' => 'font-style: {{VALUE}};'
-                ])
             )
             ->endGroup();
 

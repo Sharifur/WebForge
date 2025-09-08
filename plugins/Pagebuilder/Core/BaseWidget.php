@@ -97,37 +97,13 @@ abstract class BaseWidget
                 ]
             ],
             'background' => [
-                'type' => 'group',
+                'type' => 'background_group',
                 'label' => 'Background',
-                'fields' => [
-                    'background_type' => [
-                        'type' => 'select',
-                        'label' => 'Background Type',
-                        'options' => [
-                            'none' => 'None',
-                            'color' => 'Color',
-                            'image' => 'Image',
-                            'gradient' => 'Gradient'
-                        ],
-                        'default' => 'none'
-                    ],
-                    'background_color' => [
-                        'type' => 'color',
-                        'label' => 'Background Color',
-                        'default' => '#ffffff',
-                        'condition' => ['background_type' => 'color']
-                    ],
-                    'background_image' => [
-                        'type' => 'image',
-                        'label' => 'Background Image',
-                        'condition' => ['background_type' => 'image']
-                    ],
-                    'background_gradient' => [
-                        'type' => 'gradient',
-                        'label' => 'Background Gradient',
-                        'condition' => ['background_type' => 'gradient']
-                    ]
-                ]
+                'allowed_types' => ['none', 'color', 'gradient', 'image'],
+                'default_type' => 'none',
+                'enable_hover' => false,
+                'enable_image' => true,
+                'description' => 'Configure widget background with color, gradient, image or none'
             ],
             'spacing' => [
                 'type' => 'group',

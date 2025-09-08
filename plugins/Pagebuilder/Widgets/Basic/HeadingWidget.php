@@ -83,15 +83,12 @@ class HeadingWidget extends BaseWidget
                 ])
                 ->setDescription('Choose the semantic heading level')
             )
-            ->registerField('text_align', FieldManager::SELECT()
+            ->registerField('text_align', FieldManager::ALIGNMENT()
                 ->setLabel('Text Alignment')
+                ->asTextAlign()
+                ->setShowNone(false)
+                ->setShowJustify(true)
                 ->setDefault('left')
-                ->setOptions([
-                    'left' => 'Left',
-                    'center' => 'Center',
-                    'right' => 'Right',
-                    'justify' => 'Justify'
-                ])
                 ->setResponsive(true)
                 ->setDescription('Set text alignment')
             )

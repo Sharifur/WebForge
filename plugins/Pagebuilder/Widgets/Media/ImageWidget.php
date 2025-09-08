@@ -254,15 +254,12 @@ class ImageWidget extends BaseWidget
 
         // Position & Alignment Group
         $control->addGroup('alignment', 'Position & Alignment')
-            ->registerField('image_alignment', FieldManager::SELECT()
+            ->registerField('image_alignment', FieldManager::ALIGNMENT()
                 ->setLabel('Image Alignment')
+                ->asFlexAlign()
+                ->setShowNone(true)
+                ->setShowJustify(false)
                 ->setDefault('none')
-                ->setOptions([
-                    'none' => 'None',
-                    'left' => 'Left',
-                    'center' => 'Center',
-                    'right' => 'Right'
-                ])
                 ->setResponsive(true)
                 ->setDescription('Align image within its container')
             )
