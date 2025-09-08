@@ -134,9 +134,13 @@ abstract class BaseWidget
                 'label' => 'Spacing',
                 'fields' => [
                     'padding' => [
-                        'type' => 'spacing',
+                        'type' => 'dimension',
                         'label' => 'Padding',
                         'responsive' => true,
+                        'units' => ['px', 'em', 'rem', '%'],
+                        'min' => 0,
+                        'max' => 200,
+                        'allow_negative' => false,
                         'default' => [
                             'desktop' => '20px 20px 20px 20px',
                             'tablet' => '15px 15px 15px 15px',
@@ -144,9 +148,13 @@ abstract class BaseWidget
                         ]
                     ],
                     'margin' => [
-                        'type' => 'spacing',
+                        'type' => 'dimension',
                         'label' => 'Margin',
                         'responsive' => true,
+                        'units' => ['px', 'em', 'rem', '%'],
+                        'min' => -200,
+                        'max' => 200,
+                        'allow_negative' => true,
                         'default' => [
                             'desktop' => '0px 0px 0px 0px',
                             'tablet' => '0px 0px 0px 0px',

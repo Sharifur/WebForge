@@ -11,6 +11,7 @@ const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
 const EnhancedBackgroundPicker = lazy(() => import('./EnhancedBackgroundPicker'));
 const EnhancedTypographyPicker = lazy(() => import('./EnhancedTypographyPicker'));
 const EnhancedColorPicker = lazy(() => import('./EnhancedColorPicker'));
+const EnhancedDimensionPicker = lazy(() => import('./EnhancedDimensionPicker'));
 
 /**
  * PhpFieldRenderer - Renders dynamic PHP widget fields
@@ -184,6 +185,27 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
               <span>{rangeMax}</span>
             </div>
           </div>
+        );
+
+      case 'dimension':
+      case 'spacing':
+        return (
+          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded"></div>}>
+            <EnhancedDimensionPicker
+              value={value || defaultValue}
+              onChange={onChange}
+              sides={fieldConfig.sides || ['top', 'right', 'bottom', 'left']}
+              units={fieldConfig.units || ['px', 'em', 'rem', '%']}
+              allowNegative={fieldConfig.allow_negative || false}
+              min={fieldConfig.min || 0}
+              max={fieldConfig.max || 200}
+              step={fieldConfig.step || 1}
+              linked={fieldConfig.linked || false}
+              showLabels={fieldConfig.show_labels !== false}
+              responsive={fieldConfig.responsive || false}
+              label={label || (type === 'spacing' ? 'Spacing' : 'Dimension')}
+            />
+          </Suspense>
         );
 
       case 'wysiwyg':

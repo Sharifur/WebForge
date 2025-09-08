@@ -158,8 +158,8 @@ class ButtonWidget extends BaseWidget
             )
             ->endGroup();
 
-        // Border & Spacing
-        $control->addGroup('border', 'Border & Spacing')
+        // Border Group
+        $control->addGroup('border', 'Border')
             ->registerField('border_width', FieldManager::NUMBER()
                 ->setLabel('Border Width')
                 ->setDefault(0)
@@ -170,15 +170,46 @@ class ButtonWidget extends BaseWidget
                     '{{WRAPPER}} .simple-button' => 'border-width: {{VALUE}}{{UNIT}}; border-style: solid;'
                 ])
             )
-            ->registerField('border_radius', FieldManager::NUMBER()
+            ->registerField('border_radius', FieldManager::DIMENSION()
                 ->setLabel('Border Radius')
-                ->setDefault(6)
+                ->setDefault(['top' => 6, 'right' => 6, 'bottom' => 6, 'left' => 6])
+                ->setUnits(['px', 'em', 'rem', '%'])
                 ->setMin(0)
-                ->setMax(25)
-                ->setUnit('px')
+                ->setMax(50)
+                ->setResponsive(true)
                 ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'border-radius: {{VALUE}}{{UNIT}};'
+                    '{{WRAPPER}} .simple-button' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])
+                ->setDescription('Set individual border radius for each corner')
+            )
+            ->endGroup();
+
+        // Spacing Group
+        $control->addGroup('spacing', 'Spacing')
+            ->registerField('margin', FieldManager::DIMENSION()
+                ->setLabel('Margin')
+                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 10, 'left' => 0])
+                ->setUnits(['px', 'em', 'rem', '%'])
+                ->setAllowNegative(true)
+                ->setMin(-100)
+                ->setMax(100)
+                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'margin: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+                ])
+                ->setDescription('Set the external spacing around the button')
+            )
+            ->registerField('padding', FieldManager::DIMENSION()
+                ->setLabel('Padding')
+                ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
+                ->setUnits(['px', 'em', 'rem', '%'])
+                ->setMin(0)
+                ->setMax(100)
+                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+                ])
+                ->setDescription('Set the internal spacing within the button')
             )
             ->endGroup();
 

@@ -256,13 +256,15 @@ class ParagraphWidget extends BaseWidget
             ->registerField('drop_cap_margin', FieldManager::DIMENSION()
                 ->setLabel('Drop Cap Margin')
                 ->setDefault(['top' => 0, 'right' => 8, 'bottom' => 0, 'left' => 0])
-                ->setUnits(['px', 'em'])
+                ->setUnits(['px', 'em', 'rem'])
                 ->setMin(0)
                 ->setMax(20)
+                ->setResponsive(true)
                 ->setCondition(['enable_drop_cap' => true])
                 ->setSelectors([
                     '{{WRAPPER}} .paragraph-element::first-letter' => 'margin: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])
+                ->setDescription('Set spacing around the drop cap')
             )
             ->endGroup();
 

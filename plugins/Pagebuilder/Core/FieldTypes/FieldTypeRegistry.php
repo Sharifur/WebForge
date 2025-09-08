@@ -27,7 +27,6 @@ class FieldTypeRegistry
         self::register(new TextareaField());
         self::register(new ImageField());
         self::register(new RepeaterField());
-        self::register(new SpacingField());
         self::register(new GroupField());
 
         self::$initialized = true;
