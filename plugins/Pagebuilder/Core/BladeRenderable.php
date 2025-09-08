@@ -113,7 +113,7 @@ trait BladeRenderable
                 'description' => $this->getWidgetDescription()
             ],
             'css_classes' => $this->buildCssClasses($settings),
-            'inline_styles' => $this->buildInlineStyles($style ?? [])
+            'inline_styles' => $this->generateInlineStyles(['style' => $style ?? []])
         ];
     }
     

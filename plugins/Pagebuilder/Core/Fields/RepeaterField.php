@@ -15,6 +15,18 @@ class RepeaterField extends BaseField
         return $this;
     }
     
+    public function setMin(int $min): static
+    {
+        $this->min = $min;
+        return $this;
+    }
+    
+    public function setMax(int $max): static
+    {
+        $this->max = $max;
+        return $this;
+    }
+    
     protected function getTypeSpecificConfig(): array
     {
         // Convert field objects to arrays

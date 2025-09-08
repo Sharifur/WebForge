@@ -1,27 +1,244 @@
 import React, { useState, useRef, lazy, Suspense } from 'react';
-import { Monitor, Tablet, Smartphone, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Copy, Loader } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Copy, Loader, Check } from 'lucide-react';
 import { DndContext, closestCenter, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ButtonPresetSelector from './ButtonPresetSelector';
+import EnhancedGradientPicker from './EnhancedGradientPicker';
 
-// Lazy load the WYSIWYG editor to reduce initial bundle size
+// Lazy load heavy components to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
+const EnhancedBackgroundPicker = lazy(() => import('./EnhancedBackgroundPicker'));
+const EnhancedTypographyPicker = lazy(() => import('./EnhancedTypographyPicker'));
+
+// Enhanced Color Picker Component
+const EnhancedColorPicker = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hexInput, setHexInput] = useState(value || '#000000');
+  const [isCopied, setIsCopied] = useState(false);
+  const pickerRef = useRef(null);
+
+  // Preset colors matching your design (6x2 grid)
+  const presetColors = [
+    '#000000', '#6B7280', '#FFFFFF', '#F78DA7', '#EF4444', '#F97316',
+    '#F59E0B', '#10B981', '#06D6A0', '#0891B2', '#3B82F6', '#8B5CF6'
+  ];
+
+  // Color name mapping
+  const getColorName = (hex) => {
+    const colorNames = {
+      '#000000': 'Black',
+      '#6B7280': 'Gray',
+      '#FFFFFF': 'White', 
+      '#F78DA7': 'Pale pink',
+      '#EF4444': 'Red',
+      '#F97316': 'Orange',
+      '#F59E0B': 'Yellow',
+      '#10B981': 'Green',
+      '#06D6A0': 'Mint',
+      '#0891B2': 'Teal',
+      '#3B82F6': 'Blue',
+      '#8B5CF6': 'Purple'
+    };
+    return colorNames[hex.toUpperCase()] || 'Custom color';
+  };
+
+  // Validate and format hex color
+  const formatHex = (color) => {
+    if (!color) return '#000000';
+    if (color.startsWith('#')) {
+      return color.length === 4 ? 
+        color + color.slice(1) : // #RGB -> #RRGGBB
+        color.toUpperCase();
+    }
+    return '#' + color.toUpperCase();
+  };
+
+  // Handle hex input change
+  const handleHexChange = (inputValue) => {
+    setHexInput(inputValue);
+    const formatted = formatHex(inputValue);
+    if (/^#[0-9A-F]{6}$/i.test(formatted)) {
+      onChange(formatted);
+    }
+  };
+
+  // Handle preset color selection
+  const handlePresetSelect = (color) => {
+    const formatted = formatHex(color);
+    setHexInput(formatted);
+    onChange(formatted);
+    setIsOpen(false);
+  };
+
+  // Copy hex to clipboard with fallback
+  const copyToClipboard = async (e) => {
+    e.stopPropagation(); // Prevent opening color picker
+    
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+        console.log('Copied to clipboard:', value);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+        console.log('Copied to clipboard (fallback):', value);
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Show error feedback
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  // Close picker when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Update hex input when value changes externally
+  React.useEffect(() => {
+    setHexInput(value || '#000000');
+  }, [value]);
+
+  return (
+    <div className="relative" ref={pickerRef}>
+      {/* Inline color preview */}
+      <div className="flex items-center gap-3 w-full p-3 border-2 border-gray-200 rounded-lg">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-3 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+          title={`Click to change color - ${getColorName(value)} - ${value}`}
+        >
+          <div 
+            className="w-12 h-12 rounded-lg flex-shrink-0"
+            style={{ backgroundColor: value }}
+          />
+          <div className="text-left">
+            <div className="text-sm text-gray-600 font-mono">{value}</div>
+          </div>
+        </button>
+        
+        <button
+          type="button"
+          onClick={(e) => {
+            console.log('Copy button clicked!', value);
+            copyToClipboard(e);
+          }}
+          className={`p-2 rounded-md transition-all flex-shrink-0 relative ${
+            isCopied 
+              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+              : 'hover:bg-gray-100 text-gray-500'
+          }`}
+          title={isCopied ? 'Copied!' : 'Copy hex code'}
+        >
+          {isCopied ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
+          
+          {/* Copied feedback tooltip */}
+          {isCopied && (
+            <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg z-10">
+              Copied!
+            </div>
+          )}
+        </button>
+      </div>
+
+      {/* Enhanced color picker dropdown */}
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-2 p-4 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-72">
+          {/* Browser native color picker */}
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => {
+              const newColor = e.target.value.toUpperCase();
+              setHexInput(newColor);
+              onChange(newColor);
+            }}
+            className="w-full h-12 border-2 border-gray-200 rounded-lg cursor-pointer mb-4"
+          />
+
+          {/* Preset color swatches */}
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-gray-700 mb-3">Preset Colors</div>
+            <div className="grid grid-cols-6 gap-2">
+              {presetColors.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => handlePresetSelect(color)}
+                  className={`relative w-10 h-10 rounded-lg border-2 transition-all hover:scale-105 ${
+                    value?.toUpperCase() === color?.toUpperCase() ? 
+                      'border-blue-500 ring-2 ring-blue-200' : 
+                      'border-gray-200 hover:border-gray-300'
+                  }`}
+                  style={{ backgroundColor: color }}
+                  title={`${getColorName(color)} - ${color}`}
+                >
+                  {value?.toUpperCase() === color?.toUpperCase() && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-white drop-shadow-lg" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear button */}
+          <button
+            type="button"
+            onClick={() => handlePresetSelect('#000000')}
+            className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 rounded-md transition-colors"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 /**
  * PhpFieldRenderer - Renders dynamic PHP widget fields
- * 
+ *
  * This component handles rendering various field types from PHP widget definitions
  * with consistent styling and behavior across all settings panels.
  */
 const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
-  const { 
-    type, 
-    label, 
-    placeholder, 
-    options, 
-    default: defaultValue, 
-    required, 
+  const {
+    type,
+    label,
+    placeholder,
+    options,
+    default: defaultValue,
+    required,
     description,
     min,
     max,
@@ -47,7 +264,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             required={required}
           />
         );
-      
+
       case 'textarea':
         return (
           <textarea
@@ -59,7 +276,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             required={required}
           />
         );
-      
+
       case 'select':
         return (
           <select
@@ -75,7 +292,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             ))}
           </select>
         );
-      
+
       case 'checkbox':
       case 'toggle':
         return (
@@ -92,7 +309,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             </label>
           </div>
         );
-      
+
       case 'number':
         return (
           <input
@@ -107,7 +324,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             step={step}
           />
         );
-      
+
       case 'url':
         return (
           <input
@@ -119,12 +336,12 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             required={required}
           />
         );
-      
+
       case 'enhanced_url':
         // Enhanced URL field with sub-fields
         const urlValue = value || defaultValue || { url: '', target: '_self' };
         const subFields = fieldConfig.sub_fields || {};
-        
+
         return (
           <div className="space-y-3">
             {/* Main URL input */}
@@ -141,7 +358,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
                 required={required}
               />
             </div>
-            
+
             {/* Target options */}
             {fieldConfig.show_target_options && (
               <div>
@@ -160,7 +377,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
                 </select>
               </div>
             )}
-            
+
             {/* Rel options */}
             {fieldConfig.show_rel_options && (
               <div>
@@ -175,7 +392,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
                         checked={(urlValue.rel || []).includes(rel)}
                         onChange={(e) => {
                           const currentRel = urlValue.rel || [];
-                          const newRel = e.target.checked 
+                          const newRel = e.target.checked
                             ? [...currentRel, rel]
                             : currentRel.filter(r => r !== rel);
                           onChange({ ...urlValue, rel: newRel });
@@ -190,7 +407,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
                 </div>
               </div>
             )}
-            
+
             {/* Accessibility options */}
             {fieldConfig.enable_accessibility && (
               <>
@@ -222,26 +439,44 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             )}
           </div>
         );
-      
+
       case 'color':
         return (
-          <div className="flex gap-2">
-            <input
-              type="color"
-              value={value || defaultValue || '#000000'}
-              onChange={(e) => onChange(e.target.value)}
-              className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+          <EnhancedColorPicker
+            value={value || defaultValue || '#000000'}
+            onChange={onChange}
+          />
+        );
+
+      case 'gradient':
+        return (
+          <EnhancedGradientPicker
+            value={value || defaultValue}
+            onChange={onChange}
+          />
+        );
+      case 'background_group':
+        return (
+          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded"></div>}>
+            <EnhancedBackgroundPicker 
+              key={`bg-${fieldKey || Math.random()}`} 
+              value={value || defaultValue} 
+              onChange={onChange}
             />
-            <input
-              type="text"
-              value={value || defaultValue || '#000000'}
-              onChange={(e) => onChange(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="#000000"
-            />
-          </div>
+          </Suspense>
         );
       
+      case 'typography_group':
+        return (
+          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded"></div>}>
+            <EnhancedTypographyPicker 
+              key={`typo-${fieldKey || Math.random()}`} 
+              value={value || defaultValue} 
+              onChange={onChange}
+            />
+          </Suspense>
+        );
+
       case 'range':
         const rangeMin = min || 0;
         const rangeMax = max || 100;
@@ -290,9 +525,9 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             />
             {(value || defaultValue) && (
               <div className="mt-2">
-                <img 
-                  src={value || defaultValue} 
-                  alt="Preview" 
+                <img
+                  src={value || defaultValue}
+                  alt="Preview"
                   className="max-w-full h-32 object-cover border border-gray-200 rounded"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -323,7 +558,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             ))}
           </select>
         );
-      
+
       case 'email':
         return (
           <input
@@ -335,7 +570,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             required={required}
           />
         );
-      
+
       case 'password':
         return (
           <input
@@ -347,7 +582,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             required={required}
           />
         );
-      
+
       case 'radio':
         return (
           <div className="space-y-2">
@@ -367,7 +602,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             ))}
           </div>
         );
-      
+
       case 'date':
         return (
           <input
@@ -380,7 +615,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             max={max}
           />
         );
-      
+
       case 'time':
         return (
           <input
@@ -393,7 +628,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             max={max}
           />
         );
-      
+
       case 'datetime':
         return (
           <input
@@ -406,7 +641,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             max={max}
           />
         );
-      
+
       case 'divider':
         return (
           <div className="py-2">
@@ -418,7 +653,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             )}
           </div>
         );
-      
+
       case 'heading':
         const HeadingTag = fieldConfig.size || 'h3';
         return (
@@ -426,7 +661,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             {label}
           </HeadingTag>
         );
-      
+
       case 'code':
         return (
           <div className="space-y-2">
@@ -511,17 +746,17 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
         return <ResponsiveDimensionField value={value} onChange={onChange} defaultValue={defaultValue} />;
 
       case 'repeater':
-        return <RepeaterField 
-          fieldConfig={fieldConfig} 
-          value={value} 
-          onChange={onChange} 
-          defaultValue={defaultValue} 
+        return <RepeaterField
+          fieldConfig={fieldConfig}
+          value={value}
+          onChange={onChange}
+          defaultValue={defaultValue}
         />;
 
       case 'group':
         // Group fields should not be rendered directly - they are handled by the parent component
         return null;
-      
+
       case 'preset_selector':
         return (
           <ButtonPresetSelector
@@ -537,7 +772,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             className="w-full"
           />
         );
-      
+
       default:
         return (
           <div className="text-sm text-gray-500 italic">
@@ -577,21 +812,21 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
 const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
   const [activeDevice, setActiveDevice] = useState('desktop');
   const [isLinked, setIsLinked] = useState(true);
-  
+
   // Helper function to parse string values like "20px 20px 20px 20px" into object
   const parseSpacingString = (str) => {
     if (typeof str !== 'string') return { top: 0, right: 0, bottom: 0, left: 0, unit: 'px' };
-    
+
     const parts = str.trim().split(/\s+/);
     const values = parts.map(p => {
       const match = p.match(/^(-?\d+(?:\.\d+)?)(px|%|em|rem|vw|vh)?$/);
       return match ? parseFloat(match[1]) : 0;
     });
-    
+
     // Extract unit from first value
     const unitMatch = parts[0]?.match(/^-?\d+(?:\.\d+)?(px|%|em|rem|vw|vh)?$/);
     const unit = unitMatch?.[2] || 'px';
-    
+
     // Handle CSS shorthand notation
     if (values.length === 1) {
       return { top: values[0], right: values[0], bottom: values[0], left: values[0], unit };
@@ -603,7 +838,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
       return { top: values[0] || 0, right: values[1] || 0, bottom: values[2] || 0, left: values[3] || 0, unit };
     }
   };
-  
+
   // Helper function to convert object back to string
   const formatSpacingString = (obj) => {
     const { top, right, bottom, left, unit = 'px' } = obj;
@@ -617,7 +852,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
       return `${top}${unit} ${right}${unit} ${bottom}${unit} ${left}${unit}`;
     }
   };
-  
+
   // Initialize value structure - handle both object and string formats
   const initializeValue = () => {
     const defaultStructure = {
@@ -625,10 +860,10 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
       tablet: { top: 0, right: 0, bottom: 0, left: 0, unit: 'px' },
       mobile: { top: 0, right: 0, bottom: 0, left: 0, unit: 'px' }
     };
-    
+
     const inputValue = value || defaultValue;
     if (!inputValue) return defaultStructure;
-    
+
     // Handle string format for each device
     if (typeof inputValue === 'object' && (inputValue.desktop || inputValue.tablet || inputValue.mobile)) {
       return {
@@ -637,7 +872,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
         mobile: typeof inputValue.mobile === 'string' ? parseSpacingString(inputValue.mobile) : (inputValue.mobile || defaultStructure.mobile)
       };
     }
-    
+
     // Handle single string value - apply to all devices
     if (typeof inputValue === 'string') {
       const parsed = parseSpacingString(inputValue);
@@ -647,10 +882,10 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
         mobile: parsed
       };
     }
-    
+
     return inputValue;
   };
-  
+
   const dimensionValue = initializeValue();
 
   // Ensure all device values exist
@@ -663,7 +898,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
   const handleDimensionChange = (side, inputValue) => {
     const currentDevice = safeValue[activeDevice];
     const parsedValue = parseInt(inputValue) || 0;
-    
+
     let updatedDevice;
     if (isLinked) {
       // Update all sides when linked
@@ -684,15 +919,15 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
 
     // Check if original value was in string format
     const originalValue = value || defaultValue;
-    const isStringFormat = typeof originalValue?.desktop === 'string' || 
-                          typeof originalValue?.tablet === 'string' || 
+    const isStringFormat = typeof originalValue?.desktop === 'string' ||
+                          typeof originalValue?.tablet === 'string' ||
                           typeof originalValue?.mobile === 'string';
-    
+
     const newValue = {
       ...safeValue,
       [activeDevice]: updatedDevice
     };
-    
+
     // Convert back to string format if needed
     if (isStringFormat) {
       onChange({
@@ -707,13 +942,13 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
 
   const handleUnitChange = (newUnit) => {
     const currentDevice = safeValue[activeDevice];
-    
+
     // Check if original value was in string format
     const originalValue = value || defaultValue;
-    const isStringFormat = typeof originalValue?.desktop === 'string' || 
-                          typeof originalValue?.tablet === 'string' || 
+    const isStringFormat = typeof originalValue?.desktop === 'string' ||
+                          typeof originalValue?.tablet === 'string' ||
                           typeof originalValue?.mobile === 'string';
-    
+
     const newValue = {
       ...safeValue,
       [activeDevice]: {
@@ -721,7 +956,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
         unit: newUnit
       }
     };
-    
+
     // Convert back to string format if needed
     if (isStringFormat) {
       onChange({
@@ -735,10 +970,10 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
   };
 
   const currentValues = safeValue[activeDevice];
-  const allSidesEqual = currentValues.top === currentValues.right && 
-                        currentValues.top === currentValues.bottom && 
+  const allSidesEqual = currentValues.top === currentValues.right &&
+                        currentValues.top === currentValues.bottom &&
                         currentValues.top === currentValues.left;
-
+    {/* field for manage spacing */}
   return (
     <div className="space-y-3">
       {/* Device selector */}
@@ -766,7 +1001,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
             <Smartphone className="w-4 h-4" />
           </button>
         </div>
-        
+
         {/* Link/Unlink button */}
         <button
           onClick={() => setIsLinked(!isLinked)}
@@ -795,7 +1030,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
           type="number"
           value={currentValues.top}
           onChange={(e) => handleDimensionChange('top', e.target.value)}
-          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-[40px] w-[40px] size-[12px] flex-1 p-0 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="0"
           min="0"
         />
@@ -803,7 +1038,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
           type="number"
           value={currentValues.right}
           onChange={(e) => handleDimensionChange('right', e.target.value)}
-          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-[40px] w-[40px] size-[12px] flex-1 p-0  border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="0"
           min="0"
           disabled={isLinked}
@@ -813,7 +1048,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
           type="number"
           value={currentValues.bottom}
           onChange={(e) => handleDimensionChange('bottom', e.target.value)}
-          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-[40px] w-[40px] size-[12px] flex-1 p-0  border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="0"
           min="0"
           disabled={isLinked}
@@ -823,7 +1058,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
           type="number"
           value={currentValues.left}
           onChange={(e) => handleDimensionChange('left', e.target.value)}
-          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-[40px] w-[40px] size-[12px] flex-1 p-0  border border-gray-300 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="0"
           min="0"
           disabled={isLinked}
@@ -832,7 +1067,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
         <select
           value={currentValues.unit || 'px'}
           onChange={(e) => handleUnitChange(e.target.value)}
-          className="px-2 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-[40px] w-[40px] size-[12px] flex-1 p-0  border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="px">px</option>
           <option value="%">%</option>
@@ -842,7 +1077,7 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
           <option value="vh">vh</option>
         </select>
       </div>
-      
+
       <p className="text-xs text-gray-500">
         Set different values for each device breakpoint
       </p>
@@ -851,14 +1086,14 @@ const ResponsiveDimensionField = ({ value, onChange, defaultValue }) => {
 };
 
 // Sortable Item Component
-const SortableRepeaterItem = ({ 
-  item, 
-  index, 
-  fields, 
-  onUpdate, 
-  onRemove, 
+const SortableRepeaterItem = ({
+  item,
+  index,
+  fields,
+  onUpdate,
+  onRemove,
   onDuplicate,
-  min, 
+  min,
   max,
   itemsLength,
   repeaterId
@@ -906,7 +1141,7 @@ const SortableRepeaterItem = ({
           >
             <GripVertical className="w-4 h-4 text-gray-400" />
           </div>
-          
+
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="flex items-center gap-2 flex-1 text-left hover:bg-gray-100 rounded p-2 transition-colors"
@@ -922,7 +1157,7 @@ const SortableRepeaterItem = ({
             </span>
           </button>
         </div>
-        
+
         <div className="flex items-center gap-1">
           <button
             onClick={() => onDuplicate(index)}
@@ -932,7 +1167,7 @@ const SortableRepeaterItem = ({
           >
             <Copy className="w-4 h-4" />
           </button>
-          
+
           <button
             onClick={() => onRemove(index)}
             disabled={itemsLength <= min}
@@ -943,7 +1178,7 @@ const SortableRepeaterItem = ({
           </button>
         </div>
       </div>
-      
+
       {/* Collapsible content */}
       {!isCollapsed && (
         <div className="px-3 pb-3 border-t border-gray-200">
@@ -970,11 +1205,11 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
   const { fields = {}, label = 'Items', min = 1, max = 20 } = fieldConfig;
   const [activeId, setActiveId] = useState(null);
   const repeaterIdRef = React.useRef(`repeater-${Math.random().toString(36).substr(2, 9)}`);
-  
-  
+
+
   // Initialize value with defaults if empty
   const items = Array.isArray(value) ? value : (Array.isArray(defaultValue) ? defaultValue : []);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -982,10 +1217,10 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
       },
     })
   );
-  
+
   const addItem = () => {
     if (items.length >= max) return;
-    
+
     // Create default item based on field definitions
     const newItem = {
       _id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -993,33 +1228,33 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
     Object.entries(fields).forEach(([fieldKey, fieldDef]) => {
       newItem[fieldKey] = fieldDef.default || '';
     });
-    
+
     onChange([...items, newItem]);
   };
-  
+
   const removeItem = (index) => {
     if (items.length <= min) return;
-    
+
     const newItems = items.filter((_, i) => i !== index);
     onChange(newItems);
   };
-  
+
   const duplicateItem = (index) => {
     if (items.length >= max) return;
-    
+
     // Deep clone the item to avoid reference issues
     const itemToDuplicate = JSON.parse(JSON.stringify(items[index]));
-    
+
     // Generate new unique ID for the duplicated item
     itemToDuplicate._id = `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const newItems = [...items];
-    
+
     // Insert the duplicated item right after the original
     newItems.splice(index + 1, 0, itemToDuplicate);
     onChange(newItems);
   };
-  
+
   const updateItem = (index, fieldKey, fieldValue) => {
     const newItems = [...items];
     if (!newItems[index]) {
@@ -1035,17 +1270,17 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    
+
     if (active.id !== over?.id) {
       const activeIndex = parseInt(active.id.split('-item-')[1]);
       const overIndex = parseInt(over.id.split('-item-')[1]);
-      
+
       const newItems = [...items];
       const [movedItem] = newItems.splice(activeIndex, 1);
       newItems.splice(overIndex, 0, movedItem);
       onChange(newItems);
     }
-    
+
     setActiveId(null);
   };
 
@@ -1069,7 +1304,7 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
             Add Item
           </button>
         </div>
-        
+
         {items.length === 0 ? (
           <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
             <p className="text-sm">No items yet</p>
@@ -1081,8 +1316,8 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
             </button>
           </div>
         ) : (
-          <SortableContext 
-            items={items.map((_, index) => `${repeaterIdRef.current}-item-${index}`)} 
+          <SortableContext
+            items={items.map((_, index) => `${repeaterIdRef.current}-item-${index}`)}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">
@@ -1104,7 +1339,7 @@ const RepeaterField = ({ fieldConfig, value, onChange, defaultValue }) => {
             </div>
           </SortableContext>
         )}
-        
+
         <div className="text-xs text-gray-500 flex items-center justify-between">
           <span>{items.length} of {max} items • Minimum: {min}</span>
           <span className="text-gray-400">

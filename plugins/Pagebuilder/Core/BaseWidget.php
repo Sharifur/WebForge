@@ -356,14 +356,335 @@ abstract class BaseWidget
     }
 
     /**
-     * Generate CSS for this widget instance
-     * Override this method in child classes to provide CSS generation
+     * Universal template data preparation for Blade rendering
+     * Standardizes data structure passed to all widget templates
+     * 
+     * @param array $settings Widget settings from page builder
+     * @return array Standardized template data
+     */
+    protected function prepareTemplateData(array $settings): array
+    {
+        $general = $settings['general'] ?? [];
+        $style = $settings['style'] ?? [];
+        $advanced = $settings['advanced'] ?? [];
+
+        return [
+            'settings' => $settings,
+            'general' => $general,
+            'style' => $style,
+            'advanced' => $advanced,
+            'widget' => [
+                'type' => $this->getWidgetType(),
+                'name' => $this->getWidgetName(),
+                'icon' => $this->getWidgetIcon(),
+                'description' => $this->getWidgetDescription()
+            ],
+            'css_classes' => $this->buildCssClasses($settings),
+            'inline_styles' => $this->generateInlineStyles(['style' => $style]),
+            'widget_id' => $this->generateWidgetId(),
+            'widget_attributes' => $this->buildWidgetAttributes($settings)
+        ];
+    }
+
+    /**
+     * Universal CSS class builder for consistent widget classes
+     * Automatically generates standard widget classes plus setting-based classes
+     * 
+     * @param array $settings Widget settings
+     * @return string Space-separated CSS classes
+     */
+    protected function buildCssClasses(array $settings): string
+    {
+        $classes = $this->getBaseWidgetClasses();
+        $classes = array_merge($classes, $this->extractClassesFromSettings($settings));
+        $classes = array_merge($classes, $this->getWidgetSpecificClasses($settings));
+
+        // Remove duplicates and empty values
+        $classes = array_unique(array_filter($classes, function($class) {
+            return !empty($class) && is_string($class);
+        }));
+
+        return implode(' ', $classes);
+    }
+
+    /**
+     * Get base widget classes that all widgets should have
+     * 
+     * @return array Base CSS classes
+     */
+    protected function getBaseWidgetClasses(): array
+    {
+        return [
+            'xgp-widget',
+            'xgp-' . $this->getWidgetType(),
+            'pagebuilder-widget',
+            'pagebuilder-' . $this->getWidgetType()
+        ];
+    }
+
+    /**
+     * Extract CSS classes from widget settings automatically
+     * Looks for common patterns in settings that should become CSS classes
+     * 
+     * @param array $settings Widget settings
+     * @return array CSS classes derived from settings
+     */
+    protected function extractClassesFromSettings(array $settings): array
+    {
+        $classes = [];
+        $general = $settings['general'] ?? [];
+        
+        // Process general settings for automatic class generation
+        foreach ($general as $groupName => $group) {
+            if (!is_array($group)) continue;
+            
+            foreach ($group as $fieldName => $value) {
+                $classes = array_merge($classes, $this->fieldValueToClasses($fieldName, $value));
+            }
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Convert specific field values to CSS classes
+     * 
+     * @param string $fieldName Field name
+     * @param mixed $value Field value
+     * @return array CSS classes for this field
+     */
+    protected function fieldValueToClasses(string $fieldName, $value): array
+    {
+        $classes = [];
+
+        switch ($fieldName) {
+            case 'text_align':
+                if ($value && $value !== 'left') {
+                    $classes[] = 'text-' . $value;
+                }
+                break;
+                
+            case 'size':
+                if ($value) {
+                    $classes[] = 'size-' . $value;
+                }
+                break;
+                
+            case 'style':
+            case 'button_style':
+                if ($value) {
+                    $classes[] = 'style-' . $value;
+                }
+                break;
+                
+            case 'full_width':
+                if ($value) {
+                    $classes[] = 'full-width';
+                }
+                break;
+                
+            case 'disabled':
+                if ($value) {
+                    $classes[] = 'disabled';
+                }
+                break;
+
+            case 'heading_level':
+                if ($value) {
+                    $classes[] = 'heading-' . $value;
+                }
+                break;
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Get widget-specific classes (override in child classes for custom classes)
+     * 
+     * @param array $settings Widget settings
+     * @return array Widget-specific CSS classes
+     */
+    protected function getWidgetSpecificClasses(array $settings): array
+    {
+        return [];
+    }
+
+    /**
+     * Generate a unique widget ID for CSS and JavaScript targeting
+     * 
+     * @return string Unique widget ID
+     */
+    protected function generateWidgetId(): string
+    {
+        return 'widget-' . $this->getWidgetType() . '-' . uniqid();
+    }
+
+    /**
+     * Build widget container attributes
+     * 
+     * @param array $settings Widget settings
+     * @return array HTML attributes for widget container
+     */
+    protected function buildWidgetAttributes(array $settings): array
+    {
+        $advanced = $settings['advanced'] ?? [];
+        $custom = $advanced['custom'] ?? [];
+
+        $attributes = [
+            'class' => $this->buildCssClasses($settings),
+            'data-widget-type' => $this->getWidgetType()
+        ];
+
+        // Add custom ID if specified
+        if (!empty($custom['custom_id'])) {
+            $attributes['id'] = $this->sanitizeAttribute('id', $custom['custom_id']);
+        }
+
+        // Add z-index style if specified
+        if (!empty($custom['z_index']) && $custom['z_index'] != 1) {
+            $attributes['style'] = 'z-index: ' . (int)$custom['z_index'] . ';';
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Enhanced automatic CSS generation for widgets
+     * Combines base CSS, widget-specific CSS, and field-generated CSS
+     * 
+     * @param string $widgetId Unique widget instance ID
+     * @param array $settings Widget settings
+     * @return string Generated CSS
      */
     public function generateCSS(string $widgetId, array $settings): string
     {
-        // Default implementation returns empty CSS
-        // Child classes that need CSS generation should override this method
+        $cssParts = [];
+        
+        // 1. Base widget CSS (responsive, common styles)
+        $baseCss = $this->getBaseWidgetCSS($widgetId);
+        if (!empty($baseCss)) {
+            $cssParts[] = $baseCss;
+        }
+        
+        // 2. Widget-specific default CSS (overrideable)
+        $defaultCss = $this->getWidgetDefaultCSS($widgetId);
+        if (!empty($defaultCss)) {
+            $cssParts[] = $defaultCss;
+        }
+        
+        // 3. Field-generated CSS from AutoStyleGenerator
+        $fieldCss = $this->generateFieldCSS($widgetId, $settings);
+        if (!empty($fieldCss)) {
+            $cssParts[] = $fieldCss;
+        }
+        
+        // 4. Custom CSS from advanced settings
+        $customCss = $this->getCustomCSS($widgetId, $settings);
+        if (!empty($customCss)) {
+            $cssParts[] = $customCss;
+        }
+
+        return implode("\n\n", array_filter($cssParts));
+    }
+
+    /**
+     * Get base CSS that all widgets need (responsive utilities, etc.)
+     * 
+     * @param string $widgetId Widget instance ID
+     * @return string Base CSS
+     */
+    protected function getBaseWidgetCSS(string $widgetId): string
+    {
+        return "
+/* Base Widget Styles for {$widgetId} */
+#{$widgetId}.xgp-widget {
+    position: relative;
+    box-sizing: border-box;
+}
+
+#{$widgetId}.xgp-widget * {
+    box-sizing: border-box;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+    #{$widgetId}.hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    #{$widgetId}.hide-tablet {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    #{$widgetId}.hide-desktop {
+        display: none !important;
+    }
+}";
+    }
+
+    /**
+     * Get widget-specific default CSS (override in child classes)
+     * 
+     * @param string $widgetId Widget instance ID
+     * @return string Widget default CSS
+     */
+    protected function getWidgetDefaultCSS(string $widgetId): string
+    {
         return '';
+    }
+
+    /**
+     * Generate CSS from field configurations using ControlManager
+     * 
+     * @param string $widgetId Widget instance ID
+     * @param array $settings Widget settings
+     * @return string Field-generated CSS
+     */
+    protected function generateFieldCSS(string $widgetId, array $settings): string
+    {
+        try {
+            $styleControl = new ControlManager();
+            
+            // Skip field registration - use direct CSS generation
+            // The getStyleFields() already returns processed field data
+            // We'll use the fallback inline style generation instead
+            
+            // Use fallback inline style generation since fields are already processed
+            return $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+        } catch (\Exception $e) {
+            // Fallback to automatic inline style generation if ControlManager fails
+            return $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+        }
+    }
+
+    /**
+     * Get custom CSS from advanced settings
+     * 
+     * @param string $widgetId Widget instance ID
+     * @param array $settings Widget settings
+     * @return string Custom CSS
+     */
+    protected function getCustomCSS(string $widgetId, array $settings): string
+    {
+        $advanced = $settings['advanced'] ?? [];
+        $custom = $advanced['custom'] ?? [];
+        
+        if (empty($custom['custom_css'])) {
+            return '';
+        }
+
+        $customCss = $this->sanitizeCSS($custom['custom_css']);
+        
+        return "
+/* Custom CSS for {$widgetId} */
+#{$widgetId} {
+    {$customCss}
+}";
     }
 
     // Validation method for widget settings

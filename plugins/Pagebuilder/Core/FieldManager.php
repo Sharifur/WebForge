@@ -27,6 +27,9 @@ use Plugins\Pagebuilder\Core\Fields\HeadingField;
 use Plugins\Pagebuilder\Core\Fields\CodeField;
 use Plugins\Pagebuilder\Core\Fields\WysiwygField;
 use Plugins\Pagebuilder\Core\Fields\DimensionField;
+use Plugins\Pagebuilder\Core\Fields\GradientField;
+use Plugins\Pagebuilder\Core\Fields\BackgroundField;
+use Plugins\Pagebuilder\Core\Fields\TypographyField;
 
 /**
  * FieldManager - Static factory class for creating field instances
@@ -351,5 +354,35 @@ class FieldManager
     public static function DIMENSION(): DimensionField
     {
         return new DimensionField();
+    }
+
+    /**
+     * Create a gradient picker field with visual preview
+     *
+     * @return GradientField
+     */
+    public static function GRADIENT(): GradientField
+    {
+        return new GradientField();
+    }
+
+    /**
+     * Create a unified background field for colors, gradients, and images
+     *
+     * @return BackgroundField
+     */
+    public static function BACKGROUND_GROUP(): BackgroundField
+    {
+        return new BackgroundField();
+    }
+
+    /**
+     * Create a unified typography field for font settings
+     *
+     * @return TypographyField
+     */
+    public static function TYPOGRAPHY_GROUP(): TypographyField
+    {
+        return new TypographyField();
     }
 }

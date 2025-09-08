@@ -139,6 +139,16 @@ trait AutoStyleGenerator
                     $styles = array_merge($styles, $toggleStyles);
                 }
                 break;
+                
+            case 'typography_group':
+                $typographyStyles = $this->getTypographyGroupCSS($value);
+                $styles = array_merge($styles, $typographyStyles);
+                break;
+                
+            case 'background_group':
+                $backgroundStyles = $this->getBackgroundGroupCSS($value);
+                $styles = array_merge($styles, $backgroundStyles);
+                break;
         }
         
         return array_filter($styles);
@@ -400,6 +410,157 @@ trait AutoStyleGenerator
         return 'class="' . htmlspecialchars($cssClasses, ENT_QUOTES) . '"';
     }
     
+    /**
+     * Generate CSS for Typography Group fields
+     */
+    private function getTypographyGroupCSS(array $value): array
+    {
+        if (empty($value) || !is_array($value)) {
+            return [];
+        }
+
+        $styles = [];
+
+        // Font family
+        if (isset($value['font_family']) && $value['font_family'] !== 'inherit') {
+            $styles[] = 'font-family: ' . $value['font_family'];
+        }
+
+        // Font size with unit
+        if (isset($value['font_size']) && is_array($value['font_size'])) {
+            $fontSize = $value['font_size'];
+            if (isset($fontSize['value']) && isset($fontSize['unit'])) {
+                $styles[] = 'font-size: ' . $fontSize['value'] . $fontSize['unit'];
+            }
+        }
+
+        // Font weight
+        if (isset($value['font_weight'])) {
+            $styles[] = 'font-weight: ' . $value['font_weight'];
+        }
+
+        // Font style
+        if (isset($value['font_style']) && $value['font_style'] !== 'normal') {
+            $styles[] = 'font-style: ' . $value['font_style'];
+        }
+
+        // Text transform
+        if (isset($value['text_transform']) && $value['text_transform'] !== 'none') {
+            $styles[] = 'text-transform: ' . $value['text_transform'];
+        }
+
+        // Text decoration
+        if (isset($value['text_decoration']) && $value['text_decoration'] !== 'none') {
+            $styles[] = 'text-decoration: ' . $value['text_decoration'];
+        }
+
+        // Line height with unit
+        if (isset($value['line_height']) && is_array($value['line_height'])) {
+            $lineHeight = $value['line_height'];
+            if (isset($lineHeight['value']) && isset($lineHeight['unit'])) {
+                $styles[] = 'line-height: ' . $lineHeight['value'] . $lineHeight['unit'];
+            }
+        }
+
+        // Letter spacing with unit (only if not 0)
+        if (isset($value['letter_spacing']) && is_array($value['letter_spacing'])) {
+            $letterSpacing = $value['letter_spacing'];
+            if (isset($letterSpacing['value']) && isset($letterSpacing['unit']) && $letterSpacing['value'] != 0) {
+                $styles[] = 'letter-spacing: ' . $letterSpacing['value'] . $letterSpacing['unit'];
+            }
+        }
+
+        // Word spacing with unit (only if not 0)
+        if (isset($value['word_spacing']) && is_array($value['word_spacing'])) {
+            $wordSpacing = $value['word_spacing'];
+            if (isset($wordSpacing['value']) && isset($wordSpacing['unit']) && $wordSpacing['value'] != 0) {
+                $styles[] = 'word-spacing: ' . $wordSpacing['value'] . $wordSpacing['unit'];
+            }
+        }
+
+        return $styles;
+    }
+
+    /**
+     * Generate CSS for Background Group fields
+     */
+    private function getBackgroundGroupCSS(array $value): array
+    {
+        if (empty($value) || !is_array($value)) {
+            return [];
+        }
+
+        $styles = [];
+        $backgroundType = $value['type'] ?? 'none';
+
+        switch ($backgroundType) {
+            case 'color':
+                if (isset($value['color']) && !empty($value['color'])) {
+                    $styles[] = 'background-color: ' . $value['color'];
+                }
+                break;
+
+            case 'gradient':
+                if (isset($value['gradient']) && is_array($value['gradient'])) {
+                    $gradient = $value['gradient'];
+                    $gradientType = $gradient['type'] ?? 'linear';
+
+                    // Handle new colorStops format or legacy startColor/endColor
+                    if (isset($gradient['colorStops']) && is_array($gradient['colorStops'])) {
+                        $stops = [];
+                        foreach ($gradient['colorStops'] as $stop) {
+                            $stops[] = ($stop['color'] ?? '#000000') . ' ' . ($stop['position'] ?? 0) . '%';
+                        }
+                        $stopString = implode(', ', $stops);
+
+                        if ($gradientType === 'linear') {
+                            $angle = $gradient['angle'] ?? 135;
+                            $styles[] = "background: linear-gradient({$angle}deg, {$stopString})";
+                        } else {
+                            $styles[] = "background: radial-gradient(circle, {$stopString})";
+                        }
+                    } else if (isset($gradient['startColor']) && isset($gradient['endColor'])) {
+                        // Legacy format within gradient
+                        $startColor = $gradient['startColor'];
+                        $endColor = $gradient['endColor'];
+
+                        if ($gradientType === 'linear') {
+                            $angle = $gradient['angle'] ?? 135;
+                            $styles[] = "background: linear-gradient({$angle}deg, {$startColor} 0%, {$endColor} 100%)";
+                        } else {
+                            $styles[] = "background: radial-gradient(circle, {$startColor} 0%, {$endColor} 100%)";
+                        }
+                    }
+                }
+                break;
+
+            case 'image':
+                if (isset($value['image']) && is_array($value['image'])) {
+                    $image = $value['image'];
+                    if (!empty($image['url'])) {
+                        $styles[] = 'background-image: url(\'' . $image['url'] . '\')';
+
+                        // Add other background properties
+                        if (isset($image['size'])) {
+                            $styles[] = 'background-size: ' . $image['size'];
+                        }
+                        if (isset($image['position'])) {
+                            $styles[] = 'background-position: ' . $image['position'];
+                        }
+                        if (isset($image['repeat'])) {
+                            $styles[] = 'background-repeat: ' . $image['repeat'];
+                        }
+                        if (isset($image['attachment'])) {
+                            $styles[] = 'background-attachment: ' . $image['attachment'];
+                        }
+                    }
+                }
+                break;
+        }
+
+        return $styles;
+    }
+
     /**
      * Abstract methods that implementing classes must provide
      */
