@@ -32,6 +32,7 @@ use Plugins\Pagebuilder\Core\Fields\AlignmentField;
 use Plugins\Pagebuilder\Core\Fields\BackgroundField;
 use Plugins\Pagebuilder\Core\Fields\TypographyField;
 use Plugins\Pagebuilder\Core\Fields\BorderShadowField;
+use Plugins\Pagebuilder\Core\FieldTypes\TabGroupField;
 
 /**
  * FieldManager - Static factory class for creating field instances
@@ -406,5 +407,61 @@ class FieldManager
     public static function BORDER_SHADOW_GROUP(): BorderShadowField
     {
         return new BorderShadowField();
+    }
+
+    /**
+     * Create a tab group for organizing fields into tabs
+     *
+     * @param array $tabs Array of tab configurations
+     * @return TabGroupField
+     */
+    public static function TAB_GROUP(array $tabs = []): TabGroupField
+    {
+        return new TabGroupField($tabs);
+    }
+
+    /**
+     * Create a style states tab group (normal, hover, active, focus)
+     *
+     * @param array $states States to include (default: ['normal', 'hover'])
+     * @param array $fields Fields to include in each state
+     * @return TabGroupField
+     */
+    public static function STYLE_STATES(array $states = ['normal', 'hover'], array $fields = []): TabGroupField
+    {
+        return TabGroupField::styleStates($states, $fields);
+    }
+
+    /**
+     * Create a responsive tab group (desktop, tablet, mobile)
+     *
+     * @param array $fields Fields to include in each breakpoint
+     * @return TabGroupField
+     */
+    public static function RESPONSIVE_GROUP(array $fields = []): TabGroupField
+    {
+        return TabGroupField::responsive($fields);
+    }
+
+    /**
+     * Create a custom tab group with user-defined tab names and labels
+     *
+     * Usage examples:
+     * 
+     * // Simple format - auto-generates labels from keys
+     * CUSTOM_TABS(['design' => [...], 'content' => [...]])
+     * 
+     * // Detailed format - specify labels and icons
+     * CUSTOM_TABS([
+     *     'primary' => ['label' => 'Primary Design', 'icon' => 'Palette', 'fields' => [...]],
+     *     'secondary' => ['label' => 'Secondary Design', 'icon' => 'Brush', 'fields' => [...]]
+     * ])
+     *
+     * @param array $tabs Custom tab configuration
+     * @return TabGroupField
+     */
+    public static function CUSTOM_TABS(array $tabs = []): TabGroupField
+    {
+        return new TabGroupField($tabs);
     }
 }

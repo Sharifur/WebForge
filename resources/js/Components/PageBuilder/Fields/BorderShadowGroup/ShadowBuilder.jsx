@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Move, Plus, Trash2, Copy, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Move, Plus, Trash2, Copy } from 'lucide-react';
 
 /**
  * ShadowBuilder - Interactive shadow creation interface

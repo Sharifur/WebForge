@@ -3,6 +3,7 @@
 namespace Plugins\Pagebuilder\Core;
 
 use Plugins\Pagebuilder\Core\Fields\BaseField;
+use Plugins\Pagebuilder\Core\FieldTypes\FieldInterface;
 
 /**
  * ControlManager - Fluent field registration and organization system
@@ -37,12 +38,19 @@ class ControlManager
      * Register a field with the control manager
      *
      * @param string $id Unique field identifier
-     * @param BaseField $field Field instance
+     * @param BaseField|FieldInterface $field Field instance
      * @return self
      */
-    public function registerField(string $id, BaseField $field): self
+    public function registerField(string $id, BaseField|FieldInterface $field): self
     {
-        $fieldConfig = $field->toArray();
+        // Handle both BaseField and FieldInterface types
+        if ($field instanceof BaseField) {
+            $fieldConfig = $field->toArray();
+        } elseif ($field instanceof FieldInterface) {
+            $fieldConfig = method_exists($field, 'toArray') ? $field->toArray() : $field->render([], null);
+        } else {
+            throw new \InvalidArgumentException('Field must be instance of BaseField or FieldInterface');
+        }
         
         if ($this->currentGroup) {
             if (!isset($this->structure['groups'])) {

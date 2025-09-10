@@ -7,6 +7,7 @@ import ButtonPresetSelector from './ButtonPresetSelector';
 import EnhancedGradientPicker from './EnhancedGradientPicker';
 import AlignmentField from './AlignmentField';
 import BorderShadowGroup from './BorderShadowGroup';
+import DynamicTabGroup from './DynamicTabGroup';
 
 // Lazy load heavy components to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
@@ -268,17 +269,60 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
         );
 
       case 'border_shadow_group':
-        return (
-          <BorderShadowGroup
-            value={value}
-            onChange={onChange}
-            borderStyles={fieldConfig.border_styles || {}}
-            shadowPresets={fieldConfig.shadow_presets || {}}
-            perSideControls={fieldConfig.per_side_controls !== false}
-            multipleShadows={fieldConfig.multiple_shadows || false}
-            maxShadows={fieldConfig.max_shadows || 5}
-          />
-        );
+        try {
+          return (
+            <BorderShadowGroup
+              value={value}
+              onChange={onChange}
+              borderStyles={fieldConfig.border_styles || {}}
+              shadowPresets={fieldConfig.shadow_presets || {}}
+              perSideControls={fieldConfig.per_side_controls !== false}
+              multipleShadows={fieldConfig.multiple_shadows || false}
+              maxShadows={fieldConfig.max_shadows || 5}
+            />
+          );
+        } catch (error) {
+          console.error('BorderShadowGroup error:', error);
+          return (
+            <div className="border border-red-300 bg-red-50 p-4 rounded-lg">
+              <div className="text-sm text-red-600 font-medium">
+                BorderShadowGroup Error
+              </div>
+              <div className="text-xs text-red-500 mt-1">
+                {error.message || 'Component failed to render'}
+              </div>
+            </div>
+          );
+        }
+
+      case 'tab_group':
+        try {
+          return (
+            <DynamicTabGroup
+              tabs={fieldConfig.tabs || {}}
+              defaultTab={fieldConfig.default_tab || 'normal'}
+              allowCopy={fieldConfig.allow_copy !== false}
+              tabLabels={fieldConfig.tab_labels || {}}
+              tabIcons={fieldConfig.tab_icons || {}}
+              showLabels={fieldConfig.show_labels !== false}
+              tabStyle={fieldConfig.tab_style || 'default'}
+              value={value}
+              onChange={onChange}
+            />
+          );
+        } catch (error) {
+          console.error('DynamicTabGroup error:', error);
+          return (
+            <div className="border border-red-300 bg-red-50 p-4 rounded-lg">
+              <div className="text-sm text-red-600 font-medium">
+                Tab Group Error
+              </div>
+              <div className="text-xs text-red-500 mt-1">
+                {error.message || 'Component failed to render'}
+              </div>
+            </div>
+          );
+        }
 
       default:
         return (
@@ -308,7 +352,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
       {renderField()}
 
       {/* Field Description */}
-      {description && type !== 'wysiwyg' && (
+      {description && type !== 'wysiwyg' && type !== 'tab_group' && (
         <p className="text-xs text-gray-500">{description}</p>
       )}
     </div>

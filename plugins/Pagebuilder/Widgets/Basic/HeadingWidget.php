@@ -215,35 +215,55 @@ class HeadingWidget extends BaseWidget
             )
             ->endGroup();
 
-        // Border & Shadow Group
-        $control->addGroup('border_shadow', 'Border & Shadow')
-            ->registerField('heading_border_shadow', FieldManager::BORDER_SHADOW_GROUP()
-                ->setLabel('Border & Shadow')
-                ->setDefaultBorderShadow([
-                    'border' => [
-                        'style' => 'solid',
-                        'width' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
-                        'color' => '#e5e7eb',
-                        'radius' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
-                        'linked' => true
-                    ],
-                    'shadow' => [
-                        'type' => 'none',
-                        'x_offset' => 0,
-                        'y_offset' => 2,
-                        'blur_radius' => 4,
-                        'spread_radius' => 0,
-                        'color' => 'rgba(0,0,0,0.1)',
-                        'inset' => false
-                    ]
-                ])
-                ->setPerSideControls(true)
-                ->setMultipleShadows(false)
-                ->setSelectors([
-                    '{{WRAPPER}} .heading-element' => 'border: {{BORDER}}; box-shadow: {{SHADOW}};'
-                ])
-                ->setDescription('Configure border and shadow effects for the heading')
-            )
+        // Border & Shadow with States (Normal/Hover)
+        $control->addGroup('styling', 'Styling States')
+            ->registerField('appearance_states', FieldManager::STYLE_STATES(['normal', 'hover'], [
+                'border_shadow' => FieldManager::BORDER_SHADOW_GROUP()
+                    ->setDefaultBorderShadow([
+                        'border' => [
+                            'style' => 'solid',
+                            'width' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
+                            'color' => '#e5e7eb',
+                            'radius' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
+                            'linked' => true
+                        ],
+                        'shadow' => [
+                            'type' => 'none',
+                            'x_offset' => 0,
+                            'y_offset' => 2,
+                            'blur_radius' => 4,
+                            'spread_radius' => 0,
+                            'color' => 'rgba(0,0,0,0.1)',
+                            'inset' => false
+                        ]
+                    ])
+                    ->setPerSideControls(true)
+                    ->setMultipleShadows(false)
+            ])->setDescription('Configure normal and hover state styling for the heading'))
+            ->endGroup();
+
+        // Text Color States - Test group for tab system
+        $control->addGroup('text_states', 'Text Color States')
+            ->registerField('color_states', FieldManager::STYLE_STATES(['normal', 'hover'], [
+                'text_color' => FieldManager::COLOR()
+                    ->setLabel('Text Color')
+                    
+                    ->setDefault('#333333'),
+                'background_color' => FieldManager::COLOR()
+                    ->setLabel('Background Color')
+                    ->setDefault('transparent'),
+                'font_weight' => FieldManager::SELECT()
+                    ->setLabel('Font Weight')
+                    ->setOptions([
+                        '300' => 'Light',
+                        '400' => 'Normal',
+                        '500' => 'Medium',
+                        '600' => 'Semi Bold',
+                        '700' => 'Bold',
+                        '800' => 'Extra Bold'
+                    ])
+                    ->setDefault('400')
+            ])->setDescription('Configure text color and styling for normal and hover states'))
             ->endGroup();
 
         // Effects Group

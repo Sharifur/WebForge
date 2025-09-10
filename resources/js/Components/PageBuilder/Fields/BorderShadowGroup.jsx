@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Square, Circle, Rounded, LinkIcon, UnlinkIcon, Move, Plus, Trash2, Copy } from 'lucide-react';
+import { Move, Plus, Trash2, Copy } from 'lucide-react';
 import BorderControls from './BorderShadowGroup/BorderControls';
 import ShadowBuilder from './BorderShadowGroup/ShadowBuilder';
 import PresetGallery from './BorderShadowGroup/PresetGallery';
-import LivePreview from './BorderShadowGroup/LivePreview';
 
 /**
  * BorderShadowGroup - Enhanced border and shadow control component
@@ -99,7 +98,6 @@ const BorderShadowGroup = ({
       {/* Header with Presets Toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <h3 className="text-sm font-medium text-gray-900">Border & Shadow</h3>
           {hasEffects() && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
               Active
@@ -107,13 +105,6 @@ const BorderShadowGroup = ({
           )}
         </div>
         <div className="flex items-center space-x-1">
-          <button
-            type="button"
-            onClick={() => setShowPresets(!showPresets)}
-            className="text-xs px-2 py-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
-          >
-            Presets
-          </button>
           <button
             type="button"
             onClick={reset}
@@ -158,17 +149,6 @@ const BorderShadowGroup = ({
         >
           Shadow
         </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('preview')}
-          className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'preview'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Preview
-        </button>
       </div>
 
       {/* Tab Content */}
@@ -189,13 +169,6 @@ const BorderShadowGroup = ({
             shadowPresets={shadowPresets}
             multipleShadows={multipleShadows}
             maxShadows={maxShadows}
-          />
-        )}
-
-        {activeTab === 'preview' && (
-          <LivePreview
-            borderValue={currentValue.border}
-            shadowValue={currentValue.shadow}
           />
         )}
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Link, Unlink, Square, Circle, Rounded } from 'lucide-react';
+import { Link, Unlink, Square, Circle, CornerDownRight } from 'lucide-react';
 
 /**
  * BorderControls - Visual border control interface
@@ -86,7 +86,6 @@ const BorderControls = ({
       
       {/* Border Style */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Border Style</label>
         <div className="grid grid-cols-4 gap-2">
           {Object.entries(styles).map(([styleKey, styleName]) => (
             <button
@@ -107,7 +106,7 @@ const BorderControls = ({
                   borderTopWidth: '2px'
                 }}
               />
-              <div className="text-xs mt-1">{styleName}</div>
+              {/* <div className="text-xs mt-1">{styleName}</div> */}
             </button>
           ))}
         </div>
@@ -160,7 +159,7 @@ const BorderControls = ({
         ) : (
           /* Per-side width controls */
           perSideControls && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               {[
                 { key: 'top', label: 'Top' },
                 { key: 'right', label: 'Right' },
@@ -185,7 +184,7 @@ const BorderControls = ({
                       max="20"
                       value={value.width?.[key] || 0}
                       onChange={(e) => updateWidth(key, parseInt(e.target.value) || 0)}
-                      className="w-12 px-1 py-1 text-xs border border-gray-300 rounded"
+                      className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
                     />
                   </div>
                 </div>
@@ -251,7 +250,7 @@ const BorderControls = ({
             className="flex-1 p-2 border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center"
             title="Rounded"
           >
-            <Rounded className="w-4 h-4" />
+            <CornerDownRight className="w-4 h-4" />
           </button>
           <button
             type="button"
@@ -291,7 +290,7 @@ const BorderControls = ({
           </div>
         ) : (
           /* Per-corner radius controls */
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             {[
               { key: 'top', label: 'Top' },
               { key: 'right', label: 'Right' },
@@ -316,7 +315,7 @@ const BorderControls = ({
                     max="50"
                     value={value.radius?.[key] || 0}
                     onChange={(e) => updateRadius(key, parseInt(e.target.value) || 0)}
-                    className="w-12 px-1 py-1 text-xs border border-gray-300 rounded"
+                    className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
                   />
                 </div>
               </div>
