@@ -215,17 +215,39 @@ class HeadingWidget extends BaseWidget
             )
             ->endGroup();
 
-        // Effects Group
-        $control->addGroup('effects', 'Effects')
-            ->registerField('text_shadow', FieldManager::TEXT()
-                ->setLabel('Text Shadow')
-                ->setDefault('none')
-                ->setPlaceholder('2px 2px 4px rgba(0,0,0,0.3)')
-                ->setSelectors([
-                    '{{WRAPPER}} .heading-element' => 'text-shadow: {{VALUE}};'
+        // Border & Shadow Group
+        $control->addGroup('border_shadow', 'Border & Shadow')
+            ->registerField('heading_border_shadow', FieldManager::BORDER_SHADOW_GROUP()
+                ->setLabel('Border & Shadow')
+                ->setDefaultBorderShadow([
+                    'border' => [
+                        'style' => 'solid',
+                        'width' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
+                        'color' => '#e5e7eb',
+                        'radius' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
+                        'linked' => true
+                    ],
+                    'shadow' => [
+                        'type' => 'none',
+                        'x_offset' => 0,
+                        'y_offset' => 2,
+                        'blur_radius' => 4,
+                        'spread_radius' => 0,
+                        'color' => 'rgba(0,0,0,0.1)',
+                        'inset' => false
+                    ]
                 ])
-                ->setDescription('CSS text-shadow property')
+                ->setPerSideControls(true)
+                ->setMultipleShadows(false)
+                ->setSelectors([
+                    '{{WRAPPER}} .heading-element' => 'border: {{BORDER}}; box-shadow: {{SHADOW}};'
+                ])
+                ->setDescription('Configure border and shadow effects for the heading')
             )
+            ->endGroup();
+
+        // Effects Group
+        $control->addGroup('effects', 'Advanced Effects')
             ->registerField('transition_duration', FieldManager::NUMBER()
                 ->setLabel('Transition Duration')
                 ->setDefault(300)
@@ -237,6 +259,7 @@ class HeadingWidget extends BaseWidget
                 ->setSelectors([
                     '{{WRAPPER}} .heading-element' => 'transition-duration: {{VALUE}}{{UNIT}};'
                 ])
+                ->setDescription('Duration of hover transition effects')
             )
             ->registerField('transform_hover', FieldManager::SELECT()
                 ->setLabel('Hover Transform')
@@ -253,6 +276,7 @@ class HeadingWidget extends BaseWidget
                 ->setSelectors([
                     '{{WRAPPER}} .heading-element:hover' => 'transform: {{VALUE}};'
                 ])
+                ->setDescription('Transform effect on hover')
             )
             ->endGroup();
 

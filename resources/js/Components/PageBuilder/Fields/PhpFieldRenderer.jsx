@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import ButtonPresetSelector from './ButtonPresetSelector';
 import EnhancedGradientPicker from './EnhancedGradientPicker';
 import AlignmentField from './AlignmentField';
+import BorderShadowGroup from './BorderShadowGroup';
 
 // Lazy load heavy components to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
@@ -263,6 +264,19 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
             onChange={onChange}
             alignments={fieldConfig.alignments || ['none', 'left', 'center', 'right']}
             defaultValue={defaultValue}
+          />
+        );
+
+      case 'border_shadow_group':
+        return (
+          <BorderShadowGroup
+            value={value}
+            onChange={onChange}
+            borderStyles={fieldConfig.border_styles || {}}
+            shadowPresets={fieldConfig.shadow_presets || {}}
+            perSideControls={fieldConfig.per_side_controls !== false}
+            multipleShadows={fieldConfig.multiple_shadows || false}
+            maxShadows={fieldConfig.max_shadows || 5}
           />
         );
 

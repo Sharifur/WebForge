@@ -31,6 +31,7 @@ use Plugins\Pagebuilder\Core\Fields\GradientField;
 use Plugins\Pagebuilder\Core\Fields\AlignmentField;
 use Plugins\Pagebuilder\Core\Fields\BackgroundField;
 use Plugins\Pagebuilder\Core\Fields\TypographyField;
+use Plugins\Pagebuilder\Core\Fields\BorderShadowField;
 
 /**
  * FieldManager - Static factory class for creating field instances
@@ -395,5 +396,15 @@ class FieldManager
     public static function TYPOGRAPHY_GROUP(): TypographyField
     {
         return new TypographyField();
+    }
+
+    /**
+     * Create a unified border and shadow field with visual controls
+     *
+     * @return BorderShadowField
+     */
+    public static function BORDER_SHADOW_GROUP(): BorderShadowField
+    {
+        return new BorderShadowField();
     }
 }

@@ -772,6 +772,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
+              not section
               <tab.icon className="w-4 h-4 mr-1" />
               {tab.label}
             </button>

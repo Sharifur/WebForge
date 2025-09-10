@@ -29,6 +29,7 @@ class FieldTypeRegistry
         self::register(new RepeaterField());
         self::register(new GroupField());
         self::register(new AlignmentField());
+        self::register(new BorderShadowField());
 
         self::$initialized = true;
     }
