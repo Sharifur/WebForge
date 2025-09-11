@@ -293,7 +293,7 @@ const EnhancedLinkPicker = ({
 
       {/* Advanced Tabs Section */}
       {(enableAdvancedOptions || enableSEOControls || enableUTMTracking || enableCustomAttributes) && (
-        <div className="border-t pt-4">
+        <div className="border-t pt-4 border-slate-200">
           {/* Tab Navigation - Icon Only */}
           <div className="flex gap-2 mb-4">
             {enableAdvancedOptions && (

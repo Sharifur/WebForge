@@ -81,7 +81,6 @@ const DividerField = ({
           className={`px-3 ${fontSizes[textSize]} font-medium whitespace-nowrap`}
           style={textStyle}
         >
-          {text}
         </div>
         
         {/* Right line (for center/left text) */}
