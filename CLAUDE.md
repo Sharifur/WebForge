@@ -74,11 +74,13 @@ A comprehensive Laravel 12 Admin Panel with advanced meta information management
 - **UpdateProfileRequest**: Profile updates with email uniqueness
 
 ## Controllers & Methods
-- **PageController**: index, create, store, show, edit, update, destroy, analyzeSEO
+- **PageController**: index, create, store, show, edit, update, destroy, analyzeSEO, builder (Inertia page)
 - **AdminController**: index, store, show, update, destroy, changePassword, updateProfile
 - **UserController**: index, store, show, update, destroy, changePassword
 - **AuthController**: showLoginForm, login, logout
 - **DashboardController**: index
+- **PageBuilderController** (API): saveContent, getContent, publish, unpublish, getHistory, getWidgetData
+- **WidgetController** (API): index, popular, categories, getConfig, getFields, preview, validateSettings
 
 ## Routes Structure
 ```php
@@ -93,6 +95,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     
     Route::middleware(['admin'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])
+        
+        // Page builder route with unique path (FIXED)
+        Route::get('page-builder/{slug}', [PageController::class, 'builder'])
+        
         Route::resource('pages', PageController::class)
         Route::post('pages/analyze-seo', [PageController::class, 'analyzeSEO'])
         Route::resource('admins', AdminController::class)
@@ -101,6 +107,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('users/{user}/change-password', [UserController::class, 'changePassword'])
         Route::post('profile/update', [AdminController::class, 'updateProfile'])
     })
+})
+
+// API Routes for Page Builder
+Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
+    Route::post('pages/{page}/save', [PageBuilderController::class, 'saveContent'])
+    Route::get('pages/{page}/content', [PageBuilderController::class, 'getContent'])
+    Route::post('pages/{page}/publish', [PageBuilderController::class, 'publish'])
+    Route::get('pages/{page}/history', [PageBuilderController::class, 'getHistory'])
+})
+
+// Widget API Routes  
+Route::prefix('api/pagebuilder/widgets')->group(function () {
+    Route::get('/', [WidgetController::class, 'index'])
+    Route::get('popular', [WidgetController::class, 'popular'])
+    Route::get('categories', [WidgetController::class, 'categories'])
+    Route::get('{type}/config', [WidgetController::class, 'getConfig'])
+    Route::get('{type}/fields', [WidgetController::class, 'getFields'])
+    Route::post('{type}/preview', [WidgetController::class, 'preview'])
 })
 ```
 
@@ -245,48 +269,60 @@ class YourWidget extends BaseWidget
 - **Automatic integration**: Typography and background controls work automatically
 - **Template flexibility**: Blade templates with automatic data injection
 
-### Field System - Icon-Based Alignment Controls
+### Advanced Field System
 
-The page builder now features a modern icon-based alignment field system that replaces traditional dropdown menus with visual controls.
+The page builder features a comprehensive field system with modern UI components and extensive customization options.
 
-#### AlignmentField Features
+#### Icon-Based Alignment Controls
 - **Visual Interface**: Icon-based buttons instead of text dropdowns
 - **Flexible Configuration**: Supports different alignment types (text-align, flex, etc.)
 - **Preset Methods**: Built-in presets for common use cases
-- **Modular Design**: Separate React component for maintainability
+- **React Component**: `AlignmentField.jsx` with full accessibility support
 
-#### Usage in Widgets
+#### Enhanced Link Picker System
+- **Smart Link Detection**: Automatic type detection (email, phone, internal, external, file)
+- **Advanced Options**: SEO controls, UTM tracking, custom HTML attributes  
+- **Target Management**: Comprehensive target options with responsive behavior
+- **Link Validation**: Real-time validation with testing capabilities
+- **Visual Indicators**: Color-coded link types with icons
+- **Progressive Disclosure**: Tabbed interface for advanced options
+
+#### Comprehensive Divider Field
+- **Visual Separator**: Customizable dividers for form sections
+- **Style Options**: Solid, dashed, dotted, double border styles
+- **Color & Thickness**: Full customization with 1-10px thickness range
+- **Text Labels**: Optional text with positioning (left, center, right)
+- **Typography Controls**: Text size, color, and styling options
+- **Static Factories**: Convenient methods like `simple()`, `thick()`, `section()`, `spacer()`
+- **CSS Generation**: Built-in styling with responsive support
+
+#### Usage Examples
 ```php
-// In your widget's getGeneralFields() or getStyleFields()
+// Alignment Field
 ->registerField('text_align', FieldManager::ALIGNMENT()
     ->setLabel('Text Alignment')
-    ->asTextAlign()                    // Preset for text-align CSS property
-    ->setShowNone(false)               // Hide 'none' option
-    ->setShowJustify(true)             // Show 'justify' option
+    ->asTextAlign()                    
     ->setDefault('left')
     ->setResponsive(true)
-    ->setDescription('Set text alignment')
+)
+
+// Enhanced Link Picker
+->registerField('button_link', FieldManager::ENHANCED_LINK()
+    ->setLabel('Button Link')
+    ->enableAdvancedOptions(true)
+    ->enableSEOControls(true)
+    ->enableUTMTracking(false)
+)
+
+// Divider Field
+->registerField('section_divider', FieldManager::DIVIDER()
+    ->setColor('#e2e8f0')
+    ->setStyle('dashed')
+    ->setThickness(2)
+    ->setMargin(['top' => 24, 'bottom' => 16])
+    ->setText('Advanced Settings')
 )
 ```
-
-#### Available Presets
-- **asTextAlign()**: For CSS text-align (left, center, right, justify)
-- **asFlexAlign()**: For flexbox justify-content (flex-start, center, flex-end)
-- **asElementAlign()**: For flexbox align-items (flex-start, center, flex-end)
-
-#### React Component
-- **Location**: `resources/js/Components/PageBuilder/Fields/AlignmentField.jsx`
-- **Props**: value, onChange, alignments, defaultValue, className, size
-- **Icons**: Uses Lucide React icons (AlignLeft, AlignCenter, AlignRight, etc.)
-- **Accessibility**: Full ARIA support with proper button states
-
-#### Replaced Fields
-The alignment field system has replaced SELECT-based alignment fields across:
-- ButtonWidget (button alignment)
-- HeadingWidget (text alignment)
-- ParagraphWidget (text alignment)  
-- GridWidget (item text alignment)
-- ImageWidget (image alignment)
 
 ## Page Builder Architecture Summary
 - **Enhanced Developer Experience**: Minimal code required for new widgets
@@ -300,25 +336,69 @@ The alignment field system has replaced SELECT-based alignment fields across:
 
 ## Current Status
 ✅ All core features implemented and functional
-✅ Page Builder system with PHP/React integration
+✅ Page Builder system with PHP/React integration and Inertia.js
+✅ **FIXED** Page builder routing conflicts - now accessible at `/admin/page-builder/{slug}`
 ✅ **ENHANCED** Widget development with minimal boilerplate (579→327 lines)
 ✅ **NEW** BaseWidget automation: CSS classes, template data, inline styles
 ✅ **NEW** Automatic CSS generation from TYPOGRAPHY_GROUP and BACKGROUND_GROUP
 ✅ **NEW** Icon-based alignment field system replacing dropdown menus
+✅ **NEW** Enhanced Link Picker with smart detection, SEO controls, and UTM tracking
+✅ **NEW** Comprehensive Divider Field with advanced styling and text support
 ✅ Widget template system with Blade rendering and automatic data injection
 ✅ Centralized PHP field rendering system
+✅ API routes for widget management and page builder operations
 ✅ Traditional PHP form handling (no AJAX)  
 ✅ Comprehensive validation via Form Requests
 ✅ Pest testing framework configured
-✅ Modern UI with Tailwind CSS and Alpine.js
+✅ Modern UI with Tailwind CSS, Alpine.js, and React components
 ✅ **UPDATED** Complete documentation with enhanced widget development guide
+
+## Recent Fixes & Improvements
+✅ **Route Conflicts Resolved**: Fixed page builder 404 errors through systematic testing
+✅ **Model Binding Fixed**: Changed from automatic to manual model lookup for route parameters
+✅ **Enhanced Field Components**: Improved DividerField and EnhancedLinkPicker React components
+✅ **API Integration**: Proper CSRF handling and credential management in page builder store
+✅ **UI Consistency**: Enhanced border styling and visual component improvements
 
 ## Known Issues
 - Some Pest tests need adjustment for SEO scoring expectations
 - View cache may need clearing after template changes
 - Default admin seeder should be run for first login
 
-## Next Steps (if needed)
-- Frontend page display routes
-- Additional form request validation refinements
-- Production deployment configuration
+## Next Development Priorities
+
+### Phase 1: Core Widget Library Expansion
+- **Text Widget**: Rich text editor with formatting controls
+- **Image Widget**: Advanced image management with cropping, alt text, and responsive settings
+- **Button Widget**: Enhanced button with multiple styles and action types
+- **Spacer Widget**: Flexible spacing control for layout management
+- **Column Widget**: Layout system with responsive grid controls
+
+### Phase 2: Advanced Layout Features
+- **Section Management**: Full-width sections with background controls
+- **Row/Column System**: Nested layout capabilities
+- **Responsive Controls**: Device-specific settings for all widgets
+- **CSS Framework Integration**: Enhanced Tailwind CSS class management
+- **Custom CSS**: Advanced users can add custom styling
+
+### Phase 3: Content Management Features
+- **Widget Presets**: Save and reuse widget configurations
+- **Template System**: Pre-built page templates and sections
+- **Global Widgets**: Reusable widgets across multiple pages
+- **Import/Export**: Page content backup and migration
+- **Version History**: Track changes and restore previous versions
+
+### Phase 4: Advanced Features
+- **Dynamic Content**: Database-driven content widgets
+- **Form Builder**: Contact forms, surveys, and data collection
+- **Media Library**: Centralized asset management
+- **Performance Optimization**: Lazy loading and caching
+- **Multi-language Support**: Internationalization features
+
+## Development Guidelines
+- Follow existing BaseWidget patterns for consistency
+- Use FieldManager for all field definitions
+- Implement proper validation and sanitization
+- Create React components for complex field types
+- Add comprehensive documentation for new features
+- Write tests for critical functionality
