@@ -33,6 +33,8 @@ use Plugins\Pagebuilder\Core\Fields\BackgroundField;
 use Plugins\Pagebuilder\Core\Fields\TypographyField;
 use Plugins\Pagebuilder\Core\Fields\BorderShadowField;
 use Plugins\Pagebuilder\Core\FieldTypes\TabGroupField;
+use Plugins\Pagebuilder\Core\FieldTypes\LinkField;
+use Plugins\Pagebuilder\Core\FieldTypes\DividerField as VisualDividerField;
 
 /**
  * FieldManager - Static factory class for creating field instances
@@ -463,5 +465,78 @@ class FieldManager
     public static function CUSTOM_TABS(array $tabs = []): TabGroupField
     {
         return new TabGroupField($tabs);
+    }
+
+    /**
+     * Create a comprehensive link field with advanced options
+     *
+     * Features:
+     * - Smart link type detection (internal, external, email, phone, file)
+     * - Advanced target and behavior options
+     * - SEO controls (rel attributes, title, etc.)
+     * - Custom HTML attributes manager
+     * - UTM parameter builder
+     * - Link validation and testing
+     * - Responsive behavior settings
+     *
+     * Usage examples:
+     * 
+     * // Basic link field
+     * LINK_GROUP()
+     * 
+     * // Advanced link field with all features
+     * LINK_GROUP()
+     *     ->enableAdvancedOptions(true)
+     *     ->enableSEOControls(true)
+     *     ->enableUTMTracking(true)
+     *     ->setLinkTypes(['internal', 'external', 'email'])
+     *     ->setDefaultTarget('_blank')
+     *
+     * @return LinkField
+     */
+    public static function LINK_GROUP(): LinkField
+    {
+        return new LinkField();
+    }
+
+    /**
+     * Create a visual divider/separator field
+     *
+     * Features:
+     * - Customizable colors and styles (solid, dashed, dotted, double)
+     * - Optional text labels with positioning
+     * - Adjustable thickness and spacing
+     * - Multiple pre-configured variants
+     *
+     * Usage examples:
+     * 
+     * // Basic divider
+     * DIVIDER()
+     * 
+     * // Divider with custom styling
+     * DIVIDER()
+     *     ->setColor('#e2e8f0')
+     *     ->setStyle('dashed')
+     *     ->setThickness(2)
+     *     ->setMargin(['top' => 20, 'bottom' => 20])
+     * 
+     * // Section divider with text
+     * DIVIDER()
+     *     ->setText('Advanced Options')
+     *     ->setTextPosition('center')
+     *     ->setTextSize('base')
+     * 
+     * // Pre-configured variants
+     * DIVIDER()->thick()     // Thick divider (3px)
+     * DIVIDER()->dashed()    // Dashed style
+     * DIVIDER()->dotted()    // Dotted style
+     * DIVIDER()->section('Section Name') // With text label
+     * DIVIDER()->spacer(30)  // Invisible spacer (30px height)
+     *
+     * @return VisualDividerField
+     */
+    public static function DIVIDER(): VisualDividerField
+    {
+        return new VisualDividerField();
     }
 }

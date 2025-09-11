@@ -94,36 +94,28 @@ class HeadingWidget extends BaseWidget
             )
             ->endGroup();
 
-        // Link Group
+        // Section Divider
+        $control->addGroup('separator1', '')
+            ->registerField('divider1', FieldManager::DIVIDER()
+                ->setText('Link Configuration')
+                ->setTextPosition('center')
+                ->setTextSize('base')
+                ->setColor('#e2e8f0')
+            )
+            ->endGroup();
+
+        // Enhanced Link Group
         $control->addGroup('link', 'Link Settings')
-            ->registerField('enable_link', FieldManager::TOGGLE()
-                ->setLabel('Enable Link')
-                ->setDefault(false)
-                ->setDescription('Make the heading clickable')
-            )
-            ->registerField('link_url', FieldManager::URL()
-                ->setLabel('Link URL')
-                ->setDefault('#')
-                ->setPlaceholder('https://example.com')
-                ->setCondition(['enable_link' => true])
-                ->setDescription('The destination URL for the heading link')
-            )
-            ->registerField('link_target', FieldManager::SELECT()
-                ->setLabel('Link Target')
-                ->setDefault('_self')
-                ->setOptions([
-                    '_self' => 'Same Window',
-                    '_blank' => 'New Window',
-                    '_parent' => 'Parent Frame',
-                    '_top' => 'Top Frame'
-                ])
-                ->setCondition(['enable_link' => true])
-            )
-            ->registerField('link_nofollow', FieldManager::TOGGLE()
-                ->setLabel('Add Nofollow')
-                ->setDefault(false)
-                ->setCondition(['enable_link' => true])
-                ->setDescription('Add rel="nofollow" attribute to the link')
+            ->registerField('enhanced_link', FieldManager::LINK_GROUP()
+                ->setLabel('Heading Link')
+                ->setDescription('Configure advanced link settings for the heading')
+                ->enableAdvancedOptions(true)
+                ->enableSEOControls(true)
+                ->enableUTMTracking(true)
+                ->enableCustomAttributes(true)
+                ->enableLinkTesting(true)
+                ->setLinkTypes(['internal', 'external', 'email', 'phone'])
+                ->setDefaultTarget('_self')
             )
             ->endGroup();
 
@@ -242,6 +234,15 @@ class HeadingWidget extends BaseWidget
             ])->setDescription('Configure normal and hover state styling for the heading'))
             ->endGroup();
 
+        // Style Section Divider
+        $control->addGroup('separator2', '')
+            ->registerField('divider2', FieldManager::DIVIDER()
+                ->setStyle('dashed')
+                ->setThickness(2)
+                ->setMargin(['top' => 24, 'bottom' => 16])
+            )
+            ->endGroup();
+
         // Text Color States - Test group for tab system
         $control->addGroup('text_states', 'Text Color States')
             ->registerField('color_states', FieldManager::STYLE_STATES(['normal', 'hover'], [
@@ -336,12 +337,17 @@ class HeadingWidget extends BaseWidget
             ? $content['heading_level'] 
             : 'h2';
         
-        $enableLink = $link['enable_link'] ?? false;
-        $linkUrl = $this->sanitizeURL($link['link_url'] ?? '#');
-        $linkTarget = in_array($link['link_target'] ?? '_self', ['_self', '_blank', '_parent', '_top']) 
-            ? $link['link_target'] 
+        // Enhanced link data
+        $enhancedLink = $link['enhanced_link'] ?? [];
+        $enableLink = !empty($enhancedLink['url']);
+        $linkUrl = $this->sanitizeURL($enhancedLink['url'] ?? '#');
+        $linkTarget = in_array($enhancedLink['target'] ?? '_self', ['_self', '_blank', '_parent', '_top']) 
+            ? $enhancedLink['target'] 
             : '_self';
-        $linkNofollow = $link['link_nofollow'] ?? false;
+        $linkRel = !empty($enhancedLink['rel']) ? implode(' ', $enhancedLink['rel']) : '';
+        $linkTitle = $enhancedLink['title'] ?? '';
+        $linkId = $enhancedLink['id'] ?? '';
+        $linkClass = $enhancedLink['class'] ?? '';
         
         // Use BaseWidget's automatic CSS class generation  
         $classString = $this->buildCssClasses($settings);
@@ -355,8 +361,27 @@ class HeadingWidget extends BaseWidget
                 'target' => $linkTarget
             ];
             
-            if ($linkNofollow) {
-                $linkAttributes['rel'] = 'nofollow';
+            // Add enhanced link attributes
+            if (!empty($linkRel)) {
+                $linkAttributes['rel'] = $linkRel;
+            }
+            if (!empty($linkTitle)) {
+                $linkAttributes['title'] = $linkTitle;
+            }
+            if (!empty($linkId)) {
+                $linkAttributes['id'] = $linkId;
+            }
+            if (!empty($linkClass)) {
+                $linkAttributes['class'] = $linkClass;
+            }
+            
+            // Add custom attributes if present
+            if (!empty($enhancedLink['custom_attributes'])) {
+                foreach ($enhancedLink['custom_attributes'] as $attr) {
+                    if (!empty($attr['name']) && isset($attr['value'])) {
+                        $linkAttributes[$attr['name']] = $attr['value'];
+                    }
+                }
             }
             
             $linkAttrs = $this->buildAttributes($linkAttributes);

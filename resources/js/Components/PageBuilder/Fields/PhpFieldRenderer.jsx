@@ -8,6 +8,7 @@ import EnhancedGradientPicker from './EnhancedGradientPicker';
 import AlignmentField from './AlignmentField';
 import BorderShadowGroup from './BorderShadowGroup';
 import DynamicTabGroup from './DynamicTabGroup';
+import DividerField from './DividerField';
 
 // Lazy load heavy components to reduce initial bundle size
 const WysiwygEditor = lazy(() => import('./WysiwygEditor'));
@@ -15,6 +16,7 @@ const EnhancedBackgroundPicker = lazy(() => import('./EnhancedBackgroundPicker')
 const EnhancedTypographyPicker = lazy(() => import('./EnhancedTypographyPicker'));
 const EnhancedColorPicker = lazy(() => import('./EnhancedColorPicker'));
 const EnhancedDimensionPicker = lazy(() => import('./EnhancedDimensionPicker'));
+const EnhancedLinkPicker = lazy(() => import('./EnhancedLinkPicker'));
 
 /**
  * PhpFieldRenderer - Renders dynamic PHP widget fields
@@ -324,6 +326,54 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
           );
         }
 
+      case 'link_group':
+        try {
+          return (
+            <Suspense fallback={<div className="animate-pulse h-40 bg-gray-100 rounded-lg"></div>}>
+              <EnhancedLinkPicker
+                value={value || fieldConfig.value}
+                onChange={onChange}
+                enabledLinkTypes={fieldConfig.enabled_link_types || ['internal', 'external', 'email', 'phone', 'file']}
+                enableAdvancedOptions={fieldConfig.enable_advanced_options !== false}
+                enableSEOControls={fieldConfig.enable_seo_controls !== false}
+                enableUTMTracking={fieldConfig.enable_utm_tracking || false}
+                enableCustomAttributes={fieldConfig.enable_custom_attributes !== false}
+                enableLinkTesting={fieldConfig.enable_link_testing !== false}
+                enableResponsiveBehavior={fieldConfig.enable_responsive_behavior || false}
+                allowedTargets={fieldConfig.allowed_targets || { '_self': 'Same Window', '_blank': 'New Window/Tab', '_parent': 'Parent Frame', '_top': 'Top Frame' }}
+                commonRelValues={fieldConfig.common_rel_values || ['nofollow', 'noopener', 'noreferrer', 'sponsored']}
+              />
+            </Suspense>
+          );
+        } catch (error) {
+          console.error('EnhancedLinkPicker error:', error);
+          return (
+            <div className="border border-red-300 bg-red-50 p-4 rounded-lg">
+              <div className="text-sm text-red-600 font-medium">
+                Link Group Error
+              </div>
+              <div className="text-xs text-red-500 mt-1">
+                {error.message || 'Component failed to render'}
+              </div>
+            </div>
+          );
+        }
+
+      case 'divider':
+        return (
+          <DividerField
+            color={fieldConfig.color || '#e2e8f0'}
+            style={fieldConfig.style || 'solid'}
+            thickness={fieldConfig.thickness || 1}
+            margin={fieldConfig.margin || { top: 16, bottom: 16 }}
+            text={fieldConfig.text || ''}
+            textPosition={fieldConfig.text_position || 'center'}
+            textColor={fieldConfig.text_color || '#64748b'}
+            textSize={fieldConfig.text_size || 'sm'}
+            fullWidth={fieldConfig.full_width !== false}
+          />
+        );
+
       default:
         return (
           <div className="text-sm text-gray-500 italic">
@@ -352,7 +402,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
       {renderField()}
 
       {/* Field Description */}
-      {description && type !== 'wysiwyg' && type !== 'tab_group' && (
+      {description && type !== 'wysiwyg' && type !== 'tab_group' && type !== 'link_group' && type !== 'divider' && (
         <p className="text-xs text-gray-500">{description}</p>
       )}
     </div>
