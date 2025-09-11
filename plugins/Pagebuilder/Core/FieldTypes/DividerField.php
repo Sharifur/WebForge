@@ -202,6 +202,15 @@ class DividerField implements FieldInterface
     }
     
     /**
+     * Get the default value for divider field
+     * Dividers are visual-only and don't store values
+     */
+    public function getDefaultValue(): mixed
+    {
+        return null;
+    }
+    
+    /**
      * Get field schema for API responses
      */
     public function getSchema(): array

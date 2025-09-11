@@ -22,7 +22,6 @@ use Plugins\Pagebuilder\Core\Fields\TimeField;
 use Plugins\Pagebuilder\Core\Fields\DateTimeField;
 use Plugins\Pagebuilder\Core\Fields\RepeaterField;
 use Plugins\Pagebuilder\Core\Fields\GroupField;
-use Plugins\Pagebuilder\Core\Fields\DividerField;
 use Plugins\Pagebuilder\Core\Fields\HeadingField;
 use Plugins\Pagebuilder\Core\Fields\CodeField;
 use Plugins\Pagebuilder\Core\Fields\WysiwygField;
@@ -311,15 +310,6 @@ class FieldManager
         return new GroupField();
     }
 
-    /**
-     * Create a visual divider/separator
-     *
-     * @return DividerField
-     */
-    public static function DIVIDER(): DividerField
-    {
-        return new DividerField();
-    }
 
     /**
      * Create a heading for field sections

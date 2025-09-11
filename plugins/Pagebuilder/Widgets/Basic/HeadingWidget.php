@@ -239,6 +239,7 @@ class HeadingWidget extends BaseWidget
             ->registerField('divider2', FieldManager::DIVIDER()
                 ->setStyle('dashed')
                 ->setThickness(2)
+                ->setColor('#e2e8f0')
                 ->setMargin(['top' => 24, 'bottom' => 16])
             )
             ->endGroup();

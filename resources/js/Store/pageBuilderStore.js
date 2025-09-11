@@ -377,6 +377,7 @@ const usePageBuilderStore = create((set, get) => ({
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
           'Accept': 'application/json'
         },
+        credentials: 'same-origin',
         body: JSON.stringify({
           content: pageContent,
           is_published: false, // Save as draft by default
@@ -416,7 +417,8 @@ const usePageBuilderStore = create((set, get) => ({
         headers: {
           'Accept': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        }
+        },
+        credentials: 'same-origin'
       });
 
       if (!response.ok) {
@@ -452,7 +454,8 @@ const usePageBuilderStore = create((set, get) => ({
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
           'Accept': 'application/json'
-        }
+        },
+        credentials: 'same-origin'
       });
 
       if (!response.ok) {

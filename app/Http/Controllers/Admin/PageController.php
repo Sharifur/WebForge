@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\UpdatePageRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class PageController extends Controller
 {
@@ -173,8 +174,9 @@ class PageController extends Controller
                         ->with('success', 'Page deleted successfully.');
     }
 
-    public function builder(Page $page)
+    public function builder($slug)
     {
+        $page = Page::where('slug', $slug)->firstOrFail();
         $page->load('metaInformation');
         
         // Complete widgets data with icons and default content
@@ -258,7 +260,7 @@ class PageController extends Controller
         // Sample templates data
         $templates = [];
 
-        return inertia('PageBuilder/Index', [
+        return Inertia::render('PageBuilder/Index', [
             'page' => $page,
             'widgets' => $widgets,
             'sections' => $sections,

@@ -225,23 +225,34 @@ Route::prefix('widget-analytics')->middleware(['auth:sanctum', 'admin'])->group(
 */
 
 Route::prefix('page-builder')->middleware(['admin'])->group(function () {
+    // Override route model binding to use ID for API routes
+    Route::bind('page', function ($value) {
+        return \App\Models\Page::findOrFail($value);
+    });
+    
     Route::post('/pages/{page}/save', [App\Http\Controllers\Api\PageBuilderController::class, 'saveContent'])
-        ->name('api.page-builder.save-content');
+        ->name('api.page-builder.save-content')
+        ->whereNumber('page');
     
     Route::get('/pages/{page}/content', [App\Http\Controllers\Api\PageBuilderController::class, 'getContent'])
-        ->name('api.page-builder.get-content');
+        ->name('api.page-builder.get-content')
+        ->whereNumber('page');
     
     Route::post('/pages/{page}/publish', [App\Http\Controllers\Api\PageBuilderController::class, 'publish'])
-        ->name('api.page-builder.publish');
+        ->name('api.page-builder.publish')
+        ->whereNumber('page');
     
     Route::post('/pages/{page}/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
-        ->name('api.page-builder.unpublish');
+        ->name('api.page-builder.unpublish')
+        ->whereNumber('page');
     
     Route::get('/pages/{page}/history', [App\Http\Controllers\Api\PageBuilderController::class, 'getHistory'])
-        ->name('api.page-builder.history');
+        ->name('api.page-builder.history')
+        ->whereNumber('page');
     
     Route::get('/pages/{page}/widgets/{widgetId}', [App\Http\Controllers\Api\PageBuilderController::class, 'getWidgetData'])
-        ->name('api.page-builder.widget-data');
+        ->name('api.page-builder.widget-data')
+        ->whereNumber('page');
 });
 
 /*

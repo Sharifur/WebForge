@@ -22,9 +22,25 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected Admin Routes
     Route::middleware(['admin'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::resource('pages', AdminPageController::class);
+        
+        // Page builder route with unique path
+        Route::get('/page-builder/{slug}', [AdminPageController::class, 'builder'])->name('pages.builder');
+        
+        // Specific routes first (most specific to least specific)
         Route::post('/pages/analyze-seo', [AdminPageController::class, 'analyzeSEO'])->name('pages.analyze-seo');
-        Route::get('/pages/{page}/builder', [AdminPageController::class, 'builder'])->name('pages.builder');
+        Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
+        Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+        
+        // General routes
+        Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+        Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+        Route::patch('/pages/{page}', [AdminPageController::class, 'update']);
+        Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+        
+        // Show route with constraint to prevent builder conflicts
+        Route::get('/pages/{page}', [AdminPageController::class, 'show'])
+            ->name('pages.show');
         
         // Admin Management
         Route::resource('admins', AdminController::class);
@@ -42,7 +58,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
-// Frontend Routes - Page URLs without /page/ prefix for better SEO
+// Frontend Routes - Page URLs without /page/ prefix for better SEO  
 // This must be at the end to avoid conflicts with other routes
 Route::get('/{page}', [PageController::class, 'show'])
     ->name('page.show')
