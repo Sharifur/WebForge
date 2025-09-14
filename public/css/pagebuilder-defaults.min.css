@@ -1,0 +1,333 @@
+/**
+ * Page Builder Default Styles
+ * 
+ * Generic default styles for common HTML tags used in page builder content
+ * and website pages. Provides consistent typography and spacing.
+ * 
+ * @package Page Builder System
+ * @version 1.0.0
+ */
+/* Reset and Base Styles */
+.page-builder-content *,
+.page-builder-content *::before,
+.page-builder-content *::after {
+ box-sizing: border-box;
+}
+.page-builder-content {
+ line-height: 1.6;
+ color: #333333;
+ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+/* Headings */
+.page-builder-content h1,
+.page-builder-content h2,
+.page-builder-content h3,
+.page-builder-content h4,
+.page-builder-content h5,
+.page-builder-content h6 {
+ margin: 0 0 1rem 0;
+ font-weight: 600;
+ line-height: 1.2;
+ color: #1f2937;
+}
+.page-builder-content h1 {
+ font-size: 2.5rem;
+ margin-bottom: 1.5rem;
+}
+.page-builder-content h2 {
+ font-size: 2rem;
+ margin-bottom: 1.25rem;
+}
+.page-builder-content h3 {
+ font-size: 1.75rem;
+ margin-bottom: 1rem;
+}
+.page-builder-content h4 {
+ font-size: 1.5rem;
+ margin-bottom: 1rem;
+}
+.page-builder-content h5 {
+ font-size: 1.25rem;
+ margin-bottom: 0.75rem;
+}
+.page-builder-content h6 {
+ font-size: 1.125rem;
+ margin-bottom: 0.75rem;
+}
+/* Responsive Heading Adjustments */
+@media (max-width: 768px) {
+ .page-builder-content h1 { font-size: 2rem; }
+ .page-builder-content h2 { font-size: 1.75rem; }
+ .page-builder-content h3 { font-size: 1.5rem; }
+ .page-builder-content h4 { font-size: 1.25rem; }
+ .page-builder-content h5 { font-size: 1.125rem; }
+ .page-builder-content h6 { font-size: 1rem; }
+}
+/* Paragraphs */
+.page-builder-content p {
+ margin: 0 0 1rem 0;
+ line-height: 1.6;
+}
+.page-builder-content p:last-child {
+ margin-bottom: 0;
+}
+/* Lists */
+.page-builder-content ul,
+.page-builder-content ol {
+ margin: 0 0 1rem 0;
+ padding-left: 1.5rem;
+}
+.page-builder-content ul {
+ list-style-type: disc;
+}
+.page-builder-content ol {
+ list-style-type: decimal;
+}
+.page-builder-content li {
+ margin-bottom: 0.5rem;
+ line-height: 1.6;
+}
+.page-builder-content li:last-child {
+ margin-bottom: 0;
+}
+.page-builder-content ul ul,
+.page-builder-content ul ol,
+.page-builder-content ol ul,
+.page-builder-content ol ol {
+ margin: 0.5rem 0;
+}
+.page-builder-content ul ul {
+ list-style-type: circle;
+}
+.page-builder-content ul ul ul {
+ list-style-type: square;
+}
+/* Links */
+.page-builder-content a {
+ color: #3b82f6;
+ text-decoration: underline;
+ transition: color 0.15s ease-in-out;
+}
+.page-builder-content a:hover {
+ color: #1d4ed8;
+ text-decoration: none;
+}
+.page-builder-content a:focus {
+ outline: 2px solid #3b82f6;
+ outline-offset: 2px;
+ border-radius: 2px;
+}
+/* Text Formatting */
+.page-builder-content strong,
+.page-builder-content b {
+ font-weight: 600;
+}
+.page-builder-content em,
+.page-builder-content i {
+ font-style: italic;
+}
+.page-builder-content u {
+ text-decoration: underline;
+}
+.page-builder-content mark {
+ background-color: #fef08a;
+ padding: 0.1em 0.2em;
+ border-radius: 2px;
+}
+.page-builder-content small {
+ font-size: 0.875rem;
+ color: #6b7280;
+}
+/* Code Elements */
+.page-builder-content code {
+ background-color: #f3f4f6;
+ color: #1f2937;
+ font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+ font-size: 0.875em;
+ padding: 0.1em 0.4em;
+ border-radius: 3px;
+}
+.page-builder-content pre {
+ background-color: #1f2937;
+ color: #f9fafb;
+ padding: 1rem;
+ border-radius: 6px;
+ overflow-x: auto;
+ margin: 0 0 1rem 0;
+ font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+ font-size: 0.875rem;
+ line-height: 1.5;
+}
+.page-builder-content pre code {
+ background: none;
+ color: inherit;
+ padding: 0;
+ border-radius: 0;
+}
+/* Blockquotes */
+.page-builder-content blockquote {
+ margin: 0 0 1rem 0;
+ padding: 1rem 1.5rem;
+ border-left: 4px solid #e5e7eb;
+ background-color: #f9fafb;
+ font-style: italic;
+ color: #4b5563;
+}
+.page-builder-content blockquote p:last-child {
+ margin-bottom: 0;
+}
+.page-builder-content blockquote cite {
+ font-style: normal;
+ font-weight: 600;
+ color: #374151;
+}
+/* Horizontal Rule */
+.page-builder-content hr {
+ border: none;
+ border-top: 1px solid #e5e7eb;
+ margin: 2rem 0;
+}
+/* Tables */
+.page-builder-content table {
+ width: 100%;
+ border-collapse: collapse;
+ margin: 0 0 1rem 0;
+}
+.page-builder-content th,
+.page-builder-content td {
+ padding: 0.75rem;
+ text-align: left;
+ border-bottom: 1px solid #e5e7eb;
+}
+.page-builder-content th {
+ font-weight: 600;
+ color: #1f2937;
+ background-color: #f9fafb;
+}
+.page-builder-content tbody tr:hover {
+ background-color: #f9fafb;
+}
+/* Images */
+.page-builder-content img {
+ max-width: 100%;
+ height: auto;
+ border-radius: 6px;
+}
+.page-builder-content figure {
+ margin: 0 0 1rem 0;
+}
+.page-builder-content figcaption {
+ font-size: 0.875rem;
+ color: #6b7280;
+ text-align: center;
+ margin-top: 0.5rem;
+ font-style: italic;
+}
+/* Form Elements */
+.page-builder-content input,
+.page-builder-content textarea,
+.page-builder-content select {
+ font-family: inherit;
+ font-size: 1rem;
+ line-height: 1.5;
+ color: #1f2937;
+ background-color: #ffffff;
+ border: 1px solid #d1d5db;
+ border-radius: 6px;
+ padding: 0.5rem 0.75rem;
+ width: 100%;
+ max-width: 100%;
+}
+.page-builder-content input:focus,
+.page-builder-content textarea:focus,
+.page-builder-content select:focus {
+ outline: 2px solid #3b82f6;
+ outline-offset: 2px;
+ border-color: #3b82f6;
+}
+.page-builder-content label {
+ display: block;
+ font-weight: 500;
+ margin-bottom: 0.25rem;
+ color: #374151;
+}
+/* Buttons */
+.page-builder-content button {
+ font-family: inherit;
+ font-size: 1rem;
+ font-weight: 500;
+ line-height: 1.5;
+ color: #ffffff;
+ background-color: #3b82f6;
+ border: none;
+ border-radius: 6px;
+ padding: 0.5rem 1rem;
+ cursor: pointer;
+ transition: background-color 0.15s ease-in-out;
+}
+.page-builder-content button:hover {
+ background-color: #2563eb;
+}
+.page-builder-content button:focus {
+ outline: 2px solid #3b82f6;
+ outline-offset: 2px;
+}
+.page-builder-content button:disabled {
+ background-color: #9ca3af;
+ cursor: not-allowed;
+}
+/* Utility Classes */
+.page-builder-content .text-center { text-align: center; }
+.page-builder-content .text-left { text-align: left; }
+.page-builder-content .text-right { text-align: right; }
+.page-builder-content .text-justify { text-align: justify; }
+.page-builder-content .font-light { font-weight: 300; }
+.page-builder-content .font-normal { font-weight: 400; }
+.page-builder-content .font-medium { font-weight: 500; }
+.page-builder-content .font-semibold { font-weight: 600; }
+.page-builder-content .font-bold { font-weight: 700; }
+.page-builder-content .text-sm { font-size: 0.875rem; }
+.page-builder-content .text-base { font-size: 1rem; }
+.page-builder-content .text-lg { font-size: 1.125rem; }
+.page-builder-content .text-xl { font-size: 1.25rem; }
+.page-builder-content .text-2xl { font-size: 1.5rem; }
+/* Spacing Utilities */
+.page-builder-content .mb-0 { margin-bottom: 0; }
+.page-builder-content .mb-1 { margin-bottom: 0.25rem; }
+.page-builder-content .mb-2 { margin-bottom: 0.5rem; }
+.page-builder-content .mb-3 { margin-bottom: 0.75rem; }
+.page-builder-content .mb-4 { margin-bottom: 1rem; }
+.page-builder-content .mb-6 { margin-bottom: 1.5rem; }
+.page-builder-content .mb-8 { margin-bottom: 2rem; }
+.page-builder-content .mt-0 { margin-top: 0; }
+.page-builder-content .mt-1 { margin-top: 0.25rem; }
+.page-builder-content .mt-2 { margin-top: 0.5rem; }
+.page-builder-content .mt-3 { margin-top: 0.75rem; }
+.page-builder-content .mt-4 { margin-top: 1rem; }
+.page-builder-content .mt-6 { margin-top: 1.5rem; }
+.page-builder-content .mt-8 { margin-top: 2rem; }
+/* Print Styles */
+@media print {
+ .page-builder-content {
+ font-size: 12pt;
+ line-height: 1.4;
+ }
+ 
+ .page-builder-content h1 { font-size: 18pt; }
+ .page-builder-content h2 { font-size: 16pt; }
+ .page-builder-content h3 { font-size: 14pt; }
+ .page-builder-content h4,
+ .page-builder-content h5,
+ .page-builder-content h6 { font-size: 12pt; }
+ 
+ .page-builder-content a {
+ text-decoration: none;
+ color: #000;
+ }
+ 
+ .page-builder-content a::after {
+ content: " (" attr(href) ")";
+ font-size: 10pt;
+ color: #666;
+ }
+}

@@ -21,7 +21,7 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
       <div className="max-w-6xl mx-auto">
         <div 
           ref={setNodeRef}
-          className={`min-h-screen bg-white shadow-sm rounded-lg transition-all duration-200 p-4 ${
+          className={`page-builder-content min-h-screen bg-white shadow-sm rounded-lg transition-all duration-200 p-4 ${
             isCanvasHovered && isValidDrop ? 'ring-2 ring-blue-400 bg-blue-50' : ''
           } ${
             isCanvasHovered && !isValidDrop ? 'ring-2 ring-red-400 bg-red-50' : ''

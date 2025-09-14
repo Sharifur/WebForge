@@ -10,6 +10,9 @@
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    <!-- Page Builder Default Styles -->
+    <link rel="stylesheet" href="{{ asset(config('app.debug') ? 'css/pagebuilder-defaults.css' : 'css/pagebuilder-defaults.min.css') }}">
+    
     <!-- Shadcn UI CSS Variables -->
     <style>
         :root {

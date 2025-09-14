@@ -49,6 +49,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Page Builder Default Styles -->
+    <link rel="stylesheet" href="{{ asset(config('app.debug') ? 'css/pagebuilder-defaults.css' : 'css/pagebuilder-defaults.min.css') }}">
+    
     <!-- Page Builder CSS -->
     @yield('styles')
     
