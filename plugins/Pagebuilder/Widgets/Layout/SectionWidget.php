@@ -35,7 +35,7 @@ class SectionWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-layout';
+        return 'las la-columns';
     }
 
     protected function getWidgetDescription(): string

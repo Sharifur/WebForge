@@ -11,6 +11,9 @@ class AdminAuth
 {
     public function handle(Request $request, Closure $next): Response
     {
+
+        // dd(Auth::guard('admin')->check());
+
         if (!Auth::guard('admin')->check()) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([

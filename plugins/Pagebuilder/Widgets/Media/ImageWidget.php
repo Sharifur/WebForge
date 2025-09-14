@@ -36,7 +36,7 @@ class ImageWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-image';
+        return 'las la-image';
     }
 
     protected function getWidgetDescription(): string

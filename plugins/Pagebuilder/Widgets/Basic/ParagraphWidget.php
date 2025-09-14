@@ -34,7 +34,7 @@ class ParagraphWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-text-align-left';
+        return 'las la-paragraph';
     }
 
     protected function getWidgetDescription(): string

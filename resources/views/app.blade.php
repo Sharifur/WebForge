@@ -10,7 +10,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         {{-- load line icon --}}
-        <link rel="preconnect" href="{{ asset('assets/css/line-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/line-awesome.min.css') }}">
         <!-- Scripts -->
         @routes
         @viteReactRefresh

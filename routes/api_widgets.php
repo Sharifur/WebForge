@@ -14,7 +14,8 @@ use App\Http\Controllers\Api\WidgetController;
 |
 */
 
-Route::prefix('pagebuilder/widgets')->group(function () {
+Route::prefix('pagebuilder/widgets')
+    ->group(function () {
     
     // Widget Discovery & Listing
     Route::get('/', [WidgetController::class, 'index'])
@@ -108,112 +109,6 @@ Route::prefix('pagebuilder/widgets')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Widget Instance Routes (Commented out - Controllers need to be created)
-|--------------------------------------------------------------------------
-|
-| These routes handle individual widget instances on pages, including
-| creating, updating, and deleting widget instances.
-|
-*/
-
-/*
-Route::prefix('widget-instances')->middleware(['auth:sanctum'])->group(function () {
-    
-    // CRUD operations for widget instances
-    Route::get('/', [WidgetInstanceController::class, 'index'])
-        ->name('api.widget-instances.index');
-    
-    Route::post('/', [WidgetInstanceController::class, 'store'])
-        ->name('api.widget-instances.store');
-    
-    Route::get('/{id}', [WidgetInstanceController::class, 'show'])
-        ->name('api.widget-instances.show');
-    
-    Route::put('/{id}', [WidgetInstanceController::class, 'update'])
-        ->name('api.widget-instances.update');
-    
-    Route::delete('/{id}', [WidgetInstanceController::class, 'destroy'])
-        ->name('api.widget-instances.destroy');
-    
-    // Bulk operations
-    Route::post('/bulk-update', [WidgetInstanceController::class, 'bulkUpdate'])
-        ->name('api.widget-instances.bulk-update');
-    
-    Route::delete('/bulk-delete', [WidgetInstanceController::class, 'bulkDelete'])
-        ->name('api.widget-instances.bulk-delete');
-    
-    // Widget instance rendering
-    Route::get('/{id}/render', [WidgetInstanceController::class, 'render'])
-        ->name('api.widget-instances.render');
-    
-    // Get instances by page
-    Route::get('/page/{pageId}', [WidgetInstanceController::class, 'getByPage'])
-        ->name('api.widget-instances.by-page');
-    
-    // Duplicate widget instance
-    Route::post('/{id}/duplicate', [WidgetInstanceController::class, 'duplicate'])
-        ->name('api.widget-instances.duplicate');
-    
-    // Update position/order
-    Route::patch('/{id}/position', [WidgetInstanceController::class, 'updatePosition'])
-        ->name('api.widget-instances.update-position');
-});
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Widget Preview Routes (Commented out - Controllers need to be created)
-|--------------------------------------------------------------------------
-|
-| These routes handle widget preview functionality for the page builder,
-| allowing real-time preview of widgets with different settings.
-| Note: Widget preview is now handled by WidgetController::preview method
-|
-*/
-
-/*
-Route::prefix('widget-preview')->group(function () {
-    
-    Route::post('/render', [WidgetPreviewController::class, 'render'])
-        ->name('api.widget-preview.render');
-    
-    Route::post('/render-with-settings', [WidgetPreviewController::class, 'renderWithSettings'])
-        ->name('api.widget-preview.render-with-settings');
-    
-    Route::get('/templates/{type}', [WidgetPreviewController::class, 'getTemplates'])
-        ->name('api.widget-preview.templates')
-        ->where('type', '[a-z_]+');
-});
-*/
-
-/*
-|--------------------------------------------------------------------------
-| Widget Analytics Routes (Commented out - Controllers need to be created)
-|--------------------------------------------------------------------------
-|
-| These routes provide analytics and usage statistics for widgets,
-| helping administrators understand widget popularity and usage patterns.
-|
-*/
-
-/*
-Route::prefix('widget-analytics')->middleware(['auth:sanctum', 'admin'])->group(function () {
-    
-    Route::get('/usage-stats', [WidgetAnalyticsController::class, 'usageStats'])
-        ->name('api.widget-analytics.usage-stats');
-    
-    Route::get('/popular-by-category', [WidgetAnalyticsController::class, 'popularByCategory'])
-        ->name('api.widget-analytics.popular-by-category');
-    
-    Route::get('/usage-trends', [WidgetAnalyticsController::class, 'usageTrends'])
-        ->name('api.widget-analytics.usage-trends');
-    
-    Route::get('/performance-metrics', [WidgetAnalyticsController::class, 'performanceMetrics'])
-        ->name('api.widget-analytics.performance-metrics');
-});
-*/
 
 /*
 |--------------------------------------------------------------------------
@@ -224,7 +119,9 @@ Route::prefix('widget-analytics')->middleware(['auth:sanctum', 'admin'])->group(
 |
 */
 
-Route::prefix('page-builder')->middleware(['admin'])->group(function () {
+Route::prefix('page-builder')
+->middleware(['admin'])
+->group(function () {
     // Override route model binding to use ID for API routes
     Route::bind('page', function ($value) {
         return \App\Models\Page::findOrFail($value);

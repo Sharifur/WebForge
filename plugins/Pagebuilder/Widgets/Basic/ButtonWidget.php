@@ -30,7 +30,7 @@ class ButtonWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-cursor';
+        return 'las la-hand-point-up';
     }
 
     protected function getWidgetDescription(): string

@@ -34,7 +34,7 @@ class DividerWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-minus';
+        return 'las la-minus';
     }
 
     protected function getWidgetDescription(): string

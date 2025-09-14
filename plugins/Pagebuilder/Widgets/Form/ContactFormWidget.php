@@ -21,7 +21,7 @@ class ContactFormWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-envelope';
+        return 'las la-envelope';
     }
 
     protected function getWidgetDescription(): string
