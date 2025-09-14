@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Link, ExternalLink, Mail, Phone, FileText, Hash, 
   Monitor, Smartphone, ChevronDown, ChevronRight, 
@@ -60,10 +60,18 @@ const EnhancedLinkPicker = ({
   const [linkValidation, setLinkValidation] = useState({ isValid: true, message: '' });
   const [isTestingLink, setIsTestingLink] = useState(false);
 
-  // Update parent when linkData changes
+  // Update parent when linkData changes - Use ref to avoid infinite loops
+  const onChangeRef = useRef(onChange);
+  
+  // Update ref when onChange prop changes
   useEffect(() => {
-    onChange(linkData);
-  }, [linkData, onChange]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Call onChange only when linkData actually changes
+  useEffect(() => {
+    onChangeRef.current(linkData);
+  }, [linkData]); // Only depend on linkData, not the onChange function
 
   // Auto-detect link type based on URL
   useEffect(() => {

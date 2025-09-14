@@ -82,7 +82,7 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
     };
 
     initContent();
-  }, [page, initializePageContent, loadPageContent]);
+  }, [page?.id, page?.use_page_builder]); // Only depend on stable values, not functions
 
   return (
     <>

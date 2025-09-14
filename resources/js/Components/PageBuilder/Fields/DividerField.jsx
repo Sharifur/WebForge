@@ -76,13 +76,6 @@ const DividerField = ({
           />
         )}
         
-        {/* Text label */}
-        <div 
-          className={`px-3 ${fontSizes[textSize]} font-medium whitespace-nowrap`}
-          style={textStyle}
-        >
-        </div>
-        
         {/* Right line (for center/left text) */}
         {(textPosition === 'center' || textPosition === 'left') && (
           <div 

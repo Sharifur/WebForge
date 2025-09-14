@@ -35,7 +35,7 @@ class LinkWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-link';
+        return 'lni lni-airtable';
     }
 
     protected function getWidgetDescription(): string

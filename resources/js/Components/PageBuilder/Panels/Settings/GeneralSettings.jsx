@@ -67,7 +67,16 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     setLocalWidget(widget);
   }, [widget]);
 
-  // Debounced store update function
+  // Debounced store update function - Use ref to avoid dependency issues
+  const onWidgetUpdateRef = useRef(onWidgetUpdate);
+  const updateWidgetRef = useRef(updateWidget);
+  
+  // Update refs when props change
+  useEffect(() => {
+    onWidgetUpdateRef.current = onWidgetUpdate;
+    updateWidgetRef.current = updateWidget;
+  }, [onWidgetUpdate, updateWidget]);
+
   const debouncedStoreUpdate = useCallback((updatedWidget) => {
     // Clear existing timeout
     if (debounceTimeoutRef.current) {
@@ -77,12 +86,12 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     // Set new timeout for 500ms delay
     debounceTimeoutRef.current = setTimeout(() => {
       // Update the widget in the store
-      updateWidget(widget.id, updatedWidget);
+      updateWidgetRef.current(widget.id, updatedWidget);
       
       // Update the selected widget
-      onWidgetUpdate(updatedWidget);
+      onWidgetUpdateRef.current(updatedWidget);
     }, 500);
-  }, [widget.id, updateWidget, onWidgetUpdate]);
+  }, [widget.id]); // Only depend on widget.id
 
   // Cleanup timeout on unmount
   useEffect(() => {

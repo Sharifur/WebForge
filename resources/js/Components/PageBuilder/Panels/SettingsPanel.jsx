@@ -636,18 +636,22 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
     }
   }, [widget?.id]);
 
-  // Track changes to detect unsaved changes
+  // Track changes to detect unsaved changes - Use useCallback for stable comparison
+  const currentSettingsString = React.useMemo(() => {
+    if (!widget) return '';
+    return JSON.stringify({
+      content: widget.content || {},
+      style: widget.style || {},
+      advanced: widget.advanced || {}
+    });
+  }, [widget?.content, widget?.style, widget?.advanced, widget?.id]);
+
   useEffect(() => {
-    if (widget && originalSettingsRef.current) {
-      const currentSettings = JSON.stringify({
-        content: widget.content || {},
-        style: widget.style || {},
-        advanced: widget.advanced || {}
-      });
-      currentSettingsRef.current = currentSettings;
-      setHasUnsavedChanges(currentSettings !== originalSettingsRef.current);
+    if (widget && originalSettingsRef.current && currentSettingsString) {
+      currentSettingsRef.current = currentSettingsString;
+      setHasUnsavedChanges(currentSettingsString !== originalSettingsRef.current);
     }
-  }, [widget?.content, widget?.style, widget?.advanced]);
+  }, [currentSettingsString, widget?.id]); // Only depend on the memoized string and widget ID
 
   // ESC key handler
   useEffect(() => {
@@ -766,13 +770,12 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 p-3 text-sm font-medium transition-colors ${
+              className={`flex-1 p-3 text-sm font-medium transition-colors items-center ${
                 activeTab === tab.id
                   ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              not section
               <tab.icon className="w-4 h-4 mr-1" />
               {tab.label}
             </button>

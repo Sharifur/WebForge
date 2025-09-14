@@ -36,7 +36,7 @@ class HeadingWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-text-format';
+        return 'las la-heading';
     }
 
     protected function getWidgetDescription(): string

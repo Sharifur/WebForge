@@ -386,10 +386,22 @@ const usePageBuilderStore = create((set, get) => ({
       });
 
       if (!response.ok) {
+        // Check if response is HTML (likely redirect to login)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Authentication required. Please log in as admin.');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const text = await response.text();
+      
+      // Check if response is HTML instead of JSON
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        throw new Error('Authentication required. Please log in as admin.');
+      }
+      
+      const data = JSON.parse(text);
       
       if (data.success) {
         set({ 
@@ -406,6 +418,13 @@ const usePageBuilderStore = create((set, get) => ({
       }
     } catch (error) {
       console.error('Save failed:', error);
+      
+      // Handle authentication errors
+      if (error.message.includes('Authentication required')) {
+        // Redirect to admin login
+        window.location.href = '/admin/login';
+      }
+      
       throw error;
     }
   },
@@ -422,10 +441,22 @@ const usePageBuilderStore = create((set, get) => ({
       });
 
       if (!response.ok) {
+        // Check if response is HTML (likely redirect to login)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Authentication required. Please log in as admin.');
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const text = await response.text();
+      
+      // Check if response is HTML instead of JSON
+      if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+        throw new Error('Authentication required. Please log in as admin.');
+      }
+      
+      const data = JSON.parse(text);
       
       if (data.success) {
         const content = data.data.content || { containers: [] };
@@ -441,6 +472,13 @@ const usePageBuilderStore = create((set, get) => ({
       }
     } catch (error) {
       console.error('Load content failed:', error);
+      
+      // Handle authentication errors
+      if (error.message.includes('Authentication required')) {
+        // Redirect to admin login
+        window.location.href = '/admin/login';
+      }
+      
       throw error;
     }
   },
