@@ -58,6 +58,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 });
 
+// Page Builder API Routes that need session authentication
+Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
+    // Override route model binding to use ID for API routes
+    Route::bind('page', function ($value) {
+        return \App\Models\Page::findOrFail($value);
+    });
+    
+    Route::post('/pages/{page}/save', [App\Http\Controllers\Api\PageBuilderController::class, 'saveContent'])
+        ->name('api.page-builder.save-content')
+        ->whereNumber('page');
+    
+    Route::post('/pages/{page}/publish', [App\Http\Controllers\Api\PageBuilderController::class, 'publish'])
+        ->name('api.page-builder.publish')
+        ->whereNumber('page');
+    
+    Route::post('/pages/{page}/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
+        ->name('api.page-builder.unpublish')
+        ->whereNumber('page');
+});
+
 // Frontend Routes - Page URLs without /page/ prefix for better SEO  
 // This must be at the end to avoid conflicts with other routes
 Route::get('/{page}', [PageController::class, 'show'])
