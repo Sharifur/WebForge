@@ -49,6 +49,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Page Builder CSS -->
+    @yield('styles')
+    
     @stack('head')
 </head>
 <body class="bg-gray-50">

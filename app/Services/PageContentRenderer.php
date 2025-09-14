@@ -91,4 +91,30 @@ class PageContentRenderer
         return $this->editorRenderer->renderPageBuilderContent($pageContent);
     }
 
+    /**
+     * Render page content for frontend with separate CSS
+     * 
+     * Returns both HTML and CSS separately for better control over 
+     * where the CSS is placed (e.g., in document head).
+     * 
+     * @param mixed $pageContent Page content data (array or JSON string)
+     * @param array $config Optional renderer configuration
+     * @return array Array with 'html' and 'css' keys
+     */
+    public function renderForFrontendWithCss($pageContent, array $config = []): array
+    {
+        $renderer = !empty($config) ? new FrontendRenderer($config) : $this->frontendRenderer;
+        
+        // Render the content (CSS is stored internally)
+        $html = $renderer->renderPageBuilderContent($pageContent);
+        
+        // Get the generated CSS
+        $css = $renderer->getGeneratedCss();
+        
+        return [
+            'html' => $html,
+            'css' => $css
+        ];
+    }
+
 }

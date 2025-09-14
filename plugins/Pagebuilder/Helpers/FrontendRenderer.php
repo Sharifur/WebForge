@@ -27,6 +27,12 @@ class FrontendRenderer extends BaseRenderer
     private $accumulatedCss = '';
 
     /**
+     * Final processed CSS ready for output
+     * @var string
+     */
+    private $finalCss = '';
+
+    /**
      * Configuration options for frontend rendering
      * @var array
      */
@@ -86,15 +92,13 @@ class FrontendRenderer extends BaseRenderer
             $allCss = $this->minifyCss($allCss);
         }
 
-        // Generate cache-friendly wrapper with semantic structure
+        // Store final CSS for separate retrieval
+        $this->finalCss = $allCss;
+
+        // Generate cache-friendly wrapper with semantic structure (CSS will be in header)
         $wrappedHtml = '<div class="page-builder-content" role="main">';
         $wrappedHtml .= $html;
         $wrappedHtml .= '</div>';
-
-        // Include CSS if any was generated
-        if (!empty($allCss)) {
-            $wrappedHtml = "<style type=\"text/css\">\n{$allCss}\n</style>\n" . $wrappedHtml;
-        }
 
         return $wrappedHtml;
     }
@@ -414,5 +418,15 @@ class FrontendRenderer extends BaseRenderer
     {
         $this->config = array_merge($this->config, $config);
         return $this;
+    }
+
+    /**
+     * Get the generated CSS for separate inclusion
+     * 
+     * @return string Generated and processed CSS
+     */
+    public function getGeneratedCss(): string
+    {
+        return $this->finalCss;
     }
 }

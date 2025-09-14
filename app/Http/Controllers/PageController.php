@@ -24,17 +24,21 @@ class PageController extends Controller
 
         // Render page builder content if page builder is enabled
         $renderedContent = '';
+        $pageBuilderCss = '';
+        
         if ($page->use_page_builder) {
             // Load page builder content from the PageBuilderContent model
             $pageBuilderContent = $page->pageBuilderContent;
             if ($pageBuilderContent && $pageBuilderContent->content) {
-                $renderedContent = $this->pageContentRenderer->renderForFrontend($pageBuilderContent->content);
+                $result = $this->pageContentRenderer->renderForFrontendWithCss($pageBuilderContent->content);
+                $renderedContent = $result['html'];
+                $pageBuilderCss = $result['css'];
             }
         } else if ($page->content) {
             // Fallback to regular page content for non-page-builder pages
             $renderedContent = '<div class="prose prose-lg">' . $page->content . '</div>';
         }
 
-        return view('frontend.page', compact('page', 'renderedContent'));
+        return view('frontend.page', compact('page', 'renderedContent', 'pageBuilderCss'));
     }
 }

@@ -1,5 +1,13 @@
 @extends('frontend.layout')
 
+@section('styles')
+@if(!empty($pageBuilderCss))
+<style type="text/css">
+{!! $pageBuilderCss !!}
+</style>
+@endif
+@endsection
+
 @section('content')
 <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
     @if($page->show_breadcrumb)
