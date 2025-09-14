@@ -112,33 +112,13 @@ Route::prefix('pagebuilder/widgets')
 
 /*
 |--------------------------------------------------------------------------
-| Page Builder Routes
+| Page Builder Routes - MOVED to web.php
 |--------------------------------------------------------------------------
 |
-| These routes handle page builder content saving and management
+| Page builder routes have been moved to web.php for consistent session authentication
+| All page builder content management routes are now consolidated there.
 |
 */
-
-Route::prefix('page-builder')
-->middleware(['admin'])
-->group(function () {
-    // Override route model binding to use ID for API routes
-    Route::bind('page', function ($value) {
-        return \App\Models\Page::findOrFail($value);
-    });
-    
-    Route::get('/pages/{page}/content', [App\Http\Controllers\Api\PageBuilderController::class, 'getContent'])
-        ->name('api.page-builder.get-content')
-        ->whereNumber('page');
-    
-    Route::get('/pages/{page}/history', [App\Http\Controllers\Api\PageBuilderController::class, 'getHistory'])
-        ->name('api.page-builder.history')
-        ->whereNumber('page');
-    
-    Route::get('/pages/{page}/widgets/{widgetId}', [App\Http\Controllers\Api\PageBuilderController::class, 'getWidgetData'])
-        ->name('api.page-builder.widget-data')
-        ->whereNumber('page');
-});
 
 /*
 |--------------------------------------------------------------------------

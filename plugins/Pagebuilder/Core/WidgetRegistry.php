@@ -436,7 +436,13 @@ class WidgetRegistry
             'timestamp' => now()
         ];
 
-        Cache::put('widget_registry', $cacheData, now()->addHours(24));
+        try {
+            Cache::put('widget_registry', $cacheData, now()->addHours(24));
+        } catch (\Exception $e) {
+            // Cache table might not exist during migration, fail gracefully
+            // Log the error but don't throw exception
+            \Log::info('Widget registry cache could not be saved: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -444,15 +450,20 @@ class WidgetRegistry
      */
     public static function loadFromCache(): bool
     {
-        $cacheData = Cache::get('widget_registry');
-        
-        if ($cacheData) {
-            self::$registeredWidgets = $cacheData['widgets'];
-            self::$autoDiscovered = true;
-            return true;
-        }
+        try {
+            $cacheData = Cache::get('widget_registry');
+            
+            if ($cacheData) {
+                self::$registeredWidgets = $cacheData['widgets'];
+                self::$autoDiscovered = true;
+                return true;
+            }
 
-        return false;
+            return false;
+        } catch (\Exception $e) {
+            // Cache table might not exist during migration, fail gracefully
+            return false;
+        }
     }
 
     /**
@@ -460,7 +471,12 @@ class WidgetRegistry
      */
     public static function clearCache(): void
     {
-        Cache::forget('widget_registry');
+        try {
+            Cache::forget('widget_registry');
+        } catch (\Exception $e) {
+            // Cache table might not exist, fail gracefully
+            \Log::info('Widget registry cache could not be cleared: ' . $e->getMessage());
+        }
     }
 
     /**

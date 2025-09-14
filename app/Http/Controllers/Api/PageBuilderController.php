@@ -16,9 +16,10 @@ class PageBuilderController extends Controller
     /**
      * Save page builder content for a page
      */
-    public function saveContent(Request $request, Page $page): JsonResponse
+    public function saveContent(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
+            'page_id' => 'required|integer|exists:pages,id',
             'content' => 'required|array',
             'content.containers' => 'sometimes|array',
             'is_published' => 'sometimes|boolean',
@@ -35,6 +36,10 @@ class PageBuilderController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Find the page by ID from request
+            $pageId = $request->input('page_id');
+            $page = Page::findOrFail($pageId);
 
             $content = $request->input('content', ['containers' => []]);
             $isPublished = $request->input('is_published', false);
@@ -91,9 +96,10 @@ class PageBuilderController extends Controller
     /**
      * Get page builder content for a page
      */
-    public function getContent(Page $page): JsonResponse
+    public function getContent(int $pageId): JsonResponse
     {
         try {
+            $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
             if (!$pageBuilderContent) {
@@ -135,9 +141,23 @@ class PageBuilderController extends Controller
     /**
      * Publish page builder content
      */
-    public function publish(Page $page): JsonResponse
+    public function publish(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'page_id' => 'required|integer|exists:pages,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
+            $pageId = $request->input('page_id');
+            $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
             if (!$pageBuilderContent) {
@@ -170,9 +190,23 @@ class PageBuilderController extends Controller
     /**
      * Unpublish page builder content
      */
-    public function unpublish(Page $page): JsonResponse
+    public function unpublish(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'page_id' => 'required|integer|exists:pages,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         try {
+            $pageId = $request->input('page_id');
+            $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
             if (!$pageBuilderContent) {
@@ -205,9 +239,10 @@ class PageBuilderController extends Controller
     /**
      * Get page builder content history/versions
      */
-    public function getHistory(Page $page): JsonResponse
+    public function getHistory(int $pageId): JsonResponse
     {
         try {
+            $page = Page::findOrFail($pageId);
             $history = PageBuilderContent::where('page_id', $page->id)
                 ->orderBy('created_at', 'desc')
                 ->get(['id', 'version', 'is_published', 'published_at', 'created_at', 'updated_at']);
@@ -229,9 +264,10 @@ class PageBuilderController extends Controller
     /**
      * Get individual widget data
      */
-    public function getWidgetData(Page $page, string $widgetId): JsonResponse
+    public function getWidgetData(int $pageId, string $widgetId): JsonResponse
     {
         try {
+            $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
             if (!$pageBuilderContent) {

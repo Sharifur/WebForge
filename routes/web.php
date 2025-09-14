@@ -60,26 +60,32 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // Page Builder API Routes that need session authentication
 Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
-    // Override route model binding to use ID for API routes
-    Route::bind('page', function ($value) {
-        return \App\Models\Page::findOrFail($value);
-    });
+    // Content Management Routes
+    Route::get('/pages/{pageId}/content', [App\Http\Controllers\Api\PageBuilderController::class, 'getContent'])
+        ->name('api.page-builder.get-content')
+        ->whereNumber('pageId');
     
-    Route::post('/pages/{page}/save', [App\Http\Controllers\Api\PageBuilderController::class, 'saveContent'])
-        ->name('api.page-builder.save-content')
-        ->whereNumber('page');
+    Route::get('/pages/{pageId}/history', [App\Http\Controllers\Api\PageBuilderController::class, 'getHistory'])
+        ->name('api.page-builder.history')
+        ->whereNumber('pageId');
     
-    Route::post('/pages/{page}/publish', [App\Http\Controllers\Api\PageBuilderController::class, 'publish'])
-        ->name('api.page-builder.publish')
-        ->whereNumber('page');
+    Route::get('/pages/{pageId}/widgets/{widgetId}', [App\Http\Controllers\Api\PageBuilderController::class, 'getWidgetData'])
+        ->name('api.page-builder.widget-data')
+        ->whereNumber('pageId');
     
-    Route::post('/pages/{page}/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
-        ->name('api.page-builder.unpublish')
-        ->whereNumber('page');
+    // Save/Publish Routes (use request parameters instead of URL parameters)
+    Route::post('/save', [App\Http\Controllers\Api\PageBuilderController::class, 'saveContent'])
+        ->name('api.page-builder.save-content');
+    
+    Route::post('/publish', [App\Http\Controllers\Api\PageBuilderController::class, 'publish'])
+        ->name('api.page-builder.publish');
+    
+    Route::post('/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
+        ->name('api.page-builder.unpublish');
 });
 
 // Frontend Routes - Page URLs without /page/ prefix for better SEO  
 // This must be at the end to avoid conflicts with other routes
 Route::get('/{page}', [PageController::class, 'show'])
     ->name('page.show')
-    ->where('page', '^(?!admin|api|storage|_debugbar).*$'); // Exclude system routes
+    ->where('page', '[a-zA-Z0-9\-]+'); // Allow only alphanumeric characters and hyphens

@@ -369,8 +369,8 @@ const usePageBuilderStore = create((set, get) => ({
   savePage: async (pageId) => {
     const { pageContent } = get();
     try {
-      // Use the new page builder API endpoint
-      const response = await fetch(`/api/page-builder/pages/${pageId}/save`, {
+      // Use the new page builder API endpoint with page_id in request body
+      const response = await fetch('/api/page-builder/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,6 +379,7 @@ const usePageBuilderStore = create((set, get) => ({
         },
         credentials: 'same-origin',
         body: JSON.stringify({
+          page_id: pageId,
           content: pageContent,
           is_published: false, // Save as draft by default
           version: '1.0'
@@ -486,14 +487,17 @@ const usePageBuilderStore = create((set, get) => ({
   // Publish page content
   publishPage: async (pageId) => {
     try {
-      const response = await fetch(`/api/page-builder/pages/${pageId}/publish`, {
+      const response = await fetch('/api/page-builder/publish', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
           'Accept': 'application/json'
         },
-        credentials: 'same-origin'
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          page_id: pageId
+        })
       });
 
       if (!response.ok) {
