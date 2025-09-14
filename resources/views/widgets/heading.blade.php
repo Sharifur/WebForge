@@ -51,18 +51,16 @@ Available variables:
         }
     }
     
-    // Build style attribute
-    $styleAttr = !empty($inline_styles) ? $inline_styles : '';
 @endphp
 
 @if($enableLink)
-    <{{ $level }} class="{{ $classString }}" @if($styleAttr) style="{{ $styleAttr }}" @endif>
+    <{{ $level }} class="{{ $classString }}">
         <a @foreach($linkAttributes as $attr => $value) {{ $attr }}="{{ $value }}" @endforeach>
             {{ $text }}
         </a>
     </{{ $level }}>
 @else
-    <{{ $level }} class="{{ $classString }}" @if($styleAttr) style="{{ $styleAttr }}" @endif>
+    <{{ $level }} class="{{ $classString }}">
         {{ $text }}
     </{{ $level }}>
 @endif
