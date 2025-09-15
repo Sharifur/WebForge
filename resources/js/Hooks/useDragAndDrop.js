@@ -357,8 +357,8 @@ export const useDragAndDrop = () => {
       return;
     }
 
-    // Handle container reordering
-    if (activeData?.type === 'container' && overData?.type === 'container') {
+    // Handle container reordering - check for container drops or drops within containers
+    if (activeData?.type === 'container' && (overData?.type === 'container' || overData?.containerId)) {
       console.log('[DragAndDrop] Container reordering detected:', {
         activeId: active.id,
         overId: over.id,
@@ -368,11 +368,15 @@ export const useDragAndDrop = () => {
       
       const { pageContent } = usePageBuilderStore.getState();
       const oldIndex = pageContent.containers.findIndex(c => c.id === active.id);
-      const newIndex = pageContent.containers.findIndex(c => c.id === over.id);
+      
+      // Find target container ID - either direct container or container of the dropped element
+      const targetContainerId = overData?.type === 'container' ? over.id : overData?.containerId;
+      const newIndex = pageContent.containers.findIndex(c => c.id === targetContainerId);
       
       console.log('[DragAndDrop] Container reordering indices:', {
         oldIndex,
         newIndex,
+        targetContainerId,
         containersCount: pageContent.containers.length
       });
       
