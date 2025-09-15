@@ -89,6 +89,13 @@ export const useDragAndDrop = () => {
     try {
       const activeData = active.data.current;
       const overData = over.data.current;
+      
+      console.log('[DragAndDrop] Processing drag data:', {
+        activeType: activeData?.type,
+        overType: overData?.type,
+        activeDataFull: activeData,
+        overDataFull: overData
+      });
 
     // Validation Rules
     // Rule 1: Handle section widget placement

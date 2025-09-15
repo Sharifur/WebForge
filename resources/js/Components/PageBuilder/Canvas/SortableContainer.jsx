@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
+import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import Column from './Column';
@@ -11,7 +12,7 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
   const {
     attributes,
     listeners,
-    setNodeRef,
+    setNodeRef: setSortableNodeRef,
     transform,
     transition,
     isDragging
@@ -23,6 +24,24 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
       index
     }
   });
+
+  const {
+    setNodeRef: setDroppableNodeRef,
+    isOver
+  } = useDroppable({
+    id: container.id,
+    data: {
+      type: 'container',
+      container,
+      index
+    }
+  });
+
+  // Combine refs for both sortable and droppable
+  const setNodeRef = (node) => {
+    setSortableNodeRef(node);
+    setDroppableNodeRef(node);
+  };
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -116,7 +135,9 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
       <div 
         className={`min-h-20 transition-all duration-200 ${
           isHovered ? 'ring-1 ring-blue-300' : ''
-        } ${selectedWidget?.id === container.id ? 'ring-2 ring-blue-500' : ''}`}
+        } ${selectedWidget?.id === container.id ? 'ring-2 ring-blue-500' : ''} ${
+          isOver ? 'ring-2 ring-green-400 bg-green-50' : ''
+        }`}
         style={{
           padding: container.settings?.padding || '20px',
           margin: container.settings?.margin || '0',
