@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import PhpFieldRenderer from '@/Components/PageBuilder/Fields/PhpFieldRenderer';
+import ColorFieldComponent from '../../Fields/ColorFieldComponent';
+import TextFieldComponent from '../../Fields/TextFieldComponent';
+import SelectFieldComponent from '../../Fields/SelectFieldComponent';
+import TextareaFieldComponent from '../../Fields/TextareaFieldComponent';
 
 const BackgroundInput = ({ label, value, onChange }) => {
   const [backgroundType, setBackgroundType] = useState('color');
@@ -237,6 +241,161 @@ const SectionStyleSettings = ({ container, onUpdate, onWidgetUpdate }) => {
               value={container.settings?.backgroundColor || '#ffffff'}
               onChange={(value) => updateSetting('settings.backgroundColor', value)}
             />
+            
+            {/* Background Size */}
+            <div className="mt-4">
+              <SelectFieldComponent
+                fieldKey="background_size"
+                fieldConfig={{
+                  label: 'Background Size',
+                  options: {
+                    'auto': 'Auto',
+                    'cover': 'Cover',
+                    'contain': 'Contain',
+                    '100% 100%': 'Stretch'
+                  },
+                  default: 'cover'
+                }}
+                value={container.settings?.backgroundSize || 'cover'}
+                onChange={(value) => updateSetting('settings.backgroundSize', value)}
+              />
+            </div>
+            
+            {/* Background Position */}
+            <div>
+              <SelectFieldComponent
+                fieldKey="background_position"
+                fieldConfig={{
+                  label: 'Background Position',
+                  options: {
+                    'center': 'Center',
+                    'top': 'Top',
+                    'bottom': 'Bottom',
+                    'left': 'Left',
+                    'right': 'Right',
+                    'top left': 'Top Left',
+                    'top right': 'Top Right',
+                    'bottom left': 'Bottom Left',
+                    'bottom right': 'Bottom Right'
+                  },
+                  default: 'center'
+                }}
+                value={container.settings?.backgroundPosition || 'center'}
+                onChange={(value) => updateSetting('settings.backgroundPosition', value)}
+              />
+            </div>
+            
+            {/* Background Repeat */}
+            <div>
+              <SelectFieldComponent
+                fieldKey="background_repeat"
+                fieldConfig={{
+                  label: 'Background Repeat',
+                  options: {
+                    'no-repeat': 'No Repeat',
+                    'repeat': 'Repeat',
+                    'repeat-x': 'Repeat Horizontally',
+                    'repeat-y': 'Repeat Vertically'
+                  },
+                  default: 'no-repeat'
+                }}
+                value={container.settings?.backgroundRepeat || 'no-repeat'}
+                onChange={(value) => updateSetting('settings.backgroundRepeat', value)}
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Border Section */}
+        <div>
+          <h4 className="font-medium text-gray-900 mb-3">Border</h4>
+          <div className="space-y-4">
+            {/* Border Style */}
+            <div>
+              <SelectFieldComponent
+                fieldKey="border_style"
+                fieldConfig={{
+                  label: 'Border Style',
+                  options: {
+                    'none': 'None',
+                    'solid': 'Solid',
+                    'dashed': 'Dashed',
+                    'dotted': 'Dotted',
+                    'double': 'Double'
+                  },
+                  default: 'none'
+                }}
+                value={container.settings?.borderStyle || 'none'}
+                onChange={(value) => updateSetting('settings.borderStyle', value)}
+              />
+            </div>
+            
+            {/* Border Width */}
+            {container.settings?.borderStyle && container.settings.borderStyle !== 'none' && (
+              <>
+                <div>
+                  <TextFieldComponent
+                    fieldKey="border_width"
+                    fieldConfig={{
+                      label: 'Border Width',
+                      placeholder: '1px',
+                      default: '1px'
+                    }}
+                    value={container.settings?.borderWidth || '1px'}
+                    onChange={(value) => updateSetting('settings.borderWidth', value)}
+                  />
+                </div>
+                
+                {/* Border Color */}
+                <div>
+                  <ColorFieldComponent
+                    fieldKey="border_color"
+                    fieldConfig={{
+                      label: 'Border Color',
+                      default: '#e5e7eb'
+                    }}
+                    value={container.settings?.borderColor || '#e5e7eb'}
+                    onChange={(value) => updateSetting('settings.borderColor', value)}
+                  />
+                </div>
+                
+                {/* Border Radius */}
+                <div>
+                  <TextFieldComponent
+                    fieldKey="border_radius"
+                    fieldConfig={{
+                      label: 'Border Radius',
+                      placeholder: '0px',
+                      default: '0px'
+                    }}
+                    value={container.settings?.borderRadius || '0px'}
+                    onChange={(value) => updateSetting('settings.borderRadius', value)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Shadow Section */}
+        <div>
+          <h4 className="font-medium text-gray-900 mb-3">Shadow</h4>
+          <div className="space-y-4">
+            <div>
+              <TextFieldComponent
+                fieldKey="box_shadow"
+                fieldConfig={{
+                  label: 'Box Shadow',
+                  placeholder: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                  default: ''
+                }}
+                value={container.settings?.boxShadow || ''}
+                onChange={(value) => updateSetting('settings.boxShadow', value)}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Use CSS shadow syntax, e.g., "0px 4px 8px rgba(0, 0, 0, 0.1)"
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,9 @@
 import React from 'react';
+import RangeFieldComponent from '../../Fields/RangeFieldComponent';
+import NumberFieldComponent from '../../Fields/NumberFieldComponent';
+import SelectFieldComponent from '../../Fields/SelectFieldComponent';
+import ToggleFieldComponent from '../../Fields/ToggleFieldComponent';
+import TextFieldComponent from '../../Fields/TextFieldComponent';
 
 const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
   const updateSetting = (path, value) => {
@@ -266,49 +271,179 @@ const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
           </div>
         </div>
 
-        {/* Column Gap with slider */}
+        {/* Enhanced Column Gap */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Column Gap
-          </label>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={parseInt(container.settings?.gap || '20px') || 20}
-                onChange={(e) => {
-                  const unit = container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px';
-                  updateSetting('settings.gap', `${e.target.value}${unit}`);
-                }}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-              />
-              <input
-                type="number"
-                value={parseInt(container.settings?.gap || '20px') || 20}
-                onChange={(e) => {
-                  const unit = container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px';
-                  updateSetting('settings.gap', `${e.target.value}${unit}`);
-                }}
-                className="w-16 px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
-                min="0"
-                max="100"
-              />
-              <select
-                value={container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px'}
-                onChange={(e) => {
-                  const value = parseInt(container.settings?.gap || '20px') || 20;
-                  updateSetting('settings.gap', `${value}${e.target.value}`);
-                }}
-                className="w-14 px-1 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="px">px</option>
-                <option value="%">%</option>
-                <option value="em">em</option>
-                <option value="rem">rem</option>
-              </select>
-            </div>
+          <RangeFieldComponent
+            fieldKey="column_gap"
+            fieldConfig={{
+              label: 'Column Gap',
+              min: 0,
+              max: 100,
+              step: 1,
+              unit: container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px',
+              default: 20
+            }}
+            value={parseInt(container.settings?.gap || '20px') || 20}
+            onChange={(value) => {
+              const unit = container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px';
+              updateSetting('settings.gap', `${value}${unit}`);
+            }}
+          />
+          
+          {/* Unit Selector */}
+          <div className="mt-2">
+            <SelectFieldComponent
+              fieldKey="column_gap_unit"
+              fieldConfig={{
+                label: 'Gap Unit',
+                options: {
+                  'px': 'Pixels (px)',
+                  '%': 'Percentage (%)',
+                  'em': 'Em units (em)',
+                  'rem': 'Rem units (rem)'
+                },
+                default: 'px'
+              }}
+              value={container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px'}
+              onChange={(unit) => {
+                const value = parseInt(container.settings?.gap || '20px') || 20;
+                updateSetting('settings.gap', `${value}${unit}`);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Enhanced Section Layout Settings */}
+        <div className="border-t pt-6">
+          <h4 className="font-medium text-gray-900 mb-4">Layout Settings</h4>
+          
+          {/* Content Width */}
+          <div className="mb-4">
+            <SelectFieldComponent
+              fieldKey="content_width"
+              fieldConfig={{
+                label: 'Content Width',
+                options: {
+                  'boxed': 'Boxed (Contained)',
+                  'full_width': 'Full Width',
+                  'full_width_contained': 'Full Width with Contained Content'
+                },
+                default: 'boxed'
+              }}
+              value={container.settings?.contentWidth || 'boxed'}
+              onChange={(value) => updateSetting('settings.contentWidth', value)}
+            />
+          </div>
+
+          {/* Max Width */}
+          <div className="mb-4">
+            <NumberFieldComponent
+              fieldKey="max_width"
+              fieldConfig={{
+                label: 'Maximum Width (px)',
+                min: 300,
+                max: 1920,
+                step: 50,
+                default: 1200,
+                placeholder: '1200'
+              }}
+              value={container.settings?.maxWidth || 1200}
+              onChange={(value) => updateSetting('settings.maxWidth', value)}
+            />
+          </div>
+
+          {/* Minimum Height */}
+          <div className="mb-4">
+            <NumberFieldComponent
+              fieldKey="min_height"
+              fieldConfig={{
+                label: 'Minimum Height (px)',
+                min: 0,
+                max: 1000,
+                step: 10,
+                default: 0,
+                placeholder: '0'
+              }}
+              value={container.settings?.minHeight || 0}
+              onChange={(value) => updateSetting('settings.minHeight', value)}
+            />
+          </div>
+
+          {/* Vertical Alignment */}
+          <div className="mb-4">
+            <SelectFieldComponent
+              fieldKey="vertical_align"
+              fieldConfig={{
+                label: 'Vertical Alignment',
+                options: {
+                  'top': 'Top',
+                  'center': 'Center',
+                  'bottom': 'Bottom'
+                },
+                default: 'top'
+              }}
+              value={container.settings?.verticalAlign || 'top'}
+              onChange={(value) => updateSetting('settings.verticalAlign', value)}
+            />
+          </div>
+        </div>
+
+        {/* Enhanced Section Identity */}
+        <div className="border-t pt-6">
+          <h4 className="font-medium text-gray-900 mb-4">Section Identity</h4>
+          
+          {/* Section ID */}
+          <div className="mb-4">
+            <TextFieldComponent
+              fieldKey="section_id"
+              fieldConfig={{
+                label: 'Section ID',
+                placeholder: 'unique-section-id',
+                default: ''
+              }}
+              value={container.settings?.sectionId || ''}
+              onChange={(value) => updateSetting('settings.sectionId', value)}
+            />
+          </div>
+
+          {/* Section Label */}
+          <div className="mb-4">
+            <TextFieldComponent
+              fieldKey="section_label"
+              fieldConfig={{
+                label: 'Section Label (Internal)',
+                placeholder: 'Hero Section',
+                default: ''
+              }}
+              value={container.settings?.sectionLabel || ''}
+              onChange={(value) => updateSetting('settings.sectionLabel', value)}
+            />
+          </div>
+
+          {/* Enable Full Height */}
+          <div className="mb-4">
+            <ToggleFieldComponent
+              fieldKey="enable_full_height"
+              fieldConfig={{
+                label: 'Full Height Section (100vh)',
+                default: false
+              }}
+              value={container.settings?.enableFullHeight || false}
+              onChange={(value) => updateSetting('settings.enableFullHeight', value)}
+            />
+          </div>
+
+          {/* Enable Sticky Section */}
+          <div className="mb-4">
+            <ToggleFieldComponent
+              fieldKey="sticky_section"
+              fieldConfig={{
+                label: 'Sticky Section',
+                default: false
+              }}
+              value={container.settings?.stickySection || false}
+              onChange={(value) => updateSetting('settings.stickySection', value)}
+            />
           </div>
         </div>
       </div>
