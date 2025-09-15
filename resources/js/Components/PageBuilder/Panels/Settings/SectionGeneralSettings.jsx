@@ -271,50 +271,76 @@ const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
           </div>
         </div>
 
-        {/* Enhanced Column Gap */}
+        {/* Enhanced Column Gap - Simplified */}
         <div>
-          <RangeFieldComponent
-            fieldKey="column_gap"
-            fieldConfig={{
-              label: 'Column Gap',
-              min: 0,
-              max: 100,
-              step: 1,
-              unit: container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px',
-              default: 20
-            }}
-            value={parseInt(container.settings?.gap || '20px') || 20}
-            onChange={(value) => {
-              const unit = container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px';
-              updateSetting('settings.gap', `${value}${unit}`);
-            }}
-          />
-          
-          {/* Unit Selector */}
-          <div className="mt-2">
-            <SelectFieldComponent
-              fieldKey="column_gap_unit"
-              fieldConfig={{
-                label: 'Gap Unit',
-                options: {
-                  'px': 'Pixels (px)',
-                  '%': 'Percentage (%)',
-                  'em': 'Em units (em)',
-                  'rem': 'Rem units (rem)'
-                },
-                default: 'px'
-              }}
-              value={container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px'}
-              onChange={(unit) => {
-                const value = parseInt(container.settings?.gap || '20px') || 20;
-                updateSetting('settings.gap', `${value}${unit}`);
-              }}
-            />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Column Gap</label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-900">
+                  {parseInt(container.settings?.gap || '20px') || 20}
+                </span>
+                <select
+                  value={container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px'}
+                  onChange={(e) => {
+                    const unit = e.target.value;
+                    const value = parseInt(container.settings?.gap || '20px') || 20;
+                    updateSetting('settings.gap', `${value}${unit}`);
+                  }}
+                  className="text-xs px-2 py-1 border border-gray-300 rounded bg-gray-50 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="px">px</option>
+                  <option value="%">%</option>
+                  <option value="em">em</option>
+                  <option value="rem">rem</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={1}
+                value={parseInt(container.settings?.gap || '20px') || 20}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  const unit = container.settings?.gap?.match(/[a-zA-Z%]+$/)?.[0] || 'px';
+                  updateSetting('settings.gap', `${value}${unit}`);
+                }}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(parseInt(container.settings?.gap || '20px') || 20)}%, #E5E7EB ${(parseInt(container.settings?.gap || '20px') || 20)}%, #E5E7EB 100%)`
+                }}
+              />
+              <style jsx>{`
+                input[type="range"]::-webkit-slider-thumb {
+                  appearance: none;
+                  height: 20px;
+                  width: 20px;
+                  border-radius: 50%;
+                  background: #3B82F6;
+                  cursor: pointer;
+                  border: 2px solid #ffffff;
+                  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                input[type="range"]::-moz-range-thumb {
+                  height: 20px;
+                  width: 20px;
+                  border-radius: 50%;
+                  background: #3B82F6;
+                  cursor: pointer;
+                  border: 2px solid #ffffff;
+                  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+              `}</style>
+            </div>
           </div>
         </div>
 
         {/* Enhanced Section Layout Settings */}
-        <div className="border-t pt-6">
+        <div className="border-t border-slate-200 pt-6">
           <h4 className="font-medium text-gray-900 mb-4">Layout Settings</h4>
           
           {/* Content Width */}
@@ -335,117 +361,58 @@ const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
             />
           </div>
 
-          {/* Max Width */}
+          {/* Max Width - Simplified Slider */}
           <div className="mb-4">
-            <NumberFieldComponent
-              fieldKey="max_width"
-              fieldConfig={{
-                label: 'Maximum Width (px)',
-                min: 300,
-                max: 1920,
-                step: 50,
-                default: 1200,
-                placeholder: '1200'
-              }}
-              value={container.settings?.maxWidth || 1200}
-              onChange={(value) => updateSetting('settings.maxWidth', value)}
-            />
-          </div>
-
-          {/* Minimum Height */}
-          <div className="mb-4">
-            <NumberFieldComponent
-              fieldKey="min_height"
-              fieldConfig={{
-                label: 'Minimum Height (px)',
-                min: 0,
-                max: 1000,
-                step: 10,
-                default: 0,
-                placeholder: '0'
-              }}
-              value={container.settings?.minHeight || 0}
-              onChange={(value) => updateSetting('settings.minHeight', value)}
-            />
-          </div>
-
-          {/* Vertical Alignment */}
-          <div className="mb-4">
-            <SelectFieldComponent
-              fieldKey="vertical_align"
-              fieldConfig={{
-                label: 'Vertical Alignment',
-                options: {
-                  'top': 'Top',
-                  'center': 'Center',
-                  'bottom': 'Bottom'
-                },
-                default: 'top'
-              }}
-              value={container.settings?.verticalAlign || 'top'}
-              onChange={(value) => updateSetting('settings.verticalAlign', value)}
-            />
-          </div>
-        </div>
-
-        {/* Enhanced Section Identity */}
-        <div className="border-t pt-6">
-          <h4 className="font-medium text-gray-900 mb-4">Section Identity</h4>
-          
-          {/* Section ID */}
-          <div className="mb-4">
-            <TextFieldComponent
-              fieldKey="section_id"
-              fieldConfig={{
-                label: 'Section ID',
-                placeholder: 'unique-section-id',
-                default: ''
-              }}
-              value={container.settings?.sectionId || ''}
-              onChange={(value) => updateSetting('settings.sectionId', value)}
-            />
-          </div>
-
-          {/* Section Label */}
-          <div className="mb-4">
-            <TextFieldComponent
-              fieldKey="section_label"
-              fieldConfig={{
-                label: 'Section Label (Internal)',
-                placeholder: 'Hero Section',
-                default: ''
-              }}
-              value={container.settings?.sectionLabel || ''}
-              onChange={(value) => updateSetting('settings.sectionLabel', value)}
-            />
-          </div>
-
-          {/* Enable Full Height */}
-          <div className="mb-4">
-            <ToggleFieldComponent
-              fieldKey="enable_full_height"
-              fieldConfig={{
-                label: 'Full Height Section (100vh)',
-                default: false
-              }}
-              value={container.settings?.enableFullHeight || false}
-              onChange={(value) => updateSetting('settings.enableFullHeight', value)}
-            />
-          </div>
-
-          {/* Enable Sticky Section */}
-          <div className="mb-4">
-            <ToggleFieldComponent
-              fieldKey="sticky_section"
-              fieldConfig={{
-                label: 'Sticky Section',
-                default: false
-              }}
-              value={container.settings?.stickySection || false}
-              onChange={(value) => updateSetting('settings.stickySection', value)}
-            />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">Maximum Width (px)</label>
+                <span className="text-sm font-medium text-gray-900">
+                  {container.settings?.maxWidth || 1200}px
+                </span>
+              </div>
+              
+              <div className="relative">
+                <input
+                  type="range"
+                  min={300}
+                  max={1920}
+                  step={50}
+                  value={container.settings?.maxWidth || 1200}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    updateSetting('settings.maxWidth', value);
+                  }}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${((container.settings?.maxWidth || 1200) - 300) / (1920 - 300) * 100}%, #E5E7EB ${((container.settings?.maxWidth || 1200) - 300) / (1920 - 300) * 100}%, #E5E7EB 100%)`
+                  }}
+                />
+                <style jsx>{`
+                  input[type="range"]::-webkit-slider-thumb {
+                    appearance: none;
+                    height: 20px;
+                    width: 20px;
+                    border-radius: 50%;
+                    background: #3B82F6;
+                    cursor: pointer;
+                    border: 2px solid #ffffff;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                  }
+                  input[type="range"]::-moz-range-thumb {
+                    height: 20px;
+                    width: 20px;
+                    border-radius: 50%;
+                    background: #3B82F6;
+                    cursor: pointer;
+                    border: 2px solid #ffffff;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                  }
+                `}</style>
+              </div>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );

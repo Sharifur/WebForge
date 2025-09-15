@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import TextFieldComponent from '../../Fields/TextFieldComponent';
 import TextareaFieldComponent from '../../Fields/TextareaFieldComponent';
 import SelectFieldComponent from '../../Fields/SelectFieldComponent';
@@ -7,6 +7,39 @@ import NumberFieldComponent from '../../Fields/NumberFieldComponent';
 import CheckboxFieldComponent from '../../Fields/CheckboxFieldComponent';
 
 const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
+  // Generate consistent section ID based on container
+  const generateConsistentSectionId = () => {
+    // Use container ID to create consistent, predictable section IDs
+    if (container.id) {
+      const containerId = container.id.toString();
+      
+      // Clean the container ID - remove special characters and convert to lowercase
+      let cleanId = containerId.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      
+      // Remove 'section' prefix if it exists to avoid redundancy
+      if (cleanId.startsWith('section')) {
+        cleanId = cleanId.substring(7); // Remove 'section' (7 characters)
+      }
+      
+      // If cleanId is empty after removing 'section', use a fallback
+      if (!cleanId) {
+        cleanId = Date.now().toString().slice(-8);
+      }
+      
+      return `section-${cleanId}`;
+    }
+    // Fallback to simple incremental ID
+    return `section-${Date.now().toString().slice(-8)}`;
+  };
+
+  // Auto-generate section ID on mount if not exists
+  useEffect(() => {
+    if (!container.settings?.htmlId) {
+      const consistentId = generateConsistentSectionId();
+      updateSetting('settings.htmlId', consistentId);
+    }
+  }, [container.id]); // Only run when container ID changes
+
   const updateSetting = (path, value) => {
     const pathArray = path.split('.');
     
@@ -37,19 +70,44 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
   return (
     <div className="p-4">
       <div className="space-y-6">
+        {/* Responsive Settings - Moved after Visibility */}
         <div>
-          <h4 className="font-medium text-gray-900 mb-3">Visibility</h4>
+          <h4 className="font-medium text-gray-900 mb-3">Responsive Settings</h4>
           <div className="space-y-4">
-            <div>
-              <ToggleFieldComponent
-                fieldKey="visible"
-                fieldConfig={{
-                  label: 'Section Visible',
-                  default: true
-                }}
-                value={container.settings?.visible !== false}
-                onChange={(value) => updateSetting('settings.visible', value)}
-              />
+            <div className="space-y-2">
+              <div>
+                <ToggleFieldComponent
+                  fieldKey="show_desktop"
+                  fieldConfig={{
+                    label: 'Show on Desktop',
+                    default: true
+                  }}
+                  value={container.settings?.hideOnDesktop !== true}
+                  onChange={(value) => updateSetting('settings.hideOnDesktop', !value)}
+                />
+              </div>
+              <div>
+                <ToggleFieldComponent
+                  fieldKey="show_tablet"
+                  fieldConfig={{
+                    label: 'Show on Tablet',
+                    default: true
+                  }}
+                  value={container.settings?.hideOnTablet !== true}
+                  onChange={(value) => updateSetting('settings.hideOnTablet', !value)}
+                />
+              </div>
+              <div>
+                <ToggleFieldComponent
+                  fieldKey="show_mobile"
+                  fieldConfig={{
+                    label: 'Show on Mobile',
+                    default: true
+                  }}
+                  value={container.settings?.hideOnMobile !== true}
+                  onChange={(value) => updateSetting('settings.hideOnMobile', !value)}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -68,6 +126,23 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
                 value={container.settings?.cssClass || ''}
                 onChange={(value) => updateSetting('settings.cssClass', value)}
               />
+            </div>
+
+            {/* Section ID - Consistent Auto-generated */}
+            <div>
+              <TextFieldComponent
+                fieldKey="html_id"
+                fieldConfig={{
+                  label: 'Section ID',
+                  placeholder: 'section-12345',
+                  default: ''
+                }}
+                value={container.settings?.htmlId || generateConsistentSectionId()}
+                onChange={(value) => updateSetting('settings.htmlId', value)}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Consistent ID for database storage, CSS generation, and JavaScript targeting
+              </div>
             </div>
 
             <div>
@@ -131,67 +206,6 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
           </div>
         </div>
 
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Responsive Settings</h4>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <ToggleFieldComponent
-                  fieldKey="show_desktop"
-                  fieldConfig={{
-                    label: 'Show on Desktop',
-                    default: true
-                  }}
-                  value={container.settings?.hideOnDesktop !== true}
-                  onChange={(value) => updateSetting('settings.hideOnDesktop', !value)}
-                />
-              </div>
-              <div>
-                <ToggleFieldComponent
-                  fieldKey="show_tablet"
-                  fieldConfig={{
-                    label: 'Show on Tablet',
-                    default: true
-                  }}
-                  value={container.settings?.hideOnTablet !== true}
-                  onChange={(value) => updateSetting('settings.hideOnTablet', !value)}
-                />
-              </div>
-              <div>
-                <ToggleFieldComponent
-                  fieldKey="show_mobile"
-                  fieldConfig={{
-                    label: 'Show on Mobile',
-                    default: true
-                  }}
-                  value={container.settings?.hideOnMobile !== true}
-                  onChange={(value) => updateSetting('settings.hideOnMobile', !value)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Section ID</h4>
-          <div className="space-y-4">
-            <div>
-              <TextFieldComponent
-                fieldKey="html_id"
-                fieldConfig={{
-                  label: 'HTML ID',
-                  placeholder: 'section-id',
-                  default: ''
-                }}
-                value={container.settings?.htmlId || ''}
-                onChange={(value) => updateSetting('settings.htmlId', value)}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                Used for anchor links and JavaScript targeting
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
