@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugins\Pagebuilder\Widgets\Basic;
+namespace Plugins\Pagebuilder\Core\Widgets;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
@@ -46,7 +46,7 @@ class HeadingWidget extends BaseWidget
 
     protected function getCategory(): string
     {
-        return WidgetCategory::BASIC;
+        return WidgetCategory::CORE;
     }
 
     protected function getWidgetTags(): array
@@ -113,7 +113,7 @@ class HeadingWidget extends BaseWidget
     }
 
     /**
-     * Style settings with unified typography and background controls
+     * Heading-specific style settings
      */
     public function getStyleFields(): array
     {

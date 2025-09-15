@@ -50,6 +50,94 @@ abstract class BaseWidget
     abstract public function getGeneralFields(): array;
     abstract public function getStyleFields(): array;
 
+    /**
+     * Get essential default style fields for all widgets
+     * These are the core styling controls that every widget should have
+     */
+    protected function getDefaultStyleFields(): array
+    {
+        $control = new ControlManager();
+
+        // Background Group
+        $control->addGroup('background', 'Background')
+            ->registerField('widget_background', FieldManager::BACKGROUND_GROUP()
+                ->setLabel('Background')
+                ->setAllowedTypes(['none', 'color', 'gradient', 'image'])
+                ->setDefaultType('none')
+                ->setEnableHover(false)
+                ->setEnableImage(true)
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'background: {{VALUE}};'
+                ])
+                ->setDescription('Configure widget background with color, gradient, image or none')
+            )
+            ->endGroup();
+
+        // Spacing Group
+        $control->addGroup('spacing', 'Spacing')
+            ->registerField('padding', FieldManager::DIMENSION()
+                ->setLabel('Padding')
+                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0])
+                ->setUnits(['px', 'em', 'rem', '%'])
+                ->setMin(0)
+                ->setMax(200)
+                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+                ])
+                ->setDescription('Set internal spacing for the widget')
+            )
+            ->registerField('margin', FieldManager::DIMENSION()
+                ->setLabel('Margin')
+                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0])
+                ->setUnits(['px', 'em', 'rem', '%'])
+                ->setAllowNegative(true)
+                ->setMin(-200)
+                ->setMax(200)
+                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'margin: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+                ])
+                ->setDescription('Set external spacing around the widget')
+            )
+            ->endGroup();
+
+        // Border Group
+        $control->addGroup('border', 'Border')
+            ->registerField('border_width', FieldManager::NUMBER()
+                ->setLabel('Border Width')
+                ->setDefault(0)
+                ->setMin(0)
+                ->setMax(20)
+                ->setUnit('px')
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'border-width: {{VALUE}}{{UNIT}}; border-style: solid;'
+                ])
+            )
+            ->registerField('border_color', FieldManager::COLOR()
+                ->setLabel('Border Color')
+                ->setDefault('#e2e8f0')
+                ->setCondition(['border_width' => ['>', 0]])
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'border-color: {{VALUE}};'
+                ])
+            )
+            ->registerField('border_radius', FieldManager::DIMENSION()
+                ->setLabel('Border Radius')
+                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0])
+                ->setUnits(['px', 'em', 'rem', '%'])
+                ->setMin(0)
+                ->setMax(100)
+                ->setResponsive(false)
+                ->setSelectors([
+                    '{{WRAPPER}}' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
+                ])
+            )
+            ->endGroup();
+
+        return $control->getFields();
+    }
+
     // Optional overrideable methods
     protected function getWidgetTags(): array
     {
@@ -66,181 +154,109 @@ abstract class BaseWidget
         return 0;
     }
 
-    // Default advanced fields that all widgets inherit
+    /**
+     * Get essential default advanced fields for all widgets
+     * These are technical controls that every widget should have
+     */
     public function getAdvancedFields(): array
     {
-        return [
-            'visibility' => [
-                'type' => 'group',
-                'label' => 'Visibility',
-                'fields' => [
-                    'visible' => [
-                        'type' => 'toggle',
-                        'label' => 'Visible',
-                        'default' => true
-                    ],
-                    'hide_on_desktop' => [
-                        'type' => 'toggle',
-                        'label' => 'Hide on Desktop',
-                        'default' => false
-                    ],
-                    'hide_on_tablet' => [
-                        'type' => 'toggle',
-                        'label' => 'Hide on Tablet',
-                        'default' => false
-                    ],
-                    'hide_on_mobile' => [
-                        'type' => 'toggle',
-                        'label' => 'Hide on Mobile',
-                        'default' => false
-                    ]
-                ]
-            ],
-            'background' => [
-                'type' => 'background_group',
-                'label' => 'Background',
-                'allowed_types' => ['none', 'color', 'gradient', 'image'],
-                'default_type' => 'none',
-                'enable_hover' => false,
-                'enable_image' => true,
-                'description' => 'Configure widget background with color, gradient, image or none'
-            ],
-            'spacing' => [
-                'type' => 'group',
-                'label' => 'Spacing',
-                'fields' => [
-                    'padding' => [
-                        'type' => 'dimension',
-                        'label' => 'Padding',
-                        'responsive' => true,
-                        'units' => ['px', 'em', 'rem', '%'],
-                        'min' => 0,
-                        'max' => 200,
-                        'allow_negative' => false,
-                        'default' => [
-                            'desktop' => '20px 20px 20px 20px',
-                            'tablet' => '15px 15px 15px 15px',
-                            'mobile' => '10px 10px 10px 10px'
-                        ]
-                    ],
-                    'margin' => [
-                        'type' => 'dimension',
-                        'label' => 'Margin',
-                        'responsive' => true,
-                        'units' => ['px', 'em', 'rem', '%'],
-                        'min' => -200,
-                        'max' => 200,
-                        'allow_negative' => true,
-                        'default' => [
-                            'desktop' => '0px 0px 0px 0px',
-                            'tablet' => '0px 0px 0px 0px',
-                            'mobile' => '0px 0px 0px 0px'
-                        ]
-                    ]
-                ]
-            ],
-            'border' => [
-                'type' => 'group',
-                'label' => 'Border & Shadow',
-                'fields' => [
-                    'border_width' => [
-                        'type' => 'number',
-                        'label' => 'Border Width',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 20,
-                        'default' => 0
-                    ],
-                    'border_color' => [
-                        'type' => 'color',
-                        'label' => 'Border Color',
-                        'default' => '#000000',
-                        'condition' => ['border_width' => ['>', 0]]
-                    ],
-                    'border_radius' => [
-                        'type' => 'number',
-                        'label' => 'Border Radius',
-                        'unit' => 'px',
-                        'min' => 0,
-                        'max' => 100,
-                        'default' => 0
-                    ],
-                    'box_shadow' => [
-                        'type' => 'shadow',
-                        'label' => 'Box Shadow',
-                        'default' => 'none'
-                    ]
-                ]
-            ],
-            'animation' => [
-                'type' => 'group',
-                'label' => 'Animation',
-                'fields' => [
-                    'animation_type' => [
-                        'type' => 'select',
-                        'label' => 'Animation Type',
-                        'options' => [
-                            'none' => 'None',
-                            'fade-in' => 'Fade In',
-                            'slide-up' => 'Slide Up',
-                            'slide-down' => 'Slide Down',
-                            'slide-left' => 'Slide Left',
-                            'slide-right' => 'Slide Right',
-                            'zoom-in' => 'Zoom In',
-                            'bounce' => 'Bounce'
-                        ],
-                        'default' => 'none'
-                    ],
-                    'animation_duration' => [
-                        'type' => 'number',
-                        'label' => 'Animation Duration (ms)',
-                        'min' => 100,
-                        'max' => 3000,
-                        'step' => 100,
-                        'default' => 500,
-                        'condition' => ['animation_type' => ['!=', 'none']]
-                    ],
-                    'animation_delay' => [
-                        'type' => 'number',
-                        'label' => 'Animation Delay (ms)',
-                        'min' => 0,
-                        'max' => 2000,
-                        'step' => 100,
-                        'default' => 0,
-                        'condition' => ['animation_type' => ['!=', 'none']]
-                    ]
-                ]
-            ],
-            'custom' => [
-                'type' => 'group',
-                'label' => 'Custom',
-                'fields' => [
-                    'custom_css_class' => [
-                        'type' => 'text',
-                        'label' => 'CSS Class',
-                        'placeholder' => 'custom-class-name'
-                    ],
-                    'custom_id' => [
-                        'type' => 'text',
-                        'label' => 'Custom ID',
-                        'placeholder' => 'custom-id'
-                    ],
-                    'z_index' => [
-                        'type' => 'number',
-                        'label' => 'Z-Index',
-                        'min' => -1000,
-                        'max' => 1000,
-                        'default' => 1
-                    ],
-                    'custom_css' => [
-                        'type' => 'textarea',
-                        'label' => 'Custom CSS',
-                        'placeholder' => '/* Custom CSS rules */',
-                        'rows' => 5
-                    ]
-                ]
-            ]
-        ];
+        $control = new ControlManager();
+
+        // Visibility Group
+        $control->addGroup('visibility', 'Visibility')
+            ->registerField('visible', FieldManager::TOGGLE()
+                ->setLabel('Visible')
+                ->setDefault(true)
+                ->setDescription('Show or hide this widget')
+            )
+            ->registerField('hide_on_desktop', FieldManager::TOGGLE()
+                ->setLabel('Hide on Desktop')
+                ->setDefault(false)
+                ->setDescription('Hide widget on desktop devices (1025px+)')
+            )
+            ->registerField('hide_on_tablet', FieldManager::TOGGLE()
+                ->setLabel('Hide on Tablet')
+                ->setDefault(false)
+                ->setDescription('Hide widget on tablet devices (769px-1024px)')
+            )
+            ->registerField('hide_on_mobile', FieldManager::TOGGLE()
+                ->setLabel('Hide on Mobile')
+                ->setDefault(false)
+                ->setDescription('Hide widget on mobile devices (max 768px)')
+            )
+            ->endGroup();
+
+        // Custom Attributes Group
+        $control->addGroup('custom_attributes', 'Custom Attributes')
+            ->registerField('custom_css_class', FieldManager::TEXT()
+                ->setLabel('CSS Class')
+                ->setPlaceholder('custom-class-name')
+                ->setDescription('Add custom CSS classes to the widget')
+            )
+            ->registerField('custom_id', FieldManager::TEXT()
+                ->setLabel('Custom ID')
+                ->setPlaceholder('custom-element-id')
+                ->setDescription('Set a unique ID for the widget element')
+            )
+            ->registerField('z_index', FieldManager::NUMBER()
+                ->setLabel('Z-Index')
+                ->setDefault(1)
+                ->setMin(-1000)
+                ->setMax(1000)
+                ->setDescription('Set the stacking order of the widget')
+            )
+            ->endGroup();
+
+        // Animation Group
+        $control->addGroup('animation', 'Animation')
+            ->registerField('animation_type', FieldManager::SELECT()
+                ->setLabel('Animation Type')
+                ->setOptions([
+                    'none' => 'None',
+                    'fade-in' => 'Fade In',
+                    'slide-up' => 'Slide Up',
+                    'slide-down' => 'Slide Down',
+                    'slide-left' => 'Slide Left',
+                    'slide-right' => 'Slide Right',
+                    'zoom-in' => 'Zoom In',
+                    'bounce' => 'Bounce'
+                ])
+                ->setDefault('none')
+                ->setDescription('Choose an entrance animation for the widget')
+            )
+            ->registerField('animation_duration', FieldManager::NUMBER()
+                ->setLabel('Duration')
+                ->setDefault(500)
+                ->setMin(100)
+                ->setMax(3000)
+                ->setStep(100)
+                ->setUnit('ms')
+                ->setCondition(['animation_type' => ['!=', 'none']])
+                ->setDescription('Animation duration in milliseconds')
+            )
+            ->registerField('animation_delay', FieldManager::NUMBER()
+                ->setLabel('Delay')
+                ->setDefault(0)
+                ->setMin(0)
+                ->setMax(2000)
+                ->setStep(100)
+                ->setUnit('ms')
+                ->setCondition(['animation_type' => ['!=', 'none']])
+                ->setDescription('Delay before animation starts in milliseconds')
+            )
+            ->endGroup();
+
+        // Custom CSS Group
+        $control->addGroup('custom_css', 'Custom CSS')
+            ->registerField('custom_css', FieldManager::TEXTAREA()
+                ->setLabel('Custom CSS')
+                ->setPlaceholder('/* Add your custom CSS here */')
+                ->setRows(8)
+                ->setDescription('Add custom CSS rules for advanced styling')
+            )
+            ->endGroup();
+
+        return $control->getFields();
     }
 
     /**
@@ -316,7 +332,10 @@ abstract class BaseWidget
             case 'general':
                 return $this->getGeneralFields();
             case 'style':
-                return $this->getStyleFields();
+                // Merge widget-specific style fields with default style fields
+                $widgetStyleFields = $this->getStyleFields();
+                $defaultStyleFields = $this->getDefaultStyleFields();
+                return array_merge($widgetStyleFields, $defaultStyleFields);
             case 'advanced':
                 return $this->getAdvancedFields();
             default:
@@ -328,7 +347,7 @@ abstract class BaseWidget
     {
         return [
             'general' => $this->getGeneralFields(),
-            'style' => $this->getStyleFields(),
+            'style' => $this->getFieldsByTab('style'), // Use the merged fields
             'advanced' => $this->getAdvancedFields()
         ];
     }
@@ -352,7 +371,7 @@ abstract class BaseWidget
         $style = $settings['style'] ?? [];
         $advanced = $settings['advanced'] ?? [];
 
-        return [
+        $templateData = [
             'settings' => $settings,
             'general' => $general,
             'style' => $style,
@@ -368,6 +387,11 @@ abstract class BaseWidget
             'widget_id' => $this->generateWidgetId(),
             'widget_attributes' => $this->buildWidgetAttributes($settings)
         ];
+
+        // Add WidgetHelper instance for easy settings access in blade templates
+        $templateData['helper'] = new WidgetHelper($templateData);
+
+        return $templateData;
     }
 
     /**

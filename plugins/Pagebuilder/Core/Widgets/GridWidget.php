@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugins\Pagebuilder\Widgets\Layout;
+namespace Plugins\Pagebuilder\Core\Widgets;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
@@ -9,7 +9,7 @@ use Plugins\Pagebuilder\Core\FieldManager;
 
 /**
  * GridWidget - Provides flexible CSS Grid layout with responsive controls
- * 
+ *
  * Features:
  * - Configurable grid columns and rows
  * - Responsive grid layouts
@@ -18,7 +18,7 @@ use Plugins\Pagebuilder\Core\FieldManager;
  * - Auto-fit and auto-fill options
  * - Grid template areas support
  * - Alignment and justification controls
- * 
+ *
  * @package Plugins\Pagebuilder\Widgets\Layout
  */
 class GridWidget extends BaseWidget
@@ -35,7 +35,7 @@ class GridWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-grid-alt';
+        return 'las la-border-all';
     }
 
     protected function getWidgetDescription(): string
@@ -45,7 +45,7 @@ class GridWidget extends BaseWidget
 
     protected function getCategory(): string
     {
-        return WidgetCategory::LAYOUT;
+        return WidgetCategory::CORE;
     }
 
     protected function getWidgetTags(): array
@@ -59,7 +59,7 @@ class GridWidget extends BaseWidget
     public function getGeneralFields(): array
     {
         $control = new ControlManager();
-        
+
         // Grid Structure Group
         $control->addGroup('structure', 'Grid Structure')
             ->registerField('grid_type', FieldManager::SELECT()
@@ -443,35 +443,35 @@ class GridWidget extends BaseWidget
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
-        
+
         $gridType = $general['grid_type'] ?? 'fixed';
         $columns = $general['columns'] ?? 3;
         $rows = $general['rows'] ?? '';
         $minColumnWidth = $general['min_column_width'] ?? 250;
         $customTemplate = $general['custom_template'] ?? '1fr 1fr 1fr';
-        
+
         $gridItems = $general['grid_items'] ?? [];
         $autoFlow = $general['auto_flow'] ?? 'row';
         $equalHeight = $general['equal_height'] ?? true;
-        
+
         if (empty($gridItems)) {
             return '<div class="grid-placeholder">No grid items defined</div>';
         }
-        
+
         // Build container classes
         $containerClasses = ['grid-container', 'grid-' . $gridType];
-        
+
         if ($equalHeight) {
             $containerClasses[] = 'equal-height';
         }
-        
+
         $containerClass = implode(' ', $containerClasses);
-        
+
         // Build container styles
         $containerStyles = [];
         $containerStyles[] = 'display: grid';
         $containerStyles[] = 'grid-auto-flow: ' . $autoFlow;
-        
+
         // Set grid template based on type
         switch ($gridType) {
             case 'auto-fit':
@@ -491,15 +491,15 @@ class GridWidget extends BaseWidget
                 }
                 break;
         }
-        
+
         $containerStyleString = 'style="' . implode('; ', $containerStyles) . '"';
-        
+
         // Generate grid items HTML
         $itemsHtml = '';
         foreach ($gridItems as $index => $item) {
             $itemsHtml .= $this->renderGridItem($item, $index);
         }
-        
+
         return "<div class=\"{$containerClass}\" {$containerStyleString}>{$itemsHtml}</div>";
     }
 
@@ -515,22 +515,22 @@ class GridWidget extends BaseWidget
         $rowStart = $item['row_start'] ?? '';
         $backgroundColor = $item['background_color'] ?? '';
         $textAlign = $item['text_align'] ?? 'left';
-        
+
         // Build item classes
         $itemClasses = ['grid-item', 'item-' . ($index + 1)];
         $itemClass = implode(' ', $itemClasses);
-        
+
         // Build item styles
         $itemStyles = [];
-        
+
         if ($columnSpan > 1) {
             $itemStyles[] = 'grid-column: span ' . $columnSpan;
         }
-        
+
         if ($rowSpan > 1) {
             $itemStyles[] = 'grid-row: span ' . $rowSpan;
         }
-        
+
         if (!empty($columnStart)) {
             $columnEnd = !empty($columnSpan) && $columnSpan > 1 ? $columnStart + $columnSpan : '';
             $itemStyles[] = 'grid-column-start: ' . $columnStart;
@@ -538,7 +538,7 @@ class GridWidget extends BaseWidget
                 $itemStyles[] = 'grid-column-end: ' . $columnEnd;
             }
         }
-        
+
         if (!empty($rowStart)) {
             $rowEnd = !empty($rowSpan) && $rowSpan > 1 ? $rowStart + $rowSpan : '';
             $itemStyles[] = 'grid-row-start: ' . $rowStart;
@@ -546,21 +546,21 @@ class GridWidget extends BaseWidget
                 $itemStyles[] = 'grid-row-end: ' . $rowEnd;
             }
         }
-        
+
         if (!empty($backgroundColor)) {
             $itemStyles[] = 'background-color: ' . htmlspecialchars($backgroundColor, ENT_QUOTES, 'UTF-8');
         }
-        
+
         if ($textAlign !== 'left') {
             $itemStyles[] = 'text-align: ' . $textAlign;
         }
-        
+
         $itemStyleString = !empty($itemStyles) ? ' style="' . implode('; ', $itemStyles) . '"' : '';
-        
+
         // Process content (allow basic HTML)
         $allowedTags = '<p><br><strong><b><em><i><u><span><div><h1><h2><h3><h4><h5><h6><ul><ol><li><a>';
         $processedContent = strip_tags($content, $allowedTags);
-        
+
         return "<div class=\"{$itemClass}\"{$itemStyleString}>{$processedContent}</div>";
     }
 
@@ -570,20 +570,20 @@ class GridWidget extends BaseWidget
     public function generateCSS(string $widgetId, array $settings): string
     {
         $styleControl = new ControlManager();
-        
+
         // Register style fields for CSS generation
         $this->registerStyleFields($styleControl);
-        
+
         $css = $styleControl->generateCSS($widgetId, $settings['style'] ?? []);
-        
+
         // Add responsive grid CSS
         $general = $settings['general'] ?? [];
-        
+
         // Add responsive columns if specified
         if (isset($general['columns']) && is_array($general['columns'])) {
             foreach ($general['columns'] as $breakpoint => $columnCount) {
                 if ($breakpoint === 'desktop') continue; // Already handled in main styles
-                
+
                 $mediaQuery = '';
                 switch ($breakpoint) {
                     case 'tablet':
@@ -593,7 +593,7 @@ class GridWidget extends BaseWidget
                         $mediaQuery = '@media (max-width: 767px)';
                         break;
                 }
-                
+
                 if ($mediaQuery) {
                     $css .= "\n{$mediaQuery} {";
                     $css .= "\n    #{$widgetId} .grid-container {";
@@ -603,7 +603,7 @@ class GridWidget extends BaseWidget
                 }
             }
         }
-        
+
         // Add equal height CSS if enabled
         if ($general['equal_height'] ?? true) {
             $css .= "\n#{$widgetId} .grid-container.equal-height .grid-item {";
@@ -612,17 +612,17 @@ class GridWidget extends BaseWidget
             $css .= "\n    min-height: 100px;";
             $css .= "\n}";
         }
-        
+
         // Add hover effects for grid items
         $css .= "\n#{$widgetId} .grid-item {";
         $css .= "\n    transition: transform 0.2s ease, box-shadow 0.2s ease;";
         $css .= "\n}";
-        
+
         $css .= "\n#{$widgetId} .grid-item:hover {";
         $css .= "\n    transform: translateY(-2px);";
         $css .= "\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);";
         $css .= "\n}";
-        
+
         return $css;
     }
 

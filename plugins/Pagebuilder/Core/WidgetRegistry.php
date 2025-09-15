@@ -334,6 +334,13 @@ class WidgetRegistry
 
         foreach ($widgets as $type => $widget) {
             $config = $widget['config'];
+            $category = WidgetCategory::getCategory($config['category']);
+            
+            // Skip hidden categories unless explicitly requested
+            if (isset($category['hidden']) && $category['hidden'] && !($filters['show_hidden'] ?? false)) {
+                continue;
+            }
+            
             $result[] = [
                 'type' => $type,
                 'name' => $config['name'],

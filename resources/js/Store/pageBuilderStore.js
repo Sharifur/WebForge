@@ -22,6 +22,7 @@ const usePageBuilderStore = create((set, get) => ({
   activeId: null,
   hoveredDropZone: null,
   settingsPanelVisible: false,
+  sidebarCollapsed: false, // Left sidebar collapse state
   widgetSnapshots: {}, // Store original widget states for reverting changes
   
   // Section drag state
@@ -78,6 +79,10 @@ const usePageBuilderStore = create((set, get) => ({
   setHoveredDropZone: (zone) => set({ hoveredDropZone: zone }),
   
   setSettingsPanelVisible: (visible) => set({ settingsPanelVisible: visible }),
+  
+  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  
+  toggleSidebar: () => set(state => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   
   // Section drag actions
   setIsDraggingSection: (isDragging) => set(state => ({

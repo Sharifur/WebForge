@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugins\Pagebuilder\Widgets\Basic;
+namespace Plugins\Pagebuilder\Core\Widgets;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
@@ -44,7 +44,7 @@ class ParagraphWidget extends BaseWidget
 
     protected function getCategory(): string
     {
-        return WidgetCategory::BASIC;
+        return WidgetCategory::CORE;
     }
 
     protected function getWidgetTags(): array

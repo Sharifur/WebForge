@@ -1,117 +1,60 @@
-<section class="hero-section">
-    <div class="container">
-        <div class="hero-grid">
+<section class="{{ $helper->cssClasses('py-16 bg-gradient-to-r from-blue-50 to-indigo-100') }}" style="{{ $helper->inlineStyles() }}">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
             <!-- Left Content -->
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    Turn Raw Data Into
-                    <span class="hero-highlight">Actionable Insights</span>
-                    Instantly
+            <div class="space-y-6">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+                    {!! $helper->getText('general', 'title', 'Turn Raw Data Into <span class="text-blue-600">Actionable Insights</span> Instantly') !!}
                 </h1>
-                <p class="hero-description">
-                    CogniAI is an advanced AI-powered data analytics platform designed to transform raw data into actionable insights.
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    {!! $helper->generalSettings('description', 'CogniAI is an advanced AI-powered data analytics platform designed to transform raw data into actionable insights.') !!}
                 </p>
 
                 <!-- CTA Buttons -->
-                <div class="cta-buttons">
-                    <button class="btn-primary">Get Started Free</button>
-                    <button class="btn-secondary">Watch Demo</button>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        {{ $helper->generalSettings('primary_button_text', 'Get Started Free') }}
+                    </button>
+                    <button class="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                        {{ $helper->generalSettings('secondary_button_text', 'Watch Demo') }}
+                    </button>
                 </div>
 
                 <!-- Trust Indicators -->
-                <div class="trust-indicators">
-                    <div class="trust-item">
-                        <div class="checkmark">✓</div>
+                <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
                         No Credit Card Required
                     </div>
-                    <div class="trust-item">
-                        <div class="checkmark">✓</div>
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
                         14-Day Free Trial
                     </div>
-                    <div class="trust-item">
-                        <div class="checkmark">✓</div>
+                    <div class="flex items-center">
+                        <span class="text-green-500 mr-2">✓</span>
                         Setup in 5 Minutes
                     </div>
                 </div>
             </div>
 
-            <!-- Right Content - Dashboard Preview -->
-            <div class="dashboard-container">
-                <div class="dashboard-bg">
-                    <div class="dashboard">
-                        <!-- Dashboard Header -->
-                        <div class="dashboard-header">
-                            <h3 class="dashboard-title">Analytics Dashboard</h3>
-                            <div class="window-controls">
-                                <div class="window-control control-red"></div>
-                                <div class="window-control control-yellow"></div>
-                                <div class="window-control control-green"></div>
-                            </div>
+            <!-- Right Content - Placeholder Image -->
+            <div class="flex justify-center">
+                <div class="bg-white rounded-lg shadow-xl p-8 max-w-md">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
                         </div>
-
-                        <!-- Revenue Growth Section -->
-                        <div class="revenue-section">
-                            <div class="revenue-header">
-                                <span class="revenue-label">Revenue Growth</span>
-                                <span class="revenue-value">+23.5%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill"></div>
-                            </div>
-                        </div>
-
-                        <!-- Stats Grid -->
-                        <div class="stats-grid">
-                            <div class="stat-card blue">
-                                <div class="stat-value blue">12.5K</div>
-                                <div class="stat-label">Active Users</div>
-                            </div>
-                            <div class="stat-card orange">
-                                <div class="stat-value orange">89%</div>
-                                <div class="stat-label">Retention</div>
-                            </div>
-                            <div class="stat-card green">
-                                <div class="stat-value green">$2.4M</div>
-                                <div class="stat-label">Revenue</div>
-                            </div>
-                        </div>
-
-                        <!-- Chart Representation -->
-                        <div class="chart-container">
-                            <div class="chart-bars">
-                                <div class="chart-bar bar-blue" style="height: 60%;"></div>
-                                <div class="chart-bar bar-blue" style="height: 80%;"></div>
-                                <div class="chart-bar bar-orange" style="height: 45%;"></div>
-                                <div class="chart-bar bar-orange" style="height: 90%;"></div>
-                                <div class="chart-bar bar-green" style="height: 70%;"></div>
-                                <div class="chart-bar bar-green" style="height: 100%;"></div>
-                                <div class="chart-bar bar-purple" style="height: 55%;"></div>
-                                <div class="chart-bar bar-purple" style="height: 85%;"></div>
-                            </div>
-                            <div class="chart-labels">
-                                <span>Jan</span>
-                                <span>Feb</span>
-                                <span>Mar</span>
-                                <span>Apr</span>
-                                <span>May</span>
-                                <span>Jun</span>
-                            </div>
-                        </div>
-
-                        <!-- Live Indicator -->
-                        <div class="dashboard-footer">
-                            <div class="live-indicator">
-                                <div class="live-dot"></div>
-                                Live Data
-                            </div>
-                            <span class="last-updated">Updated 2min ago</span>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics Dashboard</h3>
+                        <p class="text-gray-600">Real-time insights and data visualization</p>
+                        <div class="mt-4 flex justify-center space-x-1">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Floating Elements -->
-                <div class="floating-badge badge-realtime">Real-time</div>
-                <div class="floating-badge badge-ai">AI Powered</div>
             </div>
         </div>
     </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugins\Pagebuilder\Widgets\Layout;
+namespace Plugins\Pagebuilder\Core\Widgets;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
@@ -45,7 +45,7 @@ class SectionWidget extends BaseWidget
 
     protected function getCategory(): string
     {
-        return WidgetCategory::LAYOUT;
+        return WidgetCategory::CORE;
     }
 
     protected function getWidgetTags(): array

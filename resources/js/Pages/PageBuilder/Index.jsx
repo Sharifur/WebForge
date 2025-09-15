@@ -18,14 +18,30 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
     activeId,
     hoveredDropZone,
     settingsPanelVisible,
+    sidebarCollapsed,
     setPageContent,
     setSelectedWidget,
     setActivePanel,
     initializePageContent,
-    loadPageContent
+    loadPageContent,
+    toggleSidebar
   } = usePageBuilderStore();
 
   const { handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop();
+
+  // Keyboard shortcut for toggling sidebar
+  React.useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Toggle sidebar with Ctrl+B or Cmd+B
+      if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+        event.preventDefault();
+        toggleSidebar();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [toggleSidebar]);
 
   // Initialize page content on mount
   React.useEffect(() => {
@@ -105,6 +121,8 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
             templates={templates}
             activeTab={activePanel}
             onTabChange={setActivePanel}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={toggleSidebar}
           />
           
           {/* Main Canvas Area */}

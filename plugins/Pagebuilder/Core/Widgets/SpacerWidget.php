@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugins\Pagebuilder\Widgets\Layout;
+namespace Plugins\Pagebuilder\Core\Widgets;
 
 use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
@@ -9,14 +9,14 @@ use Plugins\Pagebuilder\Core\FieldManager;
 
 /**
  * SpacerWidget - Provides flexible spacing control with responsive options
- * 
+ *
  * Features:
  * - Adjustable height with multiple units
  * - Responsive spacing for different breakpoints
  * - Visibility controls for different devices
  * - Custom background for visual debugging
  * - Min/max height constraints
- * 
+ *
  * @package Plugins\Pagebuilder\Widgets\Layout
  */
 class SpacerWidget extends BaseWidget
@@ -33,7 +33,7 @@ class SpacerWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-move-vertical';
+        return 'las la-expand-arrows-alt';
     }
 
     protected function getWidgetDescription(): string
@@ -43,7 +43,7 @@ class SpacerWidget extends BaseWidget
 
     protected function getCategory(): string
     {
-        return WidgetCategory::LAYOUT;
+        return WidgetCategory::CORE;
     }
 
     protected function getWidgetTags(): array
@@ -57,7 +57,7 @@ class SpacerWidget extends BaseWidget
     public function getGeneralFields(): array
     {
         $control = new ControlManager();
-        
+
         // Spacing Configuration Group
         $control->addGroup('spacing', 'Spacing Configuration')
             ->registerField('height', FieldManager::NUMBER()
@@ -304,27 +304,27 @@ class SpacerWidget extends BaseWidget
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
-        
+
         $height = $general['height'] ?? 50;
         $minHeight = $general['min_height'] ?? 0;
         $maxHeight = $general['max_height'] ?? '';
-        
+
         $hideOnDesktop = $general['hide_on_desktop'] ?? false;
         $hideOnTablet = $general['hide_on_tablet'] ?? false;
         $hideOnMobile = $general['hide_on_mobile'] ?? false;
-        
+
         $spacerType = $general['spacer_type'] ?? 'vertical';
         $horizontalWidth = $general['horizontal_width'] ?? 50;
         $inlineSpacer = $general['inline_spacer'] ?? false;
-        
+
         $showBackground = $style['show_background'] ?? false;
         $showBorder = $style['show_border'] ?? false;
         $showLabel = $style['show_label'] ?? false;
         $labelText = htmlspecialchars($style['label_text'] ?? 'SPACER', ENT_QUOTES, 'UTF-8');
-        
+
         // Build CSS classes
         $classes = ['spacer-element', 'spacer-' . $spacerType];
-        
+
         // Add responsive visibility classes
         if ($hideOnDesktop) {
             $classes[] = 'hide-desktop';
@@ -335,7 +335,7 @@ class SpacerWidget extends BaseWidget
         if ($hideOnMobile) {
             $classes[] = 'hide-mobile';
         }
-        
+
         // Add visual debugging classes
         if ($showBackground) {
             $classes[] = 'has-background';
@@ -346,52 +346,52 @@ class SpacerWidget extends BaseWidget
         if ($showLabel) {
             $classes[] = 'has-label';
         }
-        
+
         // Add inline class if needed
         if ($inlineSpacer && in_array($spacerType, ['horizontal', 'both'])) {
             $classes[] = 'inline-spacer';
         }
-        
+
         $classString = implode(' ', $classes);
-        
+
         // Build inline styles
         $styles = [];
-        
+
         // Height for vertical spacing
         if (in_array($spacerType, ['vertical', 'both'])) {
             $heightUnit = is_numeric($height) ? $height . 'px' : $height;
             $styles[] = 'height: ' . $heightUnit;
-            
+
             if ($minHeight > 0) {
                 $minHeightUnit = is_numeric($minHeight) ? $minHeight . 'px' : $minHeight;
                 $styles[] = 'min-height: ' . $minHeightUnit;
             }
-            
+
             if (!empty($maxHeight)) {
                 $maxHeightUnit = is_numeric($maxHeight) ? $maxHeight . 'px' : $maxHeight;
                 $styles[] = 'max-height: ' . $maxHeightUnit;
             }
         }
-        
+
         // Width for horizontal spacing
         if (in_array($spacerType, ['horizontal', 'both'])) {
             $widthUnit = is_numeric($horizontalWidth) ? $horizontalWidth . 'px' : $horizontalWidth;
             $styles[] = 'width: ' . $widthUnit;
-            
+
             if ($inlineSpacer) {
                 $styles[] = 'display: inline-block';
             }
         }
-        
+
         // For "both" type, make it a flexible box
         if ($spacerType === 'both') {
             $styles[] = 'display: flex';
             $styles[] = 'align-items: center';
             $styles[] = 'justify-content: center';
         }
-        
+
         $styleString = !empty($styles) ? ' style="' . implode('; ', $styles) . '"' : '';
-        
+
         // Build content
         $content = '';
         if ($showLabel) {
@@ -399,7 +399,7 @@ class SpacerWidget extends BaseWidget
             $labelClass = implode(' ', $labelClasses);
             $content = "<span class=\"{$labelClass}\">{$labelText}</span>";
         }
-        
+
         return "<div class=\"{$classString}\"{$styleString}>{$content}</div>";
     }
 
@@ -409,33 +409,33 @@ class SpacerWidget extends BaseWidget
     public function generateCSS(string $widgetId, array $settings): string
     {
         $styleControl = new ControlManager();
-        
+
         // Register style fields for CSS generation
         $this->registerStyleFields($styleControl);
-        
+
         $css = $styleControl->generateCSS($widgetId, $settings['style'] ?? []);
-        
+
         // Add responsive visibility CSS
         $general = $settings['general'] ?? [];
-        
+
         if ($general['hide_on_desktop'] ?? false) {
             $css .= "\n@media (min-width: 1024px) {";
             $css .= "\n    #{$widgetId} .spacer-element.hide-desktop { display: none !important; }";
             $css .= "\n}";
         }
-        
+
         if ($general['hide_on_tablet'] ?? false) {
             $css .= "\n@media (min-width: 768px) and (max-width: 1023px) {";
             $css .= "\n    #{$widgetId} .spacer-element.hide-tablet { display: none !important; }";
             $css .= "\n}";
         }
-        
+
         if ($general['hide_on_mobile'] ?? false) {
             $css .= "\n@media (max-width: 767px) {";
             $css .= "\n    #{$widgetId} .spacer-element.hide-mobile { display: none !important; }";
             $css .= "\n}";
         }
-        
+
         // Add label positioning CSS
         $style = $settings['style'] ?? [];
         if ($style['show_label'] ?? false) {
@@ -445,7 +445,7 @@ class SpacerWidget extends BaseWidget
             $css .= "\n    align-items: center;";
             $css .= "\n    justify-content: center;";
             $css .= "\n}";
-            
+
             $css .= "\n#{$widgetId} .spacer-label {";
             $css .= "\n    font-family: monospace;";
             $css .= "\n    font-weight: 500;";
@@ -455,23 +455,23 @@ class SpacerWidget extends BaseWidget
             $css .= "\n    pointer-events: none;";
             $css .= "\n}";
         }
-        
+
         // Add spacer type specific CSS
         $spacerType = $general['spacer_type'] ?? 'vertical';
-        
+
         if ($spacerType === 'horizontal') {
             $css .= "\n#{$widgetId} .spacer-horizontal {";
             $css .= "\n    height: auto;";
             $css .= "\n    min-height: 1px;";
             $css .= "\n}";
         }
-        
+
         if ($spacerType === 'both') {
             $css .= "\n#{$widgetId} .spacer-both {";
             $css .= "\n    box-sizing: border-box;";
             $css .= "\n}";
         }
-        
+
         return $css;
     }
 

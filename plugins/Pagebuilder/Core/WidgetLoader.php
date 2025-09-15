@@ -222,35 +222,35 @@ class WidgetLoader
     }
 
     /**
-     * Register basic widgets
+     * Register core widgets (basic and layout)
      */
     private static function registerBasicWidgets(): void
     {
-        $basicWidgets = [
-            \Plugins\Pagebuilder\Widgets\Basic\HeadingWidget::class,
-            \Plugins\Pagebuilder\Widgets\Basic\ParagraphWidget::class,
-            \Plugins\Pagebuilder\Widgets\Basic\ListWidget::class,
-            \Plugins\Pagebuilder\Widgets\Basic\LinkWidget::class,
-            \Plugins\Pagebuilder\Widgets\Basic\ButtonWidget::class,
+        $coreWidgets = [
+            \Plugins\Pagebuilder\Core\Widgets\HeadingWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\ParagraphWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\ListWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\LinkWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\ButtonWidget::class,
             HeaderWidget::class,
         ];
 
-        WidgetRegistry::registerMultiple($basicWidgets);
+        WidgetRegistry::registerMultiple($coreWidgets);
     }
 
     /**
-     * Register layout widgets
+     * Register core layout widgets
      */
     private static function registerLayoutWidgets(): void
     {
-        $layoutWidgets = [
-            \Plugins\Pagebuilder\Widgets\Layout\SectionWidget::class,
-            \Plugins\Pagebuilder\Widgets\Layout\DividerWidget::class,
-            \Plugins\Pagebuilder\Widgets\Layout\SpacerWidget::class,
-            \Plugins\Pagebuilder\Widgets\Layout\GridWidget::class,
+        $coreLayoutWidgets = [
+            \Plugins\Pagebuilder\Core\Widgets\SectionWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\DividerWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\SpacerWidget::class,
+            \Plugins\Pagebuilder\Core\Widgets\GridWidget::class,
         ];
 
-        WidgetRegistry::registerMultiple($layoutWidgets);
+        WidgetRegistry::registerMultiple($coreLayoutWidgets);
     }
 
     /**

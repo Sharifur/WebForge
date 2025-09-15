@@ -54,12 +54,27 @@ class HeaderWidget extends BaseWidget
         $control = new ControlManager();
 
         $control->addGroup('general_content','General Content')
-            ->registerField('heading_text', FieldManager::TEXT()
-                ->setLabel('Heading Text')
-                ->setDefault('Your Heading Text')
+            ->registerField('title', FieldManager::TEXTAREA()
+                ->setLabel('Title')
+                ->setDefault('Turn Raw Data Into {c}Actionable Insights{/c} Instantly')
                 ->setRequired(true)
-                ->setPlaceholder('Enter your heading text')
-                ->setDescription('The text content of the heading')
+                ->setPlaceholder('Enter title use {c}color{/c} text')
+            )
+            ->registerField('description', FieldManager::WYSIWYG()
+                ->setLabel('Description')
+                ->setDefault('CogniAI is an advanced AI-powered data analytics platform designed to transform raw data into actionable insights.')
+                ->setPlaceholder('Enter description text')
+            )
+        ->endGroup();
+
+        $control->addGroup('cta_buttons','Call to Action Buttons')
+            ->registerField('primary_button_text', FieldManager::TEXT()
+                ->setLabel('Primary Button Text')
+                ->setDefault('Get Started Free')
+            )
+            ->registerField('secondary_button_text', FieldManager::TEXT()
+                ->setLabel('Secondary Button Text')
+                ->setDefault('Watch Demo')
             )
         ->endGroup();
 
@@ -67,14 +82,12 @@ class HeaderWidget extends BaseWidget
     }
 
     /**
-     * Style settings with unified typography and background controls
+     * Style settings - intentionally empty for header widget
      */
     public function getStyleFields(): array
     {
-        $control = new ControlManager();
-
-
-        return $control->getFields();
+        // Return completely empty array to remove all style fields
+        return [];
     }
 
 

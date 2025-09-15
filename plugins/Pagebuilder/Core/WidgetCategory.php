@@ -5,6 +5,7 @@ namespace Plugins\Pagebuilder\Core;
 class WidgetCategory
 {
     // Category constants
+    public const CORE = 'core';
     public const BASIC = 'basic';
     public const CONTENT = 'content';
     public const MEDIA = 'media';
@@ -20,6 +21,14 @@ class WidgetCategory
 
     // Category definitions
     private static array $categories = [
+        self::CORE => [
+            'name' => 'Core',
+            'icon' => 'cpu',
+            'description' => 'Core system widgets (hidden from developer view)',
+            'color' => '#6B7280',
+            'sort_order' => 0,
+            'hidden' => true // Hide from main sidebar
+        ],
         self::LAYOUT => [
             'name' => 'Layout',
             'icon' => 'layout',

@@ -89,57 +89,6 @@ trait BladeRenderable
         return "widgets.{$this->getWidgetType()}";
     }
     
-    /**
-     * Prepare data for Blade template
-     * 
-     * @param array $settings Widget settings
-     * @return array Formatted data for template
-     */
-    protected function prepareTemplateData(array $settings): array
-    {
-        $general = $settings['general'] ?? [];
-        $style = $settings['style'] ?? [];
-        $advanced = $settings['advanced'] ?? [];
-        
-        return [
-            'settings' => $settings,
-            'general' => $general,
-            'style' => $style,
-            'advanced' => $advanced,
-            'widget' => [
-                'type' => $this->getWidgetType(),
-                'name' => $this->getWidgetName(),
-                'icon' => $this->getWidgetIcon(),
-                'description' => $this->getWidgetDescription()
-            ],
-            'css_classes' => $this->buildCssClasses($settings),
-            'inline_styles' => $this->generateInlineStyles(['style' => $style ?? []])
-        ];
-    }
-    
-    /**
-     * Build CSS classes for the widget
-     * 
-     * @param array $settings Widget settings
-     * @return string Space-separated CSS classes
-     */
-    protected function buildCssClasses(array $settings): string
-    {
-        $classes = [
-            'pagebuilder-widget',
-            'pagebuilder-' . $this->getWidgetType(),
-            'widget-' . $this->getWidgetType()
-        ];
-        
-        // Add custom classes from advanced settings
-        $advanced = $settings['advanced'] ?? [];
-        if (isset($advanced['css_classes']) && !empty($advanced['css_classes'])) {
-            $customClasses = explode(' ', $advanced['css_classes']);
-            $classes = array_merge($classes, array_filter($customClasses));
-        }
-        
-        return implode(' ', $classes);
-    }
     
     /**
      * Fallback rendering method when Blade templates fail
