@@ -638,11 +638,25 @@ abstract class BaseWidget
             // The getStyleFields() already returns processed field data
             // We'll use the fallback inline style generation instead
             
-            // Use fallback inline style generation since fields are already processed
-            return $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+            // Get inline styles and wrap with proper selector
+            $inlineStyles = $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+            
+            if (!empty($inlineStyles)) {
+                // Wrap inline styles with widget selector for proper CSS
+                return "#{$widgetId} .{$this->getWidgetType()}-element { {$inlineStyles} }";
+            }
+            
+            return '';
         } catch (\Exception $e) {
             // Fallback to automatic inline style generation if ControlManager fails
-            return $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+            $inlineStyles = $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
+            
+            if (!empty($inlineStyles)) {
+                // Wrap inline styles with widget selector for proper CSS
+                return "#{$widgetId} .{$this->getWidgetType()}-element { {$inlineStyles} }";
+            }
+            
+            return '';
         }
     }
 
