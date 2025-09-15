@@ -11,7 +11,8 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         {{-- load line icon --}}
         <link rel="stylesheet" href="{{ asset('assets/css/line-awesome.min.css') }}">
-        <link rel="stylesheet" href="{{ asset('css/pagebuilder-defaults.css') }}">
+{{--        <link rel="stylesheet" href="{{ asset('css/pagebuilder-defaults.css') }}">--}}
+        <link rel="stylesheet" href="{{ asset('assets/css/widgets.css') }}">
         <!-- Scripts -->
         @routes
         @viteReactRefresh

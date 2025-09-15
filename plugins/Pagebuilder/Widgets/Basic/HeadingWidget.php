@@ -10,14 +10,14 @@ use Plugins\Pagebuilder\Core\BladeRenderable;
 
 /**
  * HeadingWidget - Modern heading widget with automatic styling
- * 
+ *
  * Features:
  * - Heading levels H1-H6
  * - Unified typography controls via TYPOGRAPHY_GROUP
- * - Unified background controls via BACKGROUND_GROUP  
+ * - Unified background controls via BACKGROUND_GROUP
  * - Text alignment and link functionality
  * - Automatic CSS generation via BaseWidget
- * 
+ *
  * @package Plugins\Pagebuilder\Widgets\Basic
  */
 class HeadingWidget extends BaseWidget
@@ -60,7 +60,7 @@ class HeadingWidget extends BaseWidget
     public function getGeneralFields(): array
     {
         $control = new ControlManager();
-        
+
         // Content Group
         $control->addGroup('content', 'Content Settings')
             ->registerField('heading_text', FieldManager::TEXT()
@@ -153,6 +153,7 @@ class HeadingWidget extends BaseWidget
                 ->setDescription('Color when hovering over linked heading')
             )
             ->endGroup();
+
         return $control->getFields();
     }
 
@@ -167,11 +168,11 @@ class HeadingWidget extends BaseWidget
             $templateData = $this->prepareTemplateData($settings);
             return $this->renderBladeTemplate($this->getDefaultTemplatePath(), $templateData);
         }
-        
+
         // Fallback to manual HTML generation
         return $this->renderManually($settings);
     }
-    
+
     /**
      * Manual HTML rendering - Clean and simplified
      */
@@ -179,40 +180,40 @@ class HeadingWidget extends BaseWidget
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
-        
+
         // Access nested content structure
         $content = $general['content'] ?? [];
         $link = $general['link'] ?? [];
-        
+
         $text = $this->sanitizeText($content['heading_text'] ?? 'Your Heading Text');
-        $level = in_array($content['heading_level'] ?? 'h2', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) 
-            ? $content['heading_level'] 
+        $level = in_array($content['heading_level'] ?? 'h2', ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+            ? $content['heading_level']
             : 'h2';
-        
+
         // Enhanced link data
         $enhancedLink = $link['enhanced_link'] ?? [];
         $enableLink = !empty($enhancedLink['url']);
         $linkUrl = $this->sanitizeURL($enhancedLink['url'] ?? '#');
-        $linkTarget = in_array($enhancedLink['target'] ?? '_self', ['_self', '_blank', '_parent', '_top']) 
-            ? $enhancedLink['target'] 
+        $linkTarget = in_array($enhancedLink['target'] ?? '_self', ['_self', '_blank', '_parent', '_top'])
+            ? $enhancedLink['target']
             : '_self';
         $linkRel = !empty($enhancedLink['rel']) ? implode(' ', $enhancedLink['rel']) : '';
         $linkTitle = $enhancedLink['title'] ?? '';
         $linkId = $enhancedLink['id'] ?? '';
         $linkClass = $enhancedLink['class'] ?? '';
-        
-        // Use BaseWidget's automatic CSS class generation  
+
+        // Use BaseWidget's automatic CSS class generation
         $classString = $this->buildCssClasses($settings);
-        
+
         // Use BaseWidget's automatic CSS generation
         $styleAttr = $this->generateStyleAttribute(['general' => $general, 'style' => $style]);
-        
+
         if ($enableLink && !empty($linkUrl)) {
             $linkAttributes = [
                 'href' => $linkUrl,
                 'target' => $linkTarget
             ];
-            
+
             // Add enhanced link attributes
             if (!empty($linkRel)) {
                 $linkAttributes['rel'] = $linkRel;
@@ -226,7 +227,7 @@ class HeadingWidget extends BaseWidget
             if (!empty($linkClass)) {
                 $linkAttributes['class'] = $linkClass;
             }
-            
+
             // Add custom attributes if present
             if (!empty($enhancedLink['custom_attributes'])) {
                 foreach ($enhancedLink['custom_attributes'] as $attr) {
@@ -235,9 +236,9 @@ class HeadingWidget extends BaseWidget
                     }
                 }
             }
-            
+
             $linkAttrs = $this->buildAttributes($linkAttributes);
-            
+
             return "<{$level} class=\"{$classString}\"{$styleAttr}><a {$linkAttrs}>{$text}</a></{$level}>";
         } else {
             return "<{$level} class=\"{$classString}\"{$styleAttr}>{$text}</{$level}>";

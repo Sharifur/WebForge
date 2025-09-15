@@ -20,39 +20,39 @@ class WidgetCategory
 
     // Category definitions
     private static array $categories = [
+        self::LAYOUT => [
+            'name' => 'Layout',
+            'icon' => 'layout',
+            'description' => 'Structural and layout widgets',
+            'color' => '#8B5CF6',
+            'sort_order' => 1
+        ],
         self::BASIC => [
             'name' => 'Basic',
             'icon' => 'square',
             'description' => 'Essential widgets for basic functionality',
             'color' => '#3B82F6',
-            'sort_order' => 1
+            'sort_order' => 2
         ],
         self::CONTENT => [
             'name' => 'Content',
             'icon' => 'file-text',
             'description' => 'Text, headings, and content widgets',
             'color' => '#10B981',
-            'sort_order' => 2
+            'sort_order' => 3
         ],
         self::MEDIA => [
             'name' => 'Media',
             'icon' => 'image',
             'description' => 'Images, videos, and media widgets',
             'color' => '#F59E0B',
-            'sort_order' => 3
+            'sort_order' => 4
         ],
         self::FORM => [
             'name' => 'Form',
             'icon' => 'clipboard-list',
             'description' => 'Form elements and input widgets',
             'color' => '#EF4444',
-            'sort_order' => 4
-        ],
-        self::LAYOUT => [
-            'name' => 'Layout',
-            'icon' => 'layout',
-            'description' => 'Structural and layout widgets',
-            'color' => '#8B5CF6',
             'sort_order' => 5
         ],
         self::ECOMMERCE => [
@@ -216,6 +216,24 @@ class WidgetCategory
 
         $categoryData['sort_order'] = $categoryData['sort_order'] ?? 999;
         self::$categories[$slug] = $categoryData;
+    }
+
+    /**
+     * Register a custom category (simplified method for WidgetRegistrar)
+     */
+    public static function registerCustomCategory(string $slug, string $name, string $icon, int $sortOrder = 100): void
+    {
+        if (self::categoryExists($slug)) {
+            throw new \InvalidArgumentException("Category '{$slug}' already exists");
+        }
+
+        self::addCustomCategory($slug, [
+            'name' => $name,
+            'icon' => $icon,
+            'description' => "Custom {$name} widgets",
+            'color' => '#6366F1', // Default indigo color for custom categories
+            'sort_order' => $sortOrder
+        ]);
     }
 
     /**

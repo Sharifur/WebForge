@@ -11,7 +11,7 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Plugins\Pagebuilder\WidgetLoader;
+use Plugins\Pagebuilder\Core\WidgetLoader;
 use Plugins\Pagebuilder\Core\WidgetRegistry;
 use Plugins\Pagebuilder\Core\WidgetCategory;
 

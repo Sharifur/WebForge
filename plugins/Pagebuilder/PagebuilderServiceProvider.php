@@ -3,7 +3,7 @@
 namespace Plugins\Pagebuilder;
 
 use Illuminate\Support\ServiceProvider;
-use Plugins\Pagebuilder\WidgetLoader;
+use Plugins\Pagebuilder\Core\WidgetLoader;
 
 /**
  * PagebuilderServiceProvider - Laravel service provider for the widget system

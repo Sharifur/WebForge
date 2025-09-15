@@ -53,6 +53,15 @@ class HeaderWidget extends BaseWidget
     {
         $control = new ControlManager();
 
+        $control->addGroup('general_content','General Content')
+            ->registerField('heading_text', FieldManager::TEXT()
+                ->setLabel('Heading Text')
+                ->setDefault('Your Heading Text')
+                ->setRequired(true)
+                ->setPlaceholder('Enter your heading text')
+                ->setDescription('The text content of the heading')
+            )
+        ->endGroup();
 
         return $control->getFields();
     }

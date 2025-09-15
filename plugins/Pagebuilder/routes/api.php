@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Plugins\Pagebuilder\WidgetLoader;
+use Plugins\Pagebuilder\Core\WidgetLoader;
 
 /*
 |--------------------------------------------------------------------------

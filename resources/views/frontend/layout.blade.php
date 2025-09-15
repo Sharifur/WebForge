@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <!-- Dynamic Meta Information -->
     @if(isset($page) && $page->metaInformation)
         <title>{{ $page->metaInformation->meta_title ?: $page->title }}</title>
@@ -11,7 +11,7 @@
         <meta name="keywords" content="{{ $page->metaInformation->meta_keywords }}">
         <meta name="robots" content="{{ $page->metaInformation->meta_robots ?: 'index,follow' }}">
         <link rel="canonical" href="{{ $page->metaInformation->canonical_url ?: url()->current() }}">
-        
+
         <!-- Open Graph Tags -->
         <meta property="og:title" content="{{ $page->metaInformation->og_title ?: $page->metaInformation->meta_title ?: $page->title }}">
         <meta property="og:description" content="{{ $page->metaInformation->og_description ?: $page->metaInformation->meta_description }}">
@@ -21,7 +21,7 @@
             <meta property="og:image" content="{{ $page->metaInformation->og_image }}">
         @endif
         <meta property="og:site_name" content="{{ $page->metaInformation->og_site_name ?: config('app.name') }}">
-        
+
         <!-- Twitter Card Tags -->
         <meta name="twitter:card" content="{{ $page->metaInformation->twitter_card ?: 'summary' }}">
         <meta name="twitter:title" content="{{ $page->metaInformation->twitter_title ?: $page->metaInformation->og_title ?: $page->title }}">
@@ -32,7 +32,7 @@
         @if($page->metaInformation->twitter_site)
             <meta name="twitter:site" content="{{ $page->metaInformation->twitter_site }}">
         @endif
-        
+
         <!-- Structured Data -->
         @if($page->metaInformation->schema_markup)
             <script type="application/ld+json">
@@ -43,18 +43,19 @@
         <title>@yield('title', config('app.name'))</title>
         <meta name="description" content="@yield('description', 'Welcome to our website')">
     @endif
-    
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <link rel="stylesheet" href="{{asset('assets/css/widgets.css')}}">
     <!-- Page Builder Default Styles -->
-    <link rel="stylesheet" href="{{ asset(config('app.debug') ? 'css/pagebuilder-defaults.css' : 'css/pagebuilder-defaults.min.css') }}">
-    
+{{--    <link rel="stylesheet" href="{{ asset(config('app.debug') ? 'css/pagebuilder-defaults.css' : 'css/pagebuilder-defaults.min.css') }}">--}}
+
     <!-- Page Builder CSS -->
     @yield('styles')
-    
+
     @stack('head')
 </head>
 <body class="bg-gray-50">

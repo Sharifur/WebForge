@@ -1,22 +1,177 @@
 # Advanced Page Builder Development Guide
 
+This guide covers advanced topics for developers working with the PHP-first page builder system. All widgets are now developed entirely in PHP with automatic frontend rendering through the universal PhpWidgetRenderer system.
+
 ## Table of Contents
-1. [Adding New Field Types](#adding-new-field-types)
-2. [CSS Generation Debugging](#css-generation-debugging)
-3. [Adding New Responsive Devices](#adding-new-responsive-devices)
-4. [Troubleshooting: ButtonWidget CSS Generation](#troubleshooting-buttonwidget-css-generation)
+1. [PHP Widget Development](#php-widget-development)
+2. [Automatic CSS Generation](#automatic-css-generation)
+3. [Advanced Field Types](#advanced-field-types)
+4. [CSS Generation Debugging](#css-generation-debugging)
+5. [Adding New Responsive Devices](#adding-new-responsive-devices)
+6. [Widget Template System](#widget-template-system)
 
 ---
 
-## Adding New Field Types
+## PHP Widget Development
 
-This section demonstrates how to add a completely new field type to the page builder system, from PHP backend to React frontend.
+The page builder now uses a PHP-first architecture where widgets are developed entirely in PHP. The frontend automatically renders all widgets without requiring separate React components.
 
-### Example: Adding a Gradient Picker Field
+### Core Principles
+
+1. **Single Development Path**: Write PHP classes only
+2. **Universal Rendering**: All widgets render through PhpWidgetRenderer
+3. **Automatic Integration**: Widgets appear automatically in the sidebar
+4. **Template Discovery**: Blade templates automatically found and used
+5. **CSS Generation**: Automatic from field definitions
+
+### Creating a PHP Widget
+
+```php
+<?php
+namespace Plugins\Pagebuilder\Widgets\Basic;
+
+use Plugins\Pagebuilder\Core\BaseWidget;
+use Plugins\Pagebuilder\Core\BladeRenderable;
+use Plugins\Pagebuilder\Core\ControlManager;
+use Plugins\Pagebuilder\Core\FieldManager;
+use Plugins\Pagebuilder\Core\WidgetCategory;
+
+class CustomWidget extends BaseWidget
+{
+    use BladeRenderable;
+
+    protected function getWidgetType(): string
+    {
+        return 'custom_widget';
+    }
+
+    protected function getWidgetName(): string
+    {
+        return 'Custom Widget';
+    }
+
+    protected function getWidgetIcon(): string
+    {
+        return 'las la-star';
+    }
+
+    protected function getWidgetDescription(): string
+    {
+        return 'A custom widget with automatic CSS generation';
+    }
+
+    protected function getCategory(): string
+    {
+        return WidgetCategory::BASIC;
+    }
+
+    public function getGeneralFields(): array
+    {
+        $control = new ControlManager();
+        
+        $control->addGroup('content', 'Content')
+            ->registerField('title', FieldManager::TEXT()
+                ->setLabel('Title')
+                ->setDefault('Custom Widget')
+                ->setRequired(true)
+            )
+            ->endGroup();
+
+        return $control->getFields();
+    }
+
+    public function getStyleFields(): array
+    {
+        $control = new ControlManager();
+        
+        // Use TYPOGRAPHY_GROUP for automatic CSS generation
+        $control->addGroup('typography', 'Typography')
+            ->registerField('text_typography', FieldManager::TYPOGRAPHY_GROUP()
+                ->setLabel('Typography')
+                ->setSelectors([
+                    '{{WRAPPER}} .custom-widget' => 'CSS_PLACEHOLDER'
+                ])
+            )
+            ->endGroup();
+
+        return $control->getFields();
+    }
+
+    public function render(array $settings = []): string
+    {
+        // Automatic template handling
+        if ($this->hasBladeTemplate()) {
+            return $this->renderBladeTemplate(
+                $this->getDefaultTemplatePath(), 
+                $this->prepareTemplateData($settings)
+            );
+        }
+        
+        // Manual rendering fallback
+        return $this->renderManually($settings);
+    }
+    
+    private function renderManually(array $settings): string
+    {
+        $general = $settings['general'] ?? [];
+        $content = $general['content'] ?? [];
+        $title = $content['title'] ?? 'Custom Widget';
+        
+        return "<div class='custom-widget'>{$title}</div>";
+    }
+}
+```
+
+---
+
+## Automatic CSS Generation
+
+The system now provides automatic CSS generation for Typography and Background group fields. This eliminates the need for manual CSS building.
+
+### Typography Group
+
+```php
+$control->addGroup('typography', 'Typography')
+    ->registerField('heading_typography', FieldManager::TYPOGRAPHY_GROUP()
+        ->setLabel('Typography')
+        ->setDefaultTypography([
+            'font_size' => ['value' => 24, 'unit' => 'px'],
+            'font_weight' => '600'
+        ])
+        ->setSelectors([
+            '{{WRAPPER}} .heading' => 'CSS_PLACEHOLDER'
+        ])
+    )
+    ->endGroup();
+```
+
+### Background Group
+
+```php
+$control->addGroup('background', 'Background')
+    ->registerField('element_background', FieldManager::BACKGROUND_GROUP()
+        ->setLabel('Background')
+        ->setAllowedTypes(['none', 'color', 'gradient'])
+        ->setSelectors([
+            '{{WRAPPER}} .element' => 'CSS_PLACEHOLDER'
+        ])
+    )
+    ->endGroup();
+```
+
+CSS is generated automatically - no manual buildInlineStyles() code needed!
+
+---
+
+## Advanced Field Types
+
+The page builder includes comprehensive field types. Here's how to add custom field types when needed:
+
+### Adding a Gradient Picker Field
 
 #### Step 1: Create the PHP Field Class
 
-Create a new field class in `plugins/Pagebuilder/Core/Fields/`:
+Create the field class in `plugins/Pagebuilder/Core/Fields/`:
 
 ```php
 <?php
@@ -105,7 +260,7 @@ class FieldManager
 
 #### Step 3: Create React Component
 
-Create the React component in `resources/js/Components/PageBuilder/Fields/`:
+The React component handles the frontend UI in `resources/js/Components/PageBuilder/Fields/`:
 
 ```jsx
 // File: resources/js/Components/PageBuilder/Fields/GradientPicker.jsx
@@ -355,7 +510,7 @@ export default GradientPicker;
 
 #### Step 4: Register in PhpFieldRenderer
 
-Update `resources/js/Components/PageBuilder/Fields/PhpFieldRenderer.jsx`:
+Add the component to the universal field renderer:
 
 ```jsx
 import GradientPicker from './GradientPicker';
@@ -393,9 +548,9 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange, deviceType }
 };
 ```
 
-#### Step 5: Use in Widget
+#### Step 5: Use in Widgets
 
-Now you can use the gradient field in any widget:
+Use the gradient field in any PHP widget:
 
 ```php
 <?php
@@ -416,6 +571,8 @@ $control->addGroup('background', 'Background')
 ---
 
 ## CSS Generation Debugging
+
+The CSS generation system includes comprehensive debugging tools for troubleshooting widget styles.
 
 ### Debug Mode Implementation
 
@@ -840,24 +997,76 @@ const StyleSettings = ({ widget, onSettingsChange }) => {
 
 ---
 
-## Troubleshooting: ButtonWidget CSS Generation
+## Widget Template System
 
-### Problem Description
-Error: `Call to undefined method Plugins\Pagebuilder\Widgets\Basic\ButtonWidget::generateCSS()`
+The page builder supports automatic template discovery using Blade templates. This provides a clean separation between widget logic and presentation.
 
-This error occurs when the widget preview API tries to call the `generateCSS()` method on ButtonWidget, but the method doesn't exist or isn't properly implemented.
+### Template Structure
 
-### Root Cause Analysis
+Place widget templates in `resources/views/widgets/{widget-type}.blade.php`:
 
-1. **Missing generateCSS Method**: The ButtonWidget class doesn't override the base `generateCSS()` method
-2. **No CSS Selectors**: The widget's style fields don't have CSS selectors defined
-3. **Incomplete Field Registration**: Fields aren't properly registered with the ControlManager for CSS generation
+```blade
+{{-- resources/views/widgets/custom_widget.blade.php --}}
+<div class="{{ $cssClasses }} custom-widget"{!! $styleAttr !!}>
+    <h3 class="widget-title">{{ $title }}</h3>
+    @if($description)
+        <p class="widget-description">{{ $description }}</p>
+    @endif
+</div>
+```
 
-### Solution Implementation
+### Template Data
 
-#### Step 1: Add CSS Selectors to Style Fields
+BaseWidget automatically provides:
+- `$cssClasses` - Generated CSS classes
+- `$styleAttr` - Inline style attribute
+- All widget settings data
+- Sanitized content variables
 
-Update the `getStyleFields()` method in ButtonWidget to include CSS selectors:
+### Template Discovery
+
+The BladeRenderable trait automatically:
+1. Looks for templates in `resources/views/widgets/`
+2. Uses widget type as template name
+3. Falls back to manual rendering if template not found
+4. Handles errors gracefully
+
+---
+
+## Troubleshooting Common Issues
+
+### Widget Not Appearing
+
+If a widget doesn't appear in the sidebar:
+
+1. **Check Widget Registration**: Ensure widget is in `plugins/Pagebuilder/Widgets/`
+2. **Verify Class Structure**: Widget must extend BaseWidget
+3. **Check Required Methods**: All abstract methods must be implemented
+4. **Review Namespace**: Correct namespace structure required
+
+### CSS Not Generated
+
+If widget CSS is not generating:
+
+1. **Add CSS Selectors**: All style fields need selectors defined
+2. **Use Group Fields**: TYPOGRAPHY_GROUP and BACKGROUND_GROUP auto-generate CSS
+3. **Check Field Values**: Ensure field values are being saved properly
+4. **Verify Template**: CSS classes must match template structure
+
+### Template Not Loading
+
+If Blade template is not found:
+
+1. **Check Template Path**: Must be in `resources/views/widgets/`
+2. **Verify Filename**: Must match widget type exactly
+3. **Clear View Cache**: Run `php artisan view:clear`
+4. **Check BladeRenderable**: Ensure trait is used in widget class
+
+### PHP Widget Best Practices
+
+#### Field Definition
+
+Always include CSS selectors for style fields:
 
 ```php
 <?php
@@ -1001,9 +1210,9 @@ public function getStyleFields(): array
 }
 ```
 
-#### Step 2: Implement generateCSS Method
+#### Automatic CSS Generation
 
-Add the `generateCSS()` method to ButtonWidget:
+Use BaseWidget's built-in CSS generation:
 
 ```php
 <?php
@@ -1023,9 +1232,9 @@ public function generateCSS(string $widgetId, array $settings): string
 }
 ```
 
-#### Step 3: Update HTML Output
+#### Template Integration
 
-Ensure the widget's HTML output uses the correct CSS classes:
+Leverage Blade templates for clean separation:
 
 ```php
 <?php
@@ -1094,9 +1303,25 @@ public function render(array $settings = []): string
 }
 ```
 
-### Testing the Fix
+### Development Workflow
 
-#### Step 1: Test the Preview API
+#### 1. Create Widget Class
+
+Extend BaseWidget with required methods.
+
+#### 2. Define Fields
+
+Use ControlManager and FieldManager for automatic CSS.
+
+#### 3. Create Template (Optional)
+
+Place Blade template in `resources/views/widgets/`.
+
+#### 4. Test Widget
+
+Widget automatically appears in sidebar and renders properly.
+
+### API Testing
 
 ```bash
 curl -X POST http://127.0.0.1:8001/api/pagebuilder/widgets/button/preview \
@@ -1162,21 +1387,18 @@ The generated CSS should include all the defined styles:
 }
 ```
 
-### Prevention Strategy
+### Widget Development Checklist
 
-To prevent similar issues in the future:
+- [ ] Widget extends BaseWidget with BladeRenderable trait
+- [ ] All required abstract methods implemented
+- [ ] Style fields include CSS selectors
+- [ ] Use TYPOGRAPHY_GROUP and BACKGROUND_GROUP for automatic CSS
+- [ ] Template follows proper structure (if used)
+- [ ] Widget tested in page builder interface
 
-#### 1. Widget Development Checklist
+### Widget Template
 
-- [ ] All style fields have CSS selectors defined
-- [ ] Widget implements `generateCSS()` method
-- [ ] HTML output uses correct CSS classes
-- [ ] Preview API endpoint works correctly
-- [ ] CSS generation produces expected output
-
-#### 2. Base Widget Template
-
-Create a base widget template with all required methods:
+Use this template for new widgets:
 
 ```php
 <?php
@@ -1191,6 +1413,8 @@ use Plugins\Pagebuilder\Core\FieldManager;
 
 class YourWidget extends BaseWidget
 {
+    use BladeRenderable;
+
     protected function getWidgetType(): string
     {
         return 'your_widget';
@@ -1203,7 +1427,7 @@ class YourWidget extends BaseWidget
 
     protected function getWidgetIcon(): string
     {
-        return 'lni-layout';
+        return 'las la-star';
     }
 
     protected function getWidgetDescription(): string
@@ -1218,21 +1442,27 @@ class YourWidget extends BaseWidget
 
     public function getGeneralFields(): array
     {
-        // Define general fields
-        return [];
+        $control = new ControlManager();
+        
+        $control->addGroup('content', 'Content')
+            ->registerField('title', FieldManager::TEXT()
+                ->setLabel('Title')
+                ->setDefault('Your Widget')
+            )
+            ->endGroup();
+        
+        return $control->getFields();
     }
 
     public function getStyleFields(): array
     {
         $control = new ControlManager();
         
-        // Always include CSS selectors for style fields
-        $control->addGroup('example', 'Example')
-            ->registerField('example_field', FieldManager::COLOR()
-                ->setLabel('Example Color')
-                ->setDefault('#3B82F6')
+        $control->addGroup('typography', 'Typography')
+            ->registerField('text_typography', FieldManager::TYPOGRAPHY_GROUP()
+                ->setLabel('Typography')
                 ->setSelectors([
-                    '{{WRAPPER}} .your-widget' => 'color: {{VALUE}};'
+                    '{{WRAPPER}} .your-widget' => 'CSS_PLACEHOLDER'
                 ])
             )
             ->endGroup();
@@ -1240,76 +1470,65 @@ class YourWidget extends BaseWidget
         return $control->getFields();
     }
 
-    /**
-     * REQUIRED: Generate CSS for this widget instance
-     */
-    public function generateCSS(string $widgetId, array $settings): string
-    {
-        $styleControl = new ControlManager();
-        
-        // Register style fields for CSS generation
-        $this->getStyleFields();
-        
-        return $styleControl->generateCSS($widgetId, $settings['style'] ?? []);
-    }
-
     public function render(array $settings = []): string
     {
-        // Use correct CSS classes that match your selectors
+        if ($this->hasBladeTemplate()) {
+            return $this->renderBladeTemplate(
+                $this->getDefaultTemplatePath(),
+                $this->prepareTemplateData($settings)
+            );
+        }
+        
         return '<div class="your-widget">Your content</div>';
     }
 }
 ```
 
-#### 3. Automated Testing
+### Testing PHP Widgets
 
-Create tests to verify CSS generation:
+Test widget functionality with automated tests:
 
 ```php
 <?php
 // tests/Feature/WidgetCSSGenerationTest.php
 
-class WidgetCSSGenerationTest extends TestCase
+class WidgetTest extends TestCase
 {
-    public function test_button_widget_generates_css()
+    public function test_widget_renders_correctly()
     {
-        $widget = new ButtonWidget();
+        $widget = new YourWidget();
         $settings = [
-            'style' => [
-                'colors' => [
-                    'background_color' => '#FF0000',
-                    'text_color' => '#FFFFFF'
+            'general' => [
+                'content' => [
+                    'title' => 'Test Title'
                 ]
             ]
         ];
         
-        $css = $widget->generateCSS('test-widget', $settings);
+        $html = $widget->render($settings);
         
-        $this->assertStringContains('background-color: #FF0000', $css);
-        $this->assertStringContains('color: #FFFFFF', $css);
-        $this->assertStringContains('#test-widget .widget-button', $css);
+        $this->assertStringContains('Test Title', $html);
+        $this->assertStringContains('your-widget', $html);
     }
     
-    public function test_all_widgets_have_generate_css_method()
+    public function test_widget_has_required_methods()
     {
-        $widgets = WidgetLoader::getAllWidgets();
+        $widget = new YourWidget();
         
-        foreach ($widgets as $widget) {
-            $this->assertTrue(
-                method_exists($widget, 'generateCSS'),
-                get_class($widget) . ' must implement generateCSS method'
-            );
-        }
+        $this->assertTrue(method_exists($widget, 'getWidgetType'));
+        $this->assertTrue(method_exists($widget, 'getWidgetName'));
+        $this->assertTrue(method_exists($widget, 'render'));
     }
 }
 ```
 
-The ButtonWidget CSS generation issue has been completely resolved by:
+This PHP-first widget system provides:
 
-1. ✅ Adding CSS selectors to all style fields
-2. ✅ Implementing the `generateCSS()` method
-3. ✅ Ensuring HTML output uses correct CSS classes
-4. ✅ Providing comprehensive debugging and prevention strategies
+1. ✅ Simplified development with minimal boilerplate
+2. ✅ Automatic CSS generation from field definitions  
+3. ✅ Universal rendering through PhpWidgetRenderer
+4. ✅ Template system for clean code separation
+5. ✅ Comprehensive debugging and testing tools
 
 ---
 

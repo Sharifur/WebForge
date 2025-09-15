@@ -13,50 +13,37 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const [localWidget, setLocalWidget] = useState(widget);
   const debounceTimeoutRef = useRef(null);
 
-  // PHP widget types
-  const phpWidgetTypes = [
-    'heading',
-    'paragraph', 
-    'image',
-    'list',
-    'link',
-    'divider',
-    'spacer',
-    'grid',
-    'video',
-    'icon',
-    'code',
-    'tabs',
-    'testimonial',
-    'button',
-    'contact_form',
-    'image_gallery'
-  ];
+  // Dynamic PHP widget detection - no hardcoded list needed
+  const [isPhpWidget, setIsPhpWidget] = useState(false);
 
-  // Check if this is a PHP widget
-  const isPhpWidget = phpWidgetTypes.includes(widget.type);
-
-  // Fetch PHP widget fields when widget changes and it's a PHP widget
+  // Always try to fetch PHP widget fields for universal detection
   useEffect(() => {
-    if (isPhpWidget) {
-      fetchPhpWidgetFields();
-    }
-  }, [widget.type, isPhpWidget]);
+    fetchPhpWidgetFields();
+  }, [widget.type]);
 
   const fetchPhpWidgetFields = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
+      // Try to load PHP style fields for any widget type
       const fieldsData = await widgetService.getWidgetFields(widget.type, 'style');
-      if (fieldsData) {
+      
+      if (fieldsData && fieldsData.fields && Object.keys(fieldsData.fields).length > 0) {
+        // Successfully loaded PHP fields - this is a PHP widget
         setPhpFields(fieldsData);
+        setIsPhpWidget(true);
       } else {
-        setError('Failed to load widget fields');
+        // No PHP fields available - fallback to legacy rendering
+        setPhpFields(null);
+        setIsPhpWidget(false);
       }
     } catch (err) {
-      console.error('Error fetching PHP widget fields:', err);
-      setError('Error loading widget fields');
+      // Error loading PHP fields - fallback to legacy rendering
+      console.log(`No PHP style fields for widget type '${widget.type}', using legacy rendering`);
+      setPhpFields(null);
+      setIsPhpWidget(false);
+      setError(null); // Don't show error for widgets without PHP fields
     } finally {
       setIsLoading(false);
     }
@@ -146,15 +133,6 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
 
   // For PHP widgets, render dynamic fields from API
   const renderPhpWidgetFields = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center py-8">
-          <Loader className="w-6 h-6 animate-spin text-blue-500" />
-          <span className="ml-2 text-sm text-gray-600">Loading style settings...</span>
-        </div>
-      );
-    }
-
     if (error) {
       return (
         <div className="text-center py-8 text-red-500">
@@ -172,7 +150,7 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     if (!phpFields || !phpFields.fields) {
       return (
         <div className="text-center py-8 text-gray-500">
-          <p className="text-sm">No style settings available</p>
+          <p className="text-sm">No PHP style settings available</p>
         </div>
       );
     }
@@ -481,9 +459,29 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     );
   };
 
+  const renderSettings = () => {
+    // Loading state
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <Loader className="w-5 h-5 animate-spin text-blue-600" />
+          <span className="ml-2 text-sm text-gray-600">Loading style settings...</span>
+        </div>
+      );
+    }
+
+    // First priority: PHP fields if available
+    if (isPhpWidget && phpFields && phpFields.fields && Object.keys(phpFields.fields).length > 0) {
+      return renderPhpWidgetFields();
+    }
+    
+    // Second priority: Legacy hardcoded style settings
+    return renderLegacyFields();
+  };
+
   return (
     <div className="p-4">
-      {isPhpWidget ? renderPhpWidgetFields() : renderLegacyFields()}
+      {renderSettings()}
     </div>
   );
 };
