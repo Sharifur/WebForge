@@ -1,4 +1,5 @@
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
+import Swal from 'sweetalert2';
 
 export const useDragAndDrop = () => {
   const { 
@@ -15,6 +16,10 @@ export const useDragAndDrop = () => {
 
   const handleDragStart = (event) => {
     const { active } = event;
+    console.log('[DragAndDrop] Drag started:', {
+      activeId: active.id,
+      activeData: active.data.current
+    });
     setActiveId(active.id);
     setIsDragging(true);
   };
@@ -39,9 +44,9 @@ export const useDragAndDrop = () => {
   const validateDropTarget = (activeData, overData) => {
     if (!activeData || !overData) return false;
 
-    // Section widgets can only be dropped on canvas (root level)
+    // Section widgets can be dropped on canvas or other sections (will be placed after)
     if (activeData?.widget?.type === 'section') {
-      return overData?.type === 'canvas';
+      return overData?.type === 'canvas' || overData?.type === 'section';
     }
 
     // Container widgets can only be dropped on canvas
@@ -49,9 +54,9 @@ export const useDragAndDrop = () => {
       return overData?.type === 'canvas';
     }
 
-    // Regular widgets can only be dropped in columns
+    // Regular widgets can be dropped in columns OR on canvas (with auto-section creation)
     if (activeData?.type === 'widget-template') {
-      return overData?.type === 'column';
+      return overData?.type === 'column' || overData?.type === 'canvas';
     }
 
     // Sections can be dropped on canvas
@@ -65,35 +70,137 @@ export const useDragAndDrop = () => {
   const handleDragEnd = (event) => {
     const { active, over } = event;
     
+    console.log('[DragAndDrop] Drag ended:', {
+      activeId: active.id,
+      overId: over?.id,
+      activeData: active.data.current,
+      overData: over?.data.current
+    });
+    
     setActiveId(null);
     setIsDragging(false);
     setHoveredDropZone(null);
 
-    if (!over) return;
+    if (!over) {
+      console.log('[DragAndDrop] No drop target - drag cancelled');
+      return;
+    }
 
     try {
       const activeData = active.data.current;
       const overData = over.data.current;
 
     // Validation Rules
-    // Rule 1: Section widgets can only be placed on canvas
-    if (activeData?.widget?.type === 'section' && overData?.type !== 'canvas') {
-      console.warn('Section widgets can only be placed on the main canvas');
+    // Rule 1: Handle section widget placement
+    if (activeData?.widget?.type === 'section' && overData?.type === 'section') {
+      // Section dropped on another section - place it after the target section
+      const { pageContent } = usePageBuilderStore.getState();
+      const targetSectionIndex = pageContent.containers.findIndex(c => c.id === over.id);
+      
+      if (targetSectionIndex !== -1) {
+        // Create new section container
+        const newContainerId = `section-${Date.now()}`;
+        const newSection = {
+          id: newContainerId,
+          type: 'section',
+          columns: [{
+            id: `column-${Date.now()}`,
+            width: '100%',
+            widgets: [],
+            settings: {}
+          }],
+          settings: {
+            padding: '40px 20px',
+            margin: '0px',
+            backgroundColor: 'transparent'
+          },
+          widgetType: 'section',
+          widgetSettings: activeData.widget.content || {}
+        };
+        
+        // Insert after target section
+        const newContainers = [...pageContent.containers];
+        newContainers.splice(targetSectionIndex + 1, 0, newSection);
+        
+        const { setPageContent } = usePageBuilderStore.getState();
+        setPageContent({
+          ...pageContent,
+          containers: newContainers
+        });
+        
+        // Show success alert
+        Swal.fire({
+          icon: 'success',
+          title: 'Section Added',
+          text: 'New section has been added after the target section',
+          timer: 2000,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end'
+        });
+      }
+      return;
+    }
+    
+    // Rule 1b: Section widgets can only be placed on canvas or other sections
+    if (activeData?.widget?.type === 'section' && overData?.type !== 'canvas' && overData?.type !== 'section') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Placement',
+        text: 'Section widgets can only be placed on the main canvas or after other sections',
+        confirmButtonText: 'OK'
+      });
       return;
     }
 
     // Rule 2: Container widgets cannot be placed inside other containers/columns
     if (activeData?.widget?.type === 'container' && overData?.type === 'column') {
-      console.warn('Cannot place container widget inside another container');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Invalid Placement',
+        text: 'Container widgets cannot be placed inside other containers or columns',
+        confirmButtonText: 'OK'
+      });
       return;
     }
 
-    // Rule 3: Regular widgets can only be placed in columns, not directly on canvas
+    // Rule 3: Auto-create section for regular widgets dropped on canvas
     if (activeData?.type === 'widget-template' && 
         activeData?.widget?.type !== 'container' && 
         activeData?.widget?.type !== 'section' && 
         overData?.type === 'canvas') {
-      console.warn('Widgets must be placed inside containers/columns, not directly on canvas');
+      
+      console.log('Auto-creating section for widget dropped on canvas');
+      
+      // Auto-create a section container with the widget inside
+      const newContainerId = `section-${Date.now()}`;
+      const newColumnId = `column-${Date.now()}`;
+      
+      // Create widget with unique ID
+      const newWidget = {
+        ...activeData.widget,
+        id: `widget-${Date.now()}`,
+        content: activeData.widget.content || {}
+      };
+      
+      addContainer({
+        id: newContainerId,
+        type: 'section',
+        columns: [{
+          id: newColumnId,
+          width: '100%',
+          widgets: [newWidget], // Place the widget inside the auto-created column
+          settings: {}
+        }],
+        settings: {
+          padding: '40px 20px',
+          margin: '0px',
+          backgroundColor: 'transparent'
+        }
+      });
+      
+      // Show user-friendly message
+      console.info(`✅ Auto-created section for ${activeData.widget.type} widget`);
       return;
     }
 
@@ -245,12 +352,31 @@ export const useDragAndDrop = () => {
 
     // Handle container reordering
     if (activeData?.type === 'container' && overData?.type === 'container') {
+      console.log('[DragAndDrop] Container reordering detected:', {
+        activeId: active.id,
+        overId: over.id,
+        activeData,
+        overData
+      });
+      
       const { pageContent } = usePageBuilderStore.getState();
       const oldIndex = pageContent.containers.findIndex(c => c.id === active.id);
       const newIndex = pageContent.containers.findIndex(c => c.id === over.id);
       
-      if (oldIndex !== newIndex) {
+      console.log('[DragAndDrop] Container reordering indices:', {
+        oldIndex,
+        newIndex,
+        containersCount: pageContent.containers.length
+      });
+      
+      if (oldIndex !== newIndex && oldIndex !== -1 && newIndex !== -1) {
+        console.log('[DragAndDrop] Executing container reorder');
         reorderContainers(oldIndex, newIndex);
+        
+        // Show success feedback
+        console.log('✅ Section reordered successfully');
+      } else {
+        console.warn('[DragAndDrop] Container reorder skipped - invalid indices or same position');
       }
       return;
     }
