@@ -5,77 +5,45 @@ import CollapseWidget from './Types/CollapseWidget';
 import CarouselWidget from './Types/CarouselWidget';
 import ContainerWidget from './Types/ContainerWidget';
 
-// Legacy React Widget Registry (only for widgets not covered by PHP)
+// Legacy React Widget Registry (for specific widgets that require React components)
 const legacyWidgetRegistry = {
-  // Only keeping React widgets that don't have PHP equivalents
-  // Note: 'text' type may conflict with 'paragraph' PHP widget
+  // Only keeping React widgets that don't have PHP equivalents yet
   text: TextWidget, // Keep for backward compatibility, but PHP 'paragraph' is preferred
   container: ContainerWidget, // Special layout widget for sections
   collapse: CollapseWidget, // Not yet implemented in PHP
   carousel: CarouselWidget // Not yet implemented in PHP
 };
 
-// PHP widget types (these will be rendered via PhpWidgetRenderer)
-const phpWidgetTypes = [
-  'heading',
-  'paragraph', 
-  'image',
-  'list',
-  'link',
-  'divider',
-  'spacer',
-  'grid',
-  'section',
-  'video',
-  'icon',
-  'code',
-  'tabs',
-  'testimonial',
-  'button',
-  'contact_form',
-  'image_gallery'
-];
-
 const WidgetRenderer = ({ widget }) => {
-  // Check if this is a PHP widget
-  if (phpWidgetTypes.includes(widget.type)) {
+  // Check if this is a legacy React widget that should use React rendering
+  const WidgetComponent = legacyWidgetRegistry[widget.type];
+  
+  if (WidgetComponent) {
+    // Use React component for legacy widgets
     return (
-      <PhpWidgetRenderer 
-        widget={widget}
+      <div 
         className={widget.advanced?.cssClasses || ''}
         style={widget.advanced?.customCSS ? { 
           ...widget.style,
           ...(widget.advanced.customCSS ? parseCSSString(widget.advanced.customCSS) : {})
         } : widget.style}
-      />
-    );
-  }
-
-  // Fall back to legacy React widgets
-  const WidgetComponent = legacyWidgetRegistry[widget.type];
-  
-  if (!WidgetComponent) {
-    return (
-      <div className="p-4 border-2 border-dashed border-red-300 bg-red-50 text-red-600 text-center">
-        <p className="font-medium">Unknown Widget Type</p>
-        <p className="text-sm">Type: {widget.type}</p>
-        <p className="text-xs mt-1 opacity-75">
-          Supported: {[...phpWidgetTypes, ...Object.keys(legacyWidgetRegistry)].join(', ')}
-        </p>
+      >
+        <WidgetComponent {...widget.content} />
       </div>
     );
   }
 
+  // Default to PHP rendering for all other widgets
+  // This includes all PHP widgets and any new custom widgets
   return (
-    <div 
+    <PhpWidgetRenderer 
+      widget={widget}
       className={widget.advanced?.cssClasses || ''}
       style={widget.advanced?.customCSS ? { 
         ...widget.style,
         ...(widget.advanced.customCSS ? parseCSSString(widget.advanced.customCSS) : {})
       } : widget.style}
-    >
-      <WidgetComponent {...widget.content} />
-    </div>
+    />
   );
 };
 

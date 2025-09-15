@@ -3,10 +3,11 @@
 namespace Plugins\Pagebuilder;
 
 use Plugins\Pagebuilder\Core\WidgetRegistry;
+use Plugins\Pagebuilder\Widgets\Theme\HeaderWidget;
 
 /**
  * WidgetLoader - Centralized widget registration for the page builder system
- * 
+ *
  * This class handles the registration of all custom widgets to ensure they appear
  * in the page builder sidebar. The WidgetRegistry has auto-discovery, but this
  * loader ensures explicit registration for better control and debugging.
@@ -20,25 +21,25 @@ class WidgetLoader
     {
         // Basic Widgets (Category: BASIC)
         self::registerBasicWidgets();
-        
+
         // Layout Widgets (Category: LAYOUT)
         self::registerLayoutWidgets();
-        
-        // Media Widgets (Category: MEDIA)  
+
+        // Media Widgets (Category: MEDIA)
         self::registerMediaWidgets();
-        
+
         // Interactive Widgets (Category: INTERACTIVE)
         self::registerInteractiveWidgets();
-        
+
         // Content Widgets (Category: CONTENT)
         self::registerContentWidgets();
-        
+
         // Advanced Widgets (Category: ADVANCED)
         self::registerAdvancedWidgets();
-        
+
         // Form Widgets (Category: FORM)
         self::registerFormWidgets();
-        
+
         // Cache the registry for better performance
         WidgetRegistry::cache();
     }
@@ -54,6 +55,7 @@ class WidgetLoader
             \Plugins\Pagebuilder\Widgets\Basic\ListWidget::class,
             \Plugins\Pagebuilder\Widgets\Basic\LinkWidget::class,
             \Plugins\Pagebuilder\Widgets\Basic\ButtonWidget::class,
+            HeaderWidget::class,
         ];
 
         WidgetRegistry::registerMultiple($basicWidgets);

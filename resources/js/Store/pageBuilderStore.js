@@ -24,6 +24,14 @@ const usePageBuilderStore = create((set, get) => ({
   settingsPanelVisible: false,
   widgetSnapshots: {}, // Store original widget states for reverting changes
   
+  // Section drag state
+  dragState: {
+    isDraggingSection: false,
+    draggedSectionId: null,
+    availableDropZones: [], // [{ id, position, index, type }]
+    activeDropZone: null    // Currently highlighted drop zone
+  },
+  
   // Actions
   initializePageContent: (content) => set({ 
     pageContent: content || { containers: [] },
@@ -70,6 +78,78 @@ const usePageBuilderStore = create((set, get) => ({
   setHoveredDropZone: (zone) => set({ hoveredDropZone: zone }),
   
   setSettingsPanelVisible: (visible) => set({ settingsPanelVisible: visible }),
+  
+  // Section drag actions
+  setIsDraggingSection: (isDragging) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      isDraggingSection: isDragging,
+      draggedSectionId: isDragging ? state.dragState.draggedSectionId : null,
+      availableDropZones: isDragging ? state.dragState.availableDropZones : [],
+      activeDropZone: isDragging ? state.dragState.activeDropZone : null
+    }
+  })),
+  
+  setDraggedSectionId: (sectionId) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      draggedSectionId: sectionId
+    }
+  })),
+  
+  setAvailableDropZones: (dropZones) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      availableDropZones: dropZones
+    }
+  })),
+  
+  setActiveDropZone: (dropZone) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      activeDropZone: dropZone
+    }
+  })),
+  
+  calculateDropZones: () => set(state => {
+    const { containers } = state.pageContent;
+    const dropZones = [];
+    
+    // Add drop zone before first container
+    dropZones.push({
+      id: 'drop-zone-before-0',
+      position: 'before',
+      index: 0,
+      type: 'section-drop-zone'
+    });
+    
+    // Add drop zones after each container
+    containers.forEach((container, index) => {
+      dropZones.push({
+        id: `drop-zone-after-${index}`,
+        position: 'after',
+        index: index + 1,
+        containerId: container.id,
+        type: 'section-drop-zone'
+      });
+    });
+    
+    return {
+      dragState: {
+        ...state.dragState,
+        availableDropZones: dropZones
+      }
+    };
+  }),
+  
+  clearDragState: () => set(state => ({
+    dragState: {
+      isDraggingSection: false,
+      draggedSectionId: null,
+      availableDropZones: [],
+      activeDropZone: null
+    }
+  })),
   
   toggleSettingsPanel: () => set(state => ({ settingsPanelVisible: !state.settingsPanelVisible })),
   

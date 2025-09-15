@@ -88,6 +88,7 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
     <>
       <Head title={`Page Builder - ${page.title}`}>
         <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+        <link href="/css/drop-zones.css" rel="stylesheet" />
       </Head>
       
       <div className="h-screen flex bg-gray-50 overflow-hidden">

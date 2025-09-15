@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableContainer from './SortableContainer';
 import EmptyCanvasState from './EmptyCanvasState';
+import DropZone from './DropZone';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
+  const { dragState } = usePageBuilderStore();
+  const { isDraggingSection } = dragState;
+  
   const { setNodeRef, isOver } = useDroppable({
     id: 'canvas',
     data: { type: 'canvas' }
@@ -32,16 +37,36 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
               items={containerIds}
               strategy={verticalListSortingStrategy}
             >
-              {content.containers.map((container, index) => (
-                <SortableContainer
-                  key={container.id}
-                  container={container}
-                  index={index}
-                  onUpdate={onUpdate}
-                  onSelectWidget={onSelectWidget}
-                  selectedWidget={selectedWidget}
-                  hoveredDropZone={hoveredDropZone}
+              {/* Drop zone before first section */}
+              {isDraggingSection && (
+                <DropZone
+                  id="drop-zone-before-0"
+                  position="before"
+                  index={0}
                 />
+              )}
+              
+              {content.containers.map((container, index) => (
+                <Fragment key={container.id}>
+                  <SortableContainer
+                    container={container}
+                    index={index}
+                    onUpdate={onUpdate}
+                    onSelectWidget={onSelectWidget}
+                    selectedWidget={selectedWidget}
+                    hoveredDropZone={hoveredDropZone}
+                  />
+                  
+                  {/* Drop zone after each section */}
+                  {isDraggingSection && (
+                    <DropZone
+                      id={`drop-zone-after-${index}`}
+                      position="after"
+                      index={index + 1}
+                      containerId={container.id}
+                    />
+                  )}
+                </Fragment>
               ))}
             </SortableContext>
           ) : (

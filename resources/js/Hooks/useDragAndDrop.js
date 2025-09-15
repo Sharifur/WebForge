@@ -11,17 +11,34 @@ export const useDragAndDrop = () => {
     reorderWidgets,
     reorderContainers,
     updateWidget,
-    moveWidgetBetweenColumns
+    moveWidgetBetweenColumns,
+    // Section drag state actions
+    setIsDraggingSection,
+    setDraggedSectionId,
+    calculateDropZones,
+    setActiveDropZone,
+    clearDragState
   } = usePageBuilderStore();
 
   const handleDragStart = (event) => {
     const { active } = event;
+    const activeData = active.data.current;
+    
     console.log('[DragAndDrop] Drag started:', {
       activeId: active.id,
-      activeData: active.data.current
+      activeData: activeData
     });
+    
     setActiveId(active.id);
     setIsDragging(true);
+    
+    // Check if we're dragging a section/container
+    if (activeData?.type === 'container') {
+      console.log('[DragAndDrop] Section drag detected, setting up drop zones');
+      setIsDraggingSection(true);
+      setDraggedSectionId(active.id);
+      calculateDropZones();
+    }
   };
 
   const handleDragOver = (event) => {
@@ -29,6 +46,25 @@ export const useDragAndDrop = () => {
     if (over) {
       const activeData = active.data.current;
       const overData = over.data.current;
+      
+      // Handle section drag over drop zones
+      if (activeData?.type === 'container' && overData?.type === 'section-drop-zone') {
+        console.log('[DragAndDrop] Section hovering over drop zone:', {
+          activeId: active.id,
+          dropZone: overData
+        });
+        setActiveDropZone({
+          id: over.id,
+          position: overData.position,
+          index: overData.index,
+          containerId: overData.containerId
+        });
+      } else {
+        // Clear active drop zone if not over a section drop zone
+        if (activeData?.type === 'container') {
+          setActiveDropZone(null);
+        }
+      }
       
       // Check if this is a valid drop target
       const isValidDrop = validateDropTarget(activeData, overData);
@@ -80,6 +116,12 @@ export const useDragAndDrop = () => {
     setActiveId(null);
     setIsDragging(false);
     setHoveredDropZone(null);
+    
+    // Clean up section drag state
+    const activeData = active.data.current;
+    if (activeData?.type === 'container') {
+      clearDragState();
+    }
 
     if (!over) {
       console.log('[DragAndDrop] No drop target - drag cancelled');
@@ -96,6 +138,40 @@ export const useDragAndDrop = () => {
         activeDataFull: activeData,
         overDataFull: overData
       });
+
+    // Handle section drop on drop zones (Priority 1)
+    if (activeData?.type === 'container' && overData?.type === 'section-drop-zone') {
+      console.log('[DragAndDrop] Section dropped on drop zone:', {
+        sectionId: active.id,
+        dropZone: overData,
+        targetIndex: overData.index
+      });
+      
+      const { pageContent } = usePageBuilderStore.getState();
+      const oldIndex = pageContent.containers.findIndex(c => c.id === active.id);
+      const newIndex = overData.index;
+      
+      console.log('[DragAndDrop] Drop zone reordering:', {
+        oldIndex,
+        newIndex,
+        containersCount: pageContent.containers.length
+      });
+      
+      if (oldIndex !== -1 && newIndex >= 0 && oldIndex !== newIndex) {
+        // Adjust newIndex if dragging to a position after the current position
+        const adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+        
+        console.log('[DragAndDrop] Executing drop zone reorder:', {
+          oldIndex,
+          adjustedNewIndex
+        });
+        
+        reorderContainers(oldIndex, adjustedNewIndex);
+        
+        console.log('✅ Section reordered via drop zone successfully');
+      }
+      return;
+    }
 
     // Validation Rules
     // Rule 1: Handle section widget placement
