@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
@@ -14,7 +14,31 @@ const SortableWidget = ({
   isSelected 
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { removeWidget, updateWidget } = usePageBuilderStore();
+  const [contentHeight, setContentHeight] = useState(0);
+  const widgetRef = useRef(null);
+  const { removeWidget, updateWidget, dragState } = usePageBuilderStore();
+  
+  // Track content height for better drop positioning
+  useEffect(() => {
+    const updateContentHeight = () => {
+      if (widgetRef.current) {
+        const height = widgetRef.current.scrollHeight;
+        setContentHeight(height);
+      }
+    };
+    
+    updateContentHeight();
+    
+    // Update height when content changes
+    const resizeObserver = new ResizeObserver(updateContentHeight);
+    if (widgetRef.current) {
+      resizeObserver.observe(widgetRef.current);
+    }
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [widget]);
 
   const {
     attributes,
@@ -78,14 +102,24 @@ const SortableWidget = ({
     onSelect(widget);
   };
 
+  // Determine if this is a large content widget (over 200px)
+  const isLargeContent = contentHeight > 200;
+  
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        widgetRef.current = node;
+      }}
       style={style}
-      className={`relative group mb-4 ${isDragging ? 'z-50' : ''}`}
+      className={`relative group mb-4 ${isDragging ? 'z-50' : ''} ${
+        isLargeContent ? 'widget-large-content' : ''
+      }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleSelectWidget}
+      data-widget-height={contentHeight}
+      data-widget-large={isLargeContent}
     >
       {/* Widget Controls - Fixed position at top-right */}
       {(isHovered || isSelected) && !isDragging && (

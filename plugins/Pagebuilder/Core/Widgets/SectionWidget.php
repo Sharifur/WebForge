@@ -6,23 +6,26 @@ use Plugins\Pagebuilder\Core\BaseWidget;
 use Plugins\Pagebuilder\Core\WidgetCategory;
 use Plugins\Pagebuilder\Core\ControlManager;
 use Plugins\Pagebuilder\Core\FieldManager;
+use Plugins\Pagebuilder\Core\BladeRenderable;
 
 /**
- * SectionWidget - Basic container widget for grouping other widgets
+ * SectionWidget - Enhanced container widget for grouping other widgets
  * 
  * Features:
- * - Container for other widgets
- * - Background options (color, image, gradient)
- * - Padding and margin controls
- * - Border and border radius
- * - Responsive settings
- * - Full width or contained layouts
- * - Section alignment options
+ * - Container for other widgets with enhanced layout controls
+ * - Full-width vs Boxed layout options with responsive controls
+ * - Advanced background controls via BACKGROUND_GROUP
+ * - Enhanced spacing with responsive dimension controls
+ * - Container width controls with custom breakpoints
+ * - Vertical alignment and minimum height options
+ * - Automatic CSS generation via BaseWidget
+ * - Template system support with BladeRenderable
  * 
- * @package Plugins\Pagebuilder\Widgets\Layout
+ * @package Plugins\Pagebuilder\Core\Widgets
  */
 class SectionWidget extends BaseWidget
 {
+    use BladeRenderable;
     protected function getWidgetType(): string
     {
         return 'section';
@@ -57,35 +60,80 @@ class SectionWidget extends BaseWidget
     {
         $control = new ControlManager();
         
-        // Layout Settings Group
+        // Enhanced Layout Settings Group
         $control->addGroup('layout', 'Layout Settings')
-            ->registerField('content_width', FieldManager::SELECT()
-                ->setLabel('Content Width')
+            ->registerField('layout_type', FieldManager::SELECT()
+                ->setLabel('Layout Type')
                 ->setOptions([
-                    'boxed' => 'Boxed (Container)',
-                    'full_width' => 'Full Width'
+                    'boxed' => 'Boxed (Contained)',
+                    'full_width' => 'Full Width',
+                    'full_width_contained' => 'Full Width with Contained Content'
                 ])
                 ->setDefault('boxed')
-                ->setDescription('Choose whether content should be contained or full width')
+                ->setDescription('Choose the section layout behavior')
             )
-            ->registerField('max_width', FieldManager::NUMBER()
-                ->setLabel('Max Width')
+            ->registerField('container_width', FieldManager::SELECT()
+                ->setLabel('Container Width')
+                ->setOptions([
+                    'default' => 'Default (1200px)',
+                    'wide' => 'Wide (1400px)', 
+                    'full' => 'Full Width (1600px)',
+                    'custom' => 'Custom Width'
+                ])
+                ->setDefault('default')
+                ->setCondition(['layout_type' => ['boxed', 'full_width_contained']])
+                ->setDescription('Maximum container width for contained layouts')
+            )
+            ->registerField('custom_width', FieldManager::NUMBER()
+                ->setLabel('Custom Width')
                 ->setUnit('px')
-                ->setMin(300)
-                ->setMax(1920)
+                ->setMin(320)
+                ->setMax(2000)
                 ->setDefault(1200)
-                ->setCondition(['content_width' => 'boxed'])
-                ->setDescription('Maximum width when using boxed layout')
+                ->setCondition(['container_width' => 'custom'])
+                ->setDescription('Custom maximum width in pixels')
             )
+            ->registerField('content_alignment', FieldManager::ALIGNMENT()
+                ->setLabel('Content Alignment')
+                ->asTextAlign()
+                ->setShowNone(false)
+                ->setShowJustify(false)
+                ->setDefault('center')
+                ->setCondition(['layout_type' => ['boxed', 'full_width_contained']])
+                ->setDescription('Horizontal alignment of contained content')
+            )
+            ->endGroup();
+
+        // Section Dimensions Group
+        $control->addGroup('dimensions', 'Dimensions')
             ->registerField('min_height', FieldManager::NUMBER()
                 ->setLabel('Minimum Height')
                 ->setUnit('px')
                 ->setMin(0)
                 ->setMax(1000)
                 ->setDefault(0)
-                ->setDescription('Minimum section height')
+                ->setDescription('Minimum section height - useful for hero sections')
             )
-            ->registerField('vertical_align', FieldManager::SELECT()
+            ->registerField('height_unit', FieldManager::SELECT()
+                ->setLabel('Height Unit')
+                ->setOptions([
+                    'auto' => 'Auto (Content Based)',
+                    'viewport' => 'Viewport Height (100vh)',
+                    'custom' => 'Custom Height'
+                ])
+                ->setDefault('auto')
+                ->setDescription('How section height should be calculated')
+            )
+            ->registerField('custom_height', FieldManager::NUMBER()
+                ->setLabel('Custom Height')
+                ->setUnit('px')
+                ->setMin(200)
+                ->setMax(2000)
+                ->setDefault(600)
+                ->setCondition(['height_unit' => 'custom'])
+                ->setDescription('Fixed height for the section')
+            )
+            ->registerField('vertical_alignment', FieldManager::SELECT()
                 ->setLabel('Vertical Alignment')
                 ->setOptions([
                     'top' => 'Top',
@@ -93,40 +141,22 @@ class SectionWidget extends BaseWidget
                     'bottom' => 'Bottom'
                 ])
                 ->setDefault('top')
+                ->setCondition(['height_unit' => ['viewport', 'custom']])
                 ->setDescription('Vertical alignment of content within the section')
             )
             ->endGroup();
 
-        // Content Group
-        $control->addGroup('content', 'Content')
+        // Section Identity Group
+        $control->addGroup('identity', 'Section Identity')
             ->registerField('section_id', FieldManager::TEXT()
                 ->setLabel('Section ID')
-                ->setPlaceholder('unique-section-id')
-                ->setDescription('Unique ID for this section (useful for navigation)')
+                ->setPlaceholder('hero-section')
+                ->setDescription('Unique ID for navigation and styling (will be slugified)')
             )
-            ->registerField('custom_class', FieldManager::TEXT()
-                ->setLabel('Custom CSS Class')
-                ->setPlaceholder('my-custom-class')
-                ->setDescription('Additional CSS classes for custom styling')
-            )
-            ->endGroup();
-
-        // Spacing Group
-        $control->addGroup('spacing', 'Spacing')
-            ->registerField('padding', FieldManager::DIMENSION()
-                ->setLabel('Padding')
-                ->setDefault(['top' => 40, 'right' => 20, 'bottom' => 40, 'left' => 20])
-                ->setUnits(['px', 'em', 'rem', '%'])
-                ->setResponsive(true)
-                ->setDescription('Inner spacing of the section')
-            )
-            ->registerField('margin', FieldManager::DIMENSION()
-                ->setLabel('Margin')
-                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0])
-                ->setUnits(['px', 'em', 'rem', '%'])
-                ->setAllowNegative(true)
-                ->setResponsive(true)
-                ->setDescription('Outer spacing of the section')
+            ->registerField('section_label', FieldManager::TEXT()
+                ->setLabel('Section Label')
+                ->setPlaceholder('Hero Section')
+                ->setDescription('Internal label for section management (not displayed)')
             )
             ->endGroup();
 
@@ -137,187 +167,18 @@ class SectionWidget extends BaseWidget
     {
         $control = new ControlManager();
         
-        // Background Group
-        $control->addGroup('background', 'Background')
-            ->registerField('background_type', FieldManager::SELECT()
-                ->setLabel('Background Type')
-                ->setOptions([
-                    'none' => 'None',
-                    'color' => 'Color',
-                    'gradient' => 'Gradient',
-                    'image' => 'Image'
+        // Section-specific styling - Background and effects
+        $control->addGroup('section_background', 'Section Background')
+            ->registerField('section_bg', FieldManager::BACKGROUND_GROUP()
+                ->setLabel('Background')
+                ->setAllowedTypes(['none', 'color', 'gradient', 'image'])
+                ->setDefaultType('none')
+                ->setEnableHover(false)
+                ->setEnableImage(true)
+                ->setSelectors([
+                    '{{WRAPPER}}.widget-section' => 'background: {{VALUE}};'
                 ])
-                ->setDefault('none')
-            )
-            ->registerField('background_color', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#ffffff')
-                ->setCondition(['background_type' => ['color', 'gradient']])
-            )
-            ->registerField('gradient_type', FieldManager::SELECT()
-                ->setLabel('Gradient Type')
-                ->setOptions([
-                    'linear' => 'Linear',
-                    'radial' => 'Radial'
-                ])
-                ->setDefault('linear')
-                ->setCondition(['background_type' => 'gradient'])
-            )
-            ->registerField('gradient_angle', FieldManager::NUMBER()
-                ->setLabel('Gradient Angle')
-                ->setUnit('deg')
-                ->setMin(0)
-                ->setMax(360)
-                ->setDefault(45)
-                ->setCondition(['background_type' => 'gradient', 'gradient_type' => 'linear'])
-            )
-            ->registerField('gradient_color_start', FieldManager::COLOR()
-                ->setLabel('Gradient Start Color')
-                ->setDefault('#3B82F6')
-                ->setCondition(['background_type' => 'gradient'])
-            )
-            ->registerField('gradient_color_end', FieldManager::COLOR()
-                ->setLabel('Gradient End Color')
-                ->setDefault('#1E40AF')
-                ->setCondition(['background_type' => 'gradient'])
-            )
-            ->registerField('background_image', FieldManager::IMAGE()
-                ->setLabel('Background Image')
-                ->setCondition(['background_type' => 'image'])
-            )
-            ->registerField('background_size', FieldManager::SELECT()
-                ->setLabel('Background Size')
-                ->setOptions([
-                    'cover' => 'Cover',
-                    'contain' => 'Contain',
-                    'auto' => 'Auto',
-                    'custom' => 'Custom'
-                ])
-                ->setDefault('cover')
-                ->setCondition(['background_type' => 'image'])
-            )
-            ->registerField('background_position', FieldManager::SELECT()
-                ->setLabel('Background Position')
-                ->setOptions([
-                    'center center' => 'Center Center',
-                    'center top' => 'Center Top',
-                    'center bottom' => 'Center Bottom',
-                    'left center' => 'Left Center',
-                    'right center' => 'Right Center',
-                    'left top' => 'Left Top',
-                    'right top' => 'Right Top',
-                    'left bottom' => 'Left Bottom',
-                    'right bottom' => 'Right Bottom'
-                ])
-                ->setDefault('center center')
-                ->setCondition(['background_type' => 'image'])
-            )
-            ->registerField('background_repeat', FieldManager::SELECT()
-                ->setLabel('Background Repeat')
-                ->setOptions([
-                    'no-repeat' => 'No Repeat',
-                    'repeat' => 'Repeat',
-                    'repeat-x' => 'Repeat X',
-                    'repeat-y' => 'Repeat Y'
-                ])
-                ->setDefault('no-repeat')
-                ->setCondition(['background_type' => 'image'])
-            )
-            ->registerField('background_overlay', FieldManager::TOGGLE()
-                ->setLabel('Enable Background Overlay')
-                ->setDefault(false)
-                ->setCondition(['background_type' => 'image'])
-            )
-            ->registerField('overlay_color', FieldManager::COLOR()
-                ->setLabel('Overlay Color')
-                ->setDefault('#000000')
-                ->setCondition(['background_type' => 'image', 'background_overlay' => true])
-            )
-            ->endGroup();
-
-        // Border Group
-        $control->addGroup('border', 'Border')
-            ->registerField('border_type', FieldManager::SELECT()
-                ->setLabel('Border Type')
-                ->setOptions([
-                    'none' => 'None',
-                    'solid' => 'Solid',
-                    'dashed' => 'Dashed',
-                    'dotted' => 'Dotted'
-                ])
-                ->setDefault('none')
-            )
-            ->registerField('border_width', FieldManager::DIMENSION()
-                ->setLabel('Border Width')
-                ->setDefault(['top' => 1, 'right' => 1, 'bottom' => 1, 'left' => 1])
-                ->setUnits(['px'])
-                ->setMin(0)
-                ->setMax(20)
-                ->setCondition(['border_type' => ['solid', 'dashed', 'dotted']])
-            )
-            ->registerField('border_color', FieldManager::COLOR()
-                ->setLabel('Border Color')
-                ->setDefault('#e5e7eb')
-                ->setCondition(['border_type' => ['solid', 'dashed', 'dotted']])
-            )
-            ->registerField('border_radius', FieldManager::DIMENSION()
-                ->setLabel('Border Radius')
-                ->setDefault(['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0])
-                ->setUnits(['px', 'em', 'rem', '%'])
-                ->setMin(0)
-                ->setMax(100)
-            )
-            ->endGroup();
-
-        // Effects Group
-        $control->addGroup('effects', 'Effects')
-            ->registerField('box_shadow', FieldManager::TOGGLE()
-                ->setLabel('Enable Box Shadow')
-                ->setDefault(false)
-            )
-            ->registerField('shadow_horizontal', FieldManager::NUMBER()
-                ->setLabel('Shadow Horizontal Offset')
-                ->setUnit('px')
-                ->setMin(-50)
-                ->setMax(50)
-                ->setDefault(0)
-                ->setCondition(['box_shadow' => true])
-            )
-            ->registerField('shadow_vertical', FieldManager::NUMBER()
-                ->setLabel('Shadow Vertical Offset')
-                ->setUnit('px')
-                ->setMin(-50)
-                ->setMax(50)
-                ->setDefault(4)
-                ->setCondition(['box_shadow' => true])
-            )
-            ->registerField('shadow_blur', FieldManager::NUMBER()
-                ->setLabel('Shadow Blur')
-                ->setUnit('px')
-                ->setMin(0)
-                ->setMax(100)
-                ->setDefault(6)
-                ->setCondition(['box_shadow' => true])
-            )
-            ->registerField('shadow_spread', FieldManager::NUMBER()
-                ->setLabel('Shadow Spread')
-                ->setUnit('px')
-                ->setMin(-50)
-                ->setMax(50)
-                ->setDefault(0)
-                ->setCondition(['box_shadow' => true])
-            )
-            ->registerField('shadow_color', FieldManager::COLOR()
-                ->setLabel('Shadow Color')
-                ->setDefault('#000000')
-                ->setCondition(['box_shadow' => true])
-            )
-            ->registerField('opacity', FieldManager::RANGE()
-                ->setLabel('Opacity')
-                ->setMin(0)
-                ->setMax(1)
-                ->setStep(0.1)
-                ->setDefault(1)
+                ->setDescription('Configure section background with color, gradient, image or overlay')
             )
             ->endGroup();
 
@@ -326,165 +187,112 @@ class SectionWidget extends BaseWidget
 
     public function render(array $settings = []): string
     {
+        // Try Blade template first if available
+        if ($this->hasBladeTemplate()) {
+            $templateData = $this->prepareTemplateData($settings);
+            return $this->renderBladeTemplate($this->getDefaultTemplatePath(), $templateData);
+        }
+
+        // Fallback to manual HTML generation
+        return $this->renderManually($settings);
+    }
+
+    /**
+     * Manual HTML rendering with enhanced layout options
+     */
+    private function renderManually(array $settings): string
+    {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
         
         // Layout settings
         $layout = $general['layout'] ?? [];
-        $contentWidth = $layout['content_width'] ?? 'boxed';
-        $maxWidth = $layout['max_width'] ?? 1200;
-        $minHeight = $layout['min_height'] ?? 0;
-        $verticalAlign = $layout['vertical_align'] ?? 'top';
+        $layoutType = $layout['layout_type'] ?? 'boxed';
+        $containerWidth = $layout['container_width'] ?? 'default';
+        $customWidth = $layout['custom_width'] ?? 1200;
+        $contentAlignment = $layout['content_alignment'] ?? 'center';
         
-        // Content settings
-        $content = $general['content'] ?? [];
-        $sectionId = $content['section_id'] ?? '';
-        $customClass = $content['custom_class'] ?? '';
+        // Dimensions
+        $dimensions = $general['dimensions'] ?? [];
+        $minHeight = $dimensions['min_height'] ?? 0;
+        $heightUnit = $dimensions['height_unit'] ?? 'auto';
+        $customHeight = $dimensions['custom_height'] ?? 600;
+        $verticalAlignment = $dimensions['vertical_alignment'] ?? 'flex-start';
         
-        // Spacing
-        $spacing = $general['spacing'] ?? [];
-        $padding = $spacing['padding'] ?? ['top' => 40, 'right' => 20, 'bottom' => 40, 'left' => 20];
-        $margin = $spacing['margin'] ?? ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0];
+        // Identity
+        $identity = $general['identity'] ?? [];
+        $sectionId = !empty($identity['section_id']) ? $this->sanitizeAttribute('id', $identity['section_id']) : '';
+        $sectionLabel = $identity['section_label'] ?? '';
         
-        // Build CSS classes
-        $classes = ['widget-section'];
-        $classes[] = "content-{$contentWidth}";
-        $classes[] = "align-{$verticalAlign}";
+        // Use BaseWidget's automatic CSS class generation
+        $classString = $this->buildCssClasses($settings);
         
-        if (!empty($customClass)) {
-            $classes[] = $customClass;
+        // Add layout-specific classes
+        $layoutClasses = [];
+        $layoutClasses[] = "layout-{$layoutType}";
+        $layoutClasses[] = "container-{$containerWidth}";
+        $layoutClasses[] = "content-align-{$contentAlignment}";
+        $layoutClasses[] = "height-{$heightUnit}";
+        $layoutClasses[] = "vertical-{$verticalAlignment}";
+        
+        $finalClasses = $classString . ' ' . implode(' ', $layoutClasses);
+        
+        // Use BaseWidget's automatic CSS generation
+        $styleAttr = $this->generateStyleAttribute(['general' => $general, 'style' => $style]);
+        
+        // Add layout-specific styles
+        $layoutStyles = [];
+        
+        // Container width
+        if ($layoutType !== 'full_width') {
+            $maxWidth = match($containerWidth) {
+                'wide' => '1400px',
+                'full' => '1600px', 
+                'custom' => $customWidth . 'px',
+                default => '1200px'
+            };
+            $layoutStyles[] = "max-width: {$maxWidth}";
         }
         
-        $classString = implode(' ', $classes);
-        
-        // Build inline styles
-        $styles = [];
-        
-        // Spacing styles
-        if (isset($padding)) {
-            $styles[] = sprintf(
-                'padding: %spx %spx %spx %spx',
-                $padding['top'] ?? 40,
-                $padding['right'] ?? 20,
-                $padding['bottom'] ?? 40,
-                $padding['left'] ?? 20
-            );
+        // Height settings
+        if ($heightUnit === 'viewport') {
+            $layoutStyles[] = 'min-height: 100vh';
+        } elseif ($heightUnit === 'custom') {
+            $layoutStyles[] = "height: {$customHeight}px";
+        } elseif ($minHeight > 0) {
+            $layoutStyles[] = "min-height: {$minHeight}px";
         }
         
-        if (isset($margin)) {
-            $styles[] = sprintf(
-                'margin: %spx %spx %spx %spx',
-                $margin['top'] ?? 0,
-                $margin['right'] ?? 0,
-                $margin['bottom'] ?? 0,
-                $margin['left'] ?? 0
-            );
-        }
-        
-        // Layout styles
-        if ($contentWidth === 'boxed' && $maxWidth) {
-            $styles[] = "max-width: {$maxWidth}px";
-        }
-        
-        if ($minHeight) {
-            $styles[] = "min-height: {$minHeight}px";
-        }
-        
-        // Background styles
-        $background = $style['background'] ?? [];
-        $backgroundType = $background['background_type'] ?? 'none';
-        
-        switch ($backgroundType) {
-            case 'color':
-                if (!empty($background['background_color'])) {
-                    $styles[] = "background-color: {$background['background_color']}";
-                }
-                break;
-            case 'gradient':
-                $gradientType = $background['gradient_type'] ?? 'linear';
-                $startColor = $background['gradient_color_start'] ?? '#3B82F6';
-                $endColor = $background['gradient_color_end'] ?? '#1E40AF';
-                
-                if ($gradientType === 'linear') {
-                    $angle = $background['gradient_angle'] ?? 45;
-                    $styles[] = "background: linear-gradient({$angle}deg, {$startColor}, {$endColor})";
-                } else {
-                    $styles[] = "background: radial-gradient(circle, {$startColor}, {$endColor})";
-                }
-                break;
-            case 'image':
-                if (!empty($background['background_image'])) {
-                    $styles[] = "background-image: url({$background['background_image']})";
-                    $styles[] = "background-size: " . ($background['background_size'] ?? 'cover');
-                    $styles[] = "background-position: " . ($background['background_position'] ?? 'center center');
-                    $styles[] = "background-repeat: " . ($background['background_repeat'] ?? 'no-repeat');
-                }
-                break;
-        }
-        
-        // Border styles
-        $border = $style['border'] ?? [];
-        $borderType = $border['border_type'] ?? 'none';
-        
-        if ($borderType !== 'none') {
-            $borderWidth = $border['border_width'] ?? ['top' => 1, 'right' => 1, 'bottom' => 1, 'left' => 1];
-            $borderColor = $border['border_color'] ?? '#e5e7eb';
-            
-            $styles[] = sprintf(
-                'border: %spx %spx %spx %spx %s %s',
-                $borderWidth['top'] ?? 1,
-                $borderWidth['right'] ?? 1,
-                $borderWidth['bottom'] ?? 1,
-                $borderWidth['left'] ?? 1,
-                $borderType,
-                $borderColor
-            );
-        }
-        
-        $borderRadius = $border['border_radius'] ?? ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0];
-        if (array_sum($borderRadius) > 0) {
-            $styles[] = sprintf(
-                'border-radius: %spx %spx %spx %spx',
-                $borderRadius['top'] ?? 0,
-                $borderRadius['right'] ?? 0,
-                $borderRadius['bottom'] ?? 0,
-                $borderRadius['left'] ?? 0
-            );
-        }
-        
-        // Effects
-        $effects = $style['effects'] ?? [];
-        if (!empty($effects['box_shadow'])) {
-            $shadowH = $effects['shadow_horizontal'] ?? 0;
-            $shadowV = $effects['shadow_vertical'] ?? 4;
-            $shadowBlur = $effects['shadow_blur'] ?? 6;
-            $shadowSpread = $effects['shadow_spread'] ?? 0;
-            $shadowColor = $effects['shadow_color'] ?? 'rgba(0, 0, 0, 0.1)';
-            
-            $styles[] = "box-shadow: {$shadowH}px {$shadowV}px {$shadowBlur}px {$shadowSpread}px {$shadowColor}";
-        }
-        
-        if (isset($effects['opacity']) && $effects['opacity'] !== 1) {
-            $styles[] = "opacity: {$effects['opacity']}";
-        }
-        
-        $styleString = !empty($styles) ? 'style="' . implode('; ', $styles) . '"' : '';
+        // Combine styles
+        $additionalStyles = !empty($layoutStyles) ? implode('; ', $layoutStyles) : '';
+        $combinedStyles = trim($styleAttr . '; ' . $additionalStyles, '; ');
+        $finalStyleAttr = !empty($combinedStyles) ? " style=\"{$combinedStyles}\"" : '';
         
         // Build section attributes
-        $attributes = [];
-        $attributes[] = "class=\"{$classString}\"";
+        $attributes = [
+            'class' => $finalClasses,
+            'data-widget-type' => $this->getWidgetType(),
+            'data-layout-type' => $layoutType,
+            'data-container-width' => $containerWidth
+        ];
         
         if (!empty($sectionId)) {
-            $attributes[] = "id=\"{$sectionId}\"";
+            $attributes['id'] = $sectionId;
         }
         
-        if (!empty($styleString)) {
-            $attributes[] = $styleString;
+        if (!empty($sectionLabel)) {
+            $attributes['data-section-label'] = $sectionLabel;
         }
         
-        $attributeString = implode(' ', $attributes);
+        $attributesString = $this->buildAttributes($attributes);
         
-        // Return section HTML - this will be a container for other widgets
-        return "<section {$attributeString}><div class=\"section-inner\"><!-- Section content will be added here --></div></section>";
+        // Return enhanced section HTML
+        $containerClass = $layoutType === 'full_width' ? 'section-content-full' : 'section-content-container';
+        
+        return "<section {$attributesString}{$finalStyleAttr}>
+    <div class=\"{$containerClass}\">
+        <!-- Section content will be added here -->
+    </div>
+</section>";
     }
 }

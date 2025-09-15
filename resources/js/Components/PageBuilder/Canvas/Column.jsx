@@ -2,6 +2,7 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableWidget from '../Widgets/SortableWidget';
+import WidgetDropZone from './WidgetDropZone';
 
 const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
   const [isHovered, setIsHovered] = React.useState(false);
@@ -61,44 +62,90 @@ const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, se
         </button>
       </div>
       )}
-      {/* Column Content */}
+      {/* Column Content with Enhanced Drop Zones */}
       {widgetIds.length > 0 ? (
         <SortableContext 
           items={widgetIds}
           strategy={verticalListSortingStrategy}
         >
+          {/* Drop zone before first widget */}
+          <WidgetDropZone
+            id={`${column.id}-drop-before-0`}
+            position="before"
+            insertIndex={0}
+            columnId={column.id}
+            containerId={containerId}
+            widgetId={column.widgets[0]?.id}
+          />
+          
           {column.widgets.map((widget, widgetIndex) => (
-            <SortableWidget
-              key={widget.id}
-              widget={widget}
-              widgetIndex={widgetIndex}
-              columnId={column.id}
-              containerId={containerId}
-              onUpdate={onUpdate}
-              onSelect={onSelectWidget}
-              isSelected={selectedWidget?.id === widget.id}
-            />
+            <React.Fragment key={widget.id}>
+              <SortableWidget
+                widget={widget}
+                widgetIndex={widgetIndex}
+                columnId={column.id}
+                containerId={containerId}
+                onUpdate={onUpdate}
+                onSelect={onSelectWidget}
+                isSelected={selectedWidget?.id === widget.id}
+              />
+              
+              {/* Drop zone after each widget (except the last) */}
+              {widgetIndex < column.widgets.length - 1 && (
+                <WidgetDropZone
+                  id={`${column.id}-drop-between-${widgetIndex}-${widgetIndex + 1}`}
+                  position="between"
+                  insertIndex={widgetIndex + 1}
+                  columnId={column.id}
+                  containerId={containerId}
+                  widgetId={widget.id}
+                />
+              )}
+              
+              {/* Drop zone after last widget */}
+              {widgetIndex === column.widgets.length - 1 && (
+                <WidgetDropZone
+                  id={`${column.id}-drop-after-${widgetIndex}`}
+                  position="after"
+                  insertIndex={widgetIndex + 1}
+                  columnId={column.id}
+                  containerId={containerId}
+                  widgetId={widget.id}
+                />
+              )}
+            </React.Fragment>
           ))}
         </SortableContext>
       ) : (
-        /* Empty Column State */
-        <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
-          {isOver ? (
-            <div className="flex flex-col items-center">
-              <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Drop widget here</span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center opacity-50">
-              <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Drop widgets here</span>
-            </div>
-          )}
-        </div>
+        /* Empty Column State with Enhanced Drop Zone */
+        <>
+          <WidgetDropZone
+            id={`${column.id}-drop-empty`}
+            position="before"
+            insertIndex={0}
+            columnId={column.id}
+            containerId={containerId}
+            className="min-h-20"
+          />
+          
+          <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
+            {isOver ? (
+              <div className="flex flex-col items-center">
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Drop widget here</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center opacity-50">
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Drop widgets here</span>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
