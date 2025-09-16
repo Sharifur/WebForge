@@ -66,16 +66,19 @@ class HeaderWidget extends BaseWidget
                 ->setPlaceholder('Enter description text')
             )
         ->endGroup();
+        // $control->addGroup('cta_buttons','')
+
 
         $control->addGroup('cta_buttons','Call to Action Buttons')
-            ->registerField('primary_button_text', FieldManager::TEXT()
-                ->setLabel('Primary Button Text')
-                ->setDefault('Get Started Free')
-            )
-            ->registerField('secondary_button_text', FieldManager::TEXT()
-                ->setLabel('Secondary Button Text')
-                ->setDefault('Watch Demo')
-            )
+           ->registerField('cta_buttons_repeater',FieldManager::REPEATER()
+               ->setLabel('Gallery Items')
+               ->setFields([
+                   'btn_text' => FieldManager::IMAGE()->setLabel('Btn Text'),
+                   'btn_url' => FieldManager::TEXT()->setLabel('Caption')
+               ])
+               ->setMin(1)
+               ->setMax(10)
+           )
         ->endGroup();
 
         return $control->getFields();
@@ -101,7 +104,7 @@ class HeaderWidget extends BaseWidget
             $templateData = $this->prepareTemplateData($settings);
             return $this->renderBladeTemplate($this->getDefaultTemplatePath(), $templateData);
         }
-        return 'no blade template found for widget: Header';
+        return __('no blade template found for widget: Header');
     }
 
 

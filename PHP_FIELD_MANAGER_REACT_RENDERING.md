@@ -126,29 +126,49 @@ const PhpFieldRenderer = ({
 
 #### Field-Specific React Components
 
-##### TextInput Component
+All field components now use a standardized prop structure with `fieldKey` and `fieldConfig` parameters.
+
+##### TextFieldComponent
 ```jsx
-const TextInput = ({ label, value, onChange, placeholder, required }) => (
-    <div className="field-group">
-        <label className="field-label">
-            {label} {required && <span className="required">*</span>}
-        </label>
-        <input
-            type="text"
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="form-input"
-        />
-    </div>
-);
+const TextFieldComponent = ({ fieldKey, fieldConfig, value, onChange }) => {
+    const { label, placeholder, default: defaultValue, required } = fieldConfig;
+
+    return (
+        <div className="field-group">
+            <label className="field-label">
+                {label} {required && <span className="required">*</span>}
+            </label>
+            <input
+                type="text"
+                value={value || defaultValue || ''}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="form-input"
+            />
+        </div>
+    );
+};
+
+// Usage Example:
+<TextFieldComponent
+  fieldKey="customClasses"
+  fieldConfig={{
+    label: 'CSS Classes',
+    placeholder: 'my-custom-class another-class',
+    default: '',
+    required: false
+  }}
+  value={settings.customClasses || ''}
+  onChange={(value) => updateSetting('customClasses', value)}
+/>
 ```
 
-##### ColorPicker Component
+##### ColorFieldComponent
 ```jsx
-const ColorPicker = ({ label, value, onChange, defaultValue }) => {
+const ColorFieldComponent = ({ fieldKey, fieldConfig, value, onChange }) => {
+    const { label, default: defaultValue, showAlpha } = fieldConfig;
     const [showPicker, setShowPicker] = useState(false);
-    
+
     return (
         <div className="field-group">
             <label className="field-label">{label}</label>
@@ -159,22 +179,36 @@ const ColorPicker = ({ label, value, onChange, defaultValue }) => {
                     onChange={(e) => onChange(e.target.value)}
                     className="color-input"
                 />
-                <div 
+                <div
                     className="color-preview"
                     style={{ backgroundColor: value || defaultValue }}
                     onClick={() => setShowPicker(!showPicker)}
                 />
                 {showPicker && (
-                    <ColorPalette 
+                    <ColorPalette
                         color={value || defaultValue}
                         onChange={onChange}
                         onClose={() => setShowPicker(false)}
+                        showAlpha={showAlpha}
                     />
                 )}
             </div>
         </div>
     );
 };
+
+// Usage Example:
+<ColorFieldComponent
+  fieldKey="borderColor"
+  fieldConfig={{
+    label: 'Border Color',
+    default: '#e2e8f0',
+    showAlpha: false
+  }}
+  value={settings.borderColor || '#e2e8f0'}
+  onChange={(value) => updateSetting('borderColor', value)}
+/>
+```
 ```
 
 ##### ResponsiveDimensionField Component (Spacing)

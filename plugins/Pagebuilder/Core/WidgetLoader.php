@@ -24,7 +24,7 @@ class WidgetLoader
      * Registered external widget paths for auto-discovery
      */
     private static array $customPaths = [];
-    
+
     /**
      * Cache for preventing duplicate auto-discovery
      */
@@ -32,10 +32,10 @@ class WidgetLoader
     // =================================================================
     // INTERNAL API - Core widget registration methods
     // =================================================================
-    
+
     /**
      * Register a single widget class (internal use only)
-     * 
+     *
      * @internal
      * @param string $widgetClass Fully qualified class name
      * @throws \InvalidArgumentException If widget class is invalid
@@ -44,10 +44,10 @@ class WidgetLoader
     {
         WidgetRegistry::register($widgetClass);
     }
-    
+
     /**
      * Register multiple widget classes at once (internal use only)
-     * 
+     *
      * @internal
      * @param array $widgetClasses Array of fully qualified class names
      */
@@ -55,10 +55,10 @@ class WidgetLoader
     {
         WidgetRegistry::registerMultiple($widgetClasses);
     }
-    
+
     /**
      * Register multiple categories at once (internal use only)
-     * 
+     *
      * @internal
      * @param array $categories Array of category definitions
      */
@@ -69,20 +69,20 @@ class WidgetLoader
             $name = $categoryData['name'] ?? null;
             $icon = $categoryData['icon'] ?? null;
             $sortOrder = $categoryData['sortOrder'] ?? 100;
-            
+
             if (!$slug || !$name || !$icon) {
                 throw new \InvalidArgumentException(
                     "Category must include 'slug', 'name', and 'icon'"
                 );
             }
-            
+
             WidgetCategory::registerCustomCategory($slug, $name, $icon, $sortOrder);
         }
     }
-    
+
     /**
      * Auto-discover and register widgets from a custom directory (internal use only)
-     * 
+     *
      * @internal
      * @param string $path Absolute path to widget directory
      * @param string|null $namespace Base namespace for discovered widgets (optional)
@@ -94,21 +94,21 @@ class WidgetLoader
             \Log::warning("Widget discovery path does not exist: {$path}");
             return;
         }
-        
+
         // Avoid duplicate discovery
         $pathKey = $path . '|' . ($namespace ?? 'auto');
         if (in_array($pathKey, self::$discoveredPaths)) {
             return;
         }
-        
+
         self::$discoveredPaths[] = $pathKey;
-        
+
         $files = $recursive ? File::allFiles($path) : File::files($path);
-        
+
         foreach ($files as $file) {
             if ($file->getExtension() === 'php') {
                 $className = self::fileToClassName($file, $path, $namespace);
-                
+
                 if ($className && class_exists($className) && is_subclass_of($className, \Plugins\Pagebuilder\Core\BaseWidget::class)) {
                     try {
                         self::registerWidget($className);
@@ -119,10 +119,10 @@ class WidgetLoader
             }
         }
     }
-    
+
     /**
      * Add a path for automatic widget discovery (internal use only)
-     * 
+     *
      * @internal
      * @param string $path Absolute path to widget directory
      * @param string|null $namespace Base namespace for widgets
@@ -136,7 +136,7 @@ class WidgetLoader
             'recursive' => $recursive
         ];
     }
-    
+
     /**
      * Register all available widgets (both core and custom)
      */
@@ -144,18 +144,18 @@ class WidgetLoader
     {
         // Register core widgets
         self::registerCoreWidgets();
-        
+
         // Auto-discover from custom paths
         self::discoverCustomWidgets();
-        
+
         // Cache the registry for better performance
         WidgetRegistry::cache();
     }
-    
+
     // =================================================================
     // INTERNAL METHODS - Hidden complexity, not part of public API
     // =================================================================
-    
+
     /**
      * Register core page builder widgets
      */
@@ -182,7 +182,7 @@ class WidgetLoader
         // Form Widgets (Category: FORM)
         self::registerFormWidgets();
     }
-    
+
     /**
      * Auto-discover widgets from custom registered paths
      */
@@ -196,7 +196,7 @@ class WidgetLoader
             );
         }
     }
-    
+
     /**
      * Convert file path to class name with proper namespace
      */
@@ -205,11 +205,11 @@ class WidgetLoader
         $relativePath = str_replace($basePath, '', $file->getPathname());
         $relativePath = ltrim($relativePath, '/\\');
         $relativePath = str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
-        
+
         if ($namespace) {
             return $namespace . '\\' . $relativePath;
         }
-        
+
         // Auto-detect namespace from file content (fallback)
         $content = File::get($file->getPathname());
         if (preg_match('/namespace\s+([^;]+);/', $content, $matches)) {
@@ -217,7 +217,7 @@ class WidgetLoader
             $className = basename($relativePath);
             return $detectedNamespace . '\\' . $className;
         }
-        
+
         return null;
     }
 
@@ -310,7 +310,7 @@ class WidgetLoader
     private static function registerFormWidgets(): void
     {
         $formWidgets = [
-            \Plugins\Pagebuilder\Widgets\Form\ContactFormWidget::class,
+
         ];
 
         WidgetRegistry::registerMultiple($formWidgets);
@@ -364,20 +364,20 @@ class WidgetLoader
             self::registerAllWidgets();
         }
     }
-    
+
     /**
      * Get all custom widget paths registered for auto-discovery (internal use only)
-     * 
+     *
      * @internal
      */
     public static function getCustomPaths(): array
     {
         return self::$customPaths;
     }
-    
+
     /**
      * Clear all custom widget paths (internal use only)
-     * 
+     *
      * @internal
      */
     public static function clearCustomPaths(): void
@@ -399,7 +399,7 @@ class WidgetLoader
     // =================================================================
     // QUERY METHODS - Widget retrieval and information
     // =================================================================
-    
+
     /**
      * Get widget by type for rendering
      */
