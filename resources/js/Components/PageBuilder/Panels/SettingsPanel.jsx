@@ -7,6 +7,9 @@ import AdvancedSettings from './Settings/AdvancedSettings';
 import SectionGeneralSettings from './Settings/SectionGeneralSettings';
 import SectionStyleSettings from './Settings/SectionStyleSettings';
 import SectionAdvancedSettings from './Settings/SectionAdvancedSettings';
+import ColumnGeneralSettings from './Settings/ColumnGeneralSettings';
+import ColumnStyleSettings from './Settings/ColumnStyleSettings';
+import ColumnAdvancedSettings from './Settings/ColumnAdvancedSettings';
 
 // Helper functions for padding/margin parsing
 const parseSpacing = (value) => {
@@ -747,10 +750,10 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-900 capitalize">
-              {widget.type === 'section' ? 'Section' : widget.type} Settings
+              {widget.type === 'section' ? 'Section' : widget.type === 'column' ? 'Column' : widget.type} Settings
             </h3>
             <p className="text-sm text-gray-500 mt-1">
-              Configure the selected {widget.type === 'section' ? 'section' : 'widget'}
+              Configure the selected {widget.type === 'section' ? 'section' : widget.type === 'column' ? 'column' : 'widget'}
             </p>
           </div>
           <button
@@ -763,8 +766,8 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
         </div>
       </div>
 
-      {/* Only show tabs for widgets, not containers */}
-      {widget.type !== 'section' && (
+      {/* Only show tabs for widgets, not containers/sections */}
+      {widget.type !== 'section' && widget.type !== 'column' && (
         <div className="flex border-b border-gray-200">
           {tabs.map(tab => (
             <button
@@ -830,6 +833,51 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               )}
             </div>
           </>
+        ) : widget.type === 'column' ? (
+          <>
+            {/* Column Settings Tabs */}
+            <div className="flex border-b border-gray-200">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex p-3 text-sm font-medium transition-colors items-center ${
+                    activeTab === tab.id
+                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4 mr-1" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Column Tab Content */}
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === 'general' && (
+                <ColumnGeneralSettings
+                  column={widget}
+                  onUpdate={onUpdate}
+                  onWidgetUpdate={onWidgetUpdate}
+                />
+              )}
+              {activeTab === 'style' && (
+                <ColumnStyleSettings
+                  column={widget}
+                  onUpdate={onUpdate}
+                  onWidgetUpdate={onWidgetUpdate}
+                />
+              )}
+              {activeTab === 'advanced' && (
+                <ColumnAdvancedSettings
+                  column={widget}
+                  onUpdate={onUpdate}
+                  onWidgetUpdate={onWidgetUpdate}
+                />
+              )}
+            </div>
+          </>
         ) : (
           <>
             {activeTab === 'general' && (
@@ -870,7 +918,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               <h3 className="text-lg font-semibold text-gray-900">Unsaved Changes</h3>
             </div>
             <p className="text-gray-600 mb-6">
-              You have unsaved changes to this {widget.type === 'section' ? 'section' : 'widget'}. 
+              You have unsaved changes to this {widget.type === 'section' ? 'section' : widget.type === 'column' ? 'column' : 'widget'}. 
               What would you like to do?
             </p>
             <div className="flex space-x-3">

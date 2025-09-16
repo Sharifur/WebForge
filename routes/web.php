@@ -82,6 +82,22 @@ Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
     
     Route::post('/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
         ->name('api.page-builder.unpublish');
+    
+    // Column CSS Generation Routes
+    Route::post('/columns/css/generate', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateCSS'])
+        ->name('api.page-builder.column-css.generate');
+    
+    Route::post('/columns/css/generate-multiple', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateMultipleCSS'])
+        ->name('api.page-builder.column-css.generate-multiple');
+    
+    Route::post('/columns/css/classes', [App\Http\Controllers\Admin\ColumnCSSController::class, 'getColumnClasses'])
+        ->name('api.page-builder.column-css.classes');
+    
+    Route::post('/columns/css/preview', [App\Http\Controllers\Admin\ColumnCSSController::class, 'previewColumn'])
+        ->name('api.page-builder.column-css.preview');
+    
+    Route::post('/columns/css/clear-cache', [App\Http\Controllers\Admin\ColumnCSSController::class, 'clearCache'])
+        ->name('api.page-builder.column-css.clear-cache');
 });
 
 // Frontend Routes - Page URLs without /page/ prefix for better SEO  

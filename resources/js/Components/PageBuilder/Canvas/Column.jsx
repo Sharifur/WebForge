@@ -3,6 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableWidget from '../Widgets/SortableWidget';
 import WidgetDropZone from './WidgetDropZone';
+import { generateColumnInlineStyles, generateColumnCssClasses } from '../Utils/ColumnStyleGenerator';
 
 const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
   const [isHovered, setIsHovered] = React.useState(false);
@@ -21,29 +22,33 @@ const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, se
   // Check if this column is being hovered with valid/invalid drop
   const isColumnHovered = hoveredDropZone?.id === column.id;
   const isValidDrop = hoveredDropZone?.isValid;
+  
+  // Generate dynamic column styles and classes
+  const columnSettings = column.settings || {};
+  const dynamicStyles = generateColumnInlineStyles(columnSettings);
+  const dynamicClasses = generateColumnCssClasses(columnSettings);
+  
+  // Combine existing styles with dynamic column styles
+  const existingStyles = {
+    flexBasis: column.width || 'auto',
+    flexGrow: column.width ? 0 : 1,
+    flexShrink: 0,
+    padding: columnSettings.padding || '10px'
+  };
+  
+  const finalStyles = { ...existingStyles, ...dynamicStyles };
 
   return (
     <div
       ref={setNodeRef}
-      className={`relative min-h-20 transition-all duration-200 ${
+      className={`relative min-h-20 transition-all duration-200 ${dynamicClasses} ${
         isColumnHovered && isValidDrop
           ? 'bg-blue-50 border-2 border-dashed border-blue-400' 
           : isColumnHovered && !isValidDrop
           ? 'bg-red-50 border-2 border-dashed border-red-400'
           : 'border-2 border-dashed border-transparent hover:border-gray-300'
       }`}
-      style={{
-        flexBasis: column.width || 'auto',
-        flexGrow: column.width ? 0 : 1,
-        flexShrink: 0,
-        padding: column.settings?.padding || '10px',
-        // Only spread CSS-related properties, filter out internal settings
-        ...Object.fromEntries(
-          Object.entries(column.settings || {}).filter(([key]) => 
-            !['padding'].includes(key) // Filter out properties already handled
-          )
-        )
-      }}
+      style={finalStyles}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
