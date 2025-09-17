@@ -280,13 +280,13 @@ const IconSelectorModal = ({
                         </div>
                     ) : (
                         <div>
-                            <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-12 xl:grid-cols-12 gap-1">
+                            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-10 xl:grid-cols-10 gap-2">
                                 {filteredIcons.map((icon) => (
                                     <div
                                         key={icon.cssClass}
                                         onClick={() => handleIconClick(icon.cssClass)}
                                         className={`
-                                            relative flex items-center justify-center w-10 h-10 rounded cursor-pointer transition-all duration-200
+                                            relative flex items-center justify-center w-15 h-15 rounded cursor-pointer transition-all duration-200
                                             hover:bg-blue-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500
                                             ${currentValue === icon.cssClass ? 'bg-blue-500 text-white' : 'bg-gray-50 text-gray-700'}
                                         `}
@@ -302,7 +302,7 @@ const IconSelectorModal = ({
                                         aria-label={`Select ${icon.displayName} icon`}
                                     >
                                         <i
-                                            className={`${icon.cssClass} text-lg`}
+                                            className={`${icon.cssClass} text-2xl`}
                                             aria-hidden="true"
                                         />
                                     </div>

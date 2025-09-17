@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class IconService
 {
-    private const JSON_FILE_PATH = 'line-awesome-icons-complete.json';
+    private const JSON_FILE_PATH = 'assets/line-awesome-icons-complete.json';
     private const CACHE_KEY = 'line_awesome_icons';
     private const CACHE_DURATION = 3600; // 1 hour
 

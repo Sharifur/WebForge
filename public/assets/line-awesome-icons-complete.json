@@ -31,7 +31,7 @@
     {
       "name": "500px",
       "displayName": "500px",
-      "cssClass": "las la-500px",
+      "cssClass": "lab la-500px",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -60,7 +60,7 @@
     {
       "name": "accusoft",
       "displayName": "Accusoft",
-      "cssClass": "las la-accusoft",
+      "cssClass": "lab la-accusoft",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -217,7 +217,7 @@
     {
       "name": "affiliatetheme",
       "displayName": "Affiliatetheme",
-      "cssClass": "las la-affiliatetheme",
+      "cssClass": "lab la-affiliatetheme",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -242,7 +242,7 @@
     {
       "name": "airbnb",
       "displayName": "Airbnb",
-      "cssClass": "las la-airbnb",
+      "cssClass": "lab la-airbnb",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -256,7 +256,7 @@
     {
       "name": "algolia",
       "displayName": "Algolia",
-      "cssClass": "las la-algolia",
+      "cssClass": "lab la-algolia",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -330,7 +330,7 @@
     {
       "name": "alipay",
       "displayName": "Alipay",
-      "cssClass": "las la-alipay",
+      "cssClass": "lab la-alipay",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -452,7 +452,7 @@
     {
       "name": "angellist",
       "displayName": "Angellist",
-      "cssClass": "las la-angellist",
+      "cssClass": "lab la-angellist",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -604,7 +604,7 @@
     {
       "name": "angrycreative",
       "displayName": "Angrycreative",
-      "cssClass": "las la-angrycreative",
+      "cssClass": "lab la-angrycreative",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -642,7 +642,7 @@
     {
       "name": "app-store",
       "displayName": "App Store",
-      "cssClass": "las la-app-store",
+      "cssClass": "lab la-app-store",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -657,7 +657,7 @@
     {
       "name": "app-store-ios",
       "displayName": "App Store Ios",
-      "cssClass": "las la-app-store-ios",
+      "cssClass": "lab la-app-store-ios",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -673,7 +673,7 @@
     {
       "name": "apper",
       "displayName": "Apper",
-      "cssClass": "las la-apper",
+      "cssClass": "lab la-apper",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1077,7 +1077,7 @@
     {
       "name": "artstation",
       "displayName": "Artstation",
-      "cssClass": "las la-artstation",
+      "cssClass": "lab la-artstation",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1128,7 +1128,7 @@
     {
       "name": "asymmetrik",
       "displayName": "Asymmetrik",
-      "cssClass": "las la-asymmetrik",
+      "cssClass": "lab la-asymmetrik",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1166,7 +1166,7 @@
     {
       "name": "atlassian",
       "displayName": "Atlassian",
-      "cssClass": "las la-atlassian",
+      "cssClass": "lab la-atlassian",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1194,7 +1194,7 @@
     {
       "name": "audible",
       "displayName": "Audible",
-      "cssClass": "las la-audible",
+      "cssClass": "lab la-audible",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1233,7 +1233,7 @@
     {
       "name": "autoprefixer",
       "displayName": "Autoprefixer",
-      "cssClass": "las la-autoprefixer",
+      "cssClass": "lab la-autoprefixer",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1247,7 +1247,7 @@
     {
       "name": "avianex",
       "displayName": "Avianex",
-      "cssClass": "las la-avianex",
+      "cssClass": "lab la-avianex",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1261,7 +1261,7 @@
     {
       "name": "aviato",
       "displayName": "Aviato",
-      "cssClass": "las la-aviato",
+      "cssClass": "lab la-aviato",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1285,7 +1285,7 @@
     {
       "name": "aws",
       "displayName": "AWS",
-      "cssClass": "las la-aws",
+      "cssClass": "lab la-aws",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1414,7 +1414,7 @@
     {
       "name": "bandcamp",
       "displayName": "Bandcamp",
-      "cssClass": "las la-bandcamp",
+      "cssClass": "lab la-bandcamp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1677,7 +1677,7 @@
     {
       "name": "battle-net",
       "displayName": "Battle Net",
-      "cssClass": "las la-battle-net",
+      "cssClass": "lab la-battle-net",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1716,7 +1716,7 @@
     {
       "name": "behance",
       "displayName": "Behance",
-      "cssClass": "las la-behance",
+      "cssClass": "lab la-behance",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1730,7 +1730,7 @@
     {
       "name": "behance-square",
       "displayName": "Behance Square",
-      "cssClass": "las la-behance-square",
+      "cssClass": "lab la-behance-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1865,7 +1865,7 @@
     {
       "name": "bimobject",
       "displayName": "Bimobject",
-      "cssClass": "las la-bimobject",
+      "cssClass": "lab la-bimobject",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1918,7 +1918,7 @@
     {
       "name": "bitbucket",
       "displayName": "Bitbucket",
-      "cssClass": "las la-bitbucket",
+      "cssClass": "lab la-bitbucket",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1932,7 +1932,7 @@
     {
       "name": "bitbucket-square",
       "displayName": "Bitbucket Square",
-      "cssClass": "las la-bitbucket-square",
+      "cssClass": "lab la-bitbucket-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1961,7 +1961,7 @@
     {
       "name": "bity",
       "displayName": "Bity",
-      "cssClass": "las la-bity",
+      "cssClass": "lab la-bity",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1975,7 +1975,7 @@
     {
       "name": "black-tie",
       "displayName": "Black Tie",
-      "cssClass": "las la-black-tie",
+      "cssClass": "lab la-black-tie",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -1990,7 +1990,7 @@
     {
       "name": "blackberry",
       "displayName": "Blackberry",
-      "cssClass": "las la-blackberry",
+      "cssClass": "lab la-blackberry",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2049,7 +2049,7 @@
     {
       "name": "blogger",
       "displayName": "Blogger",
-      "cssClass": "las la-blogger",
+      "cssClass": "lab la-blogger",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2063,7 +2063,7 @@
     {
       "name": "blogger-b",
       "displayName": "Blogger B",
-      "cssClass": "las la-blogger-b",
+      "cssClass": "lab la-blogger-b",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2259,7 +2259,7 @@
     {
       "name": "bootstrap",
       "displayName": "Bootstrap",
-      "cssClass": "las la-bootstrap",
+      "cssClass": "lab la-bootstrap",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2458,7 +2458,7 @@
     {
       "name": "btc",
       "displayName": "BTC",
-      "cssClass": "las la-btc",
+      "cssClass": "lab la-btc",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2472,7 +2472,7 @@
     {
       "name": "buffer",
       "displayName": "Buffer",
-      "cssClass": "las la-buffer",
+      "cssClass": "lab la-buffer",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2564,7 +2564,7 @@
     {
       "name": "buromobelexperte",
       "displayName": "Buromobelexperte",
-      "cssClass": "las la-buromobelexperte",
+      "cssClass": "lab la-buromobelexperte",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2618,7 +2618,7 @@
     {
       "name": "buy-n-large",
       "displayName": "Buy N Large",
-      "cssClass": "las la-buy-n-large",
+      "cssClass": "lab la-buy-n-large",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -2633,7 +2633,7 @@
     {
       "name": "buysellads",
       "displayName": "Buysellads",
-      "cssClass": "las la-buysellads",
+      "cssClass": "lab la-buysellads",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3349,7 +3349,7 @@
     {
       "name": "cc-stripe",
       "displayName": "Cc Stripe",
-      "cssClass": "las la-cc-stripe",
+      "cssClass": "lab la-cc-stripe",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3375,7 +3375,7 @@
     {
       "name": "centercode",
       "displayName": "Centercode",
-      "cssClass": "las la-centercode",
+      "cssClass": "lab la-centercode",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3389,7 +3389,7 @@
     {
       "name": "centos",
       "displayName": "Centos",
-      "cssClass": "las la-centos",
+      "cssClass": "lab la-centos",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3498,7 +3498,7 @@
     {
       "name": "chart-line",
       "displayName": "Chart Line",
-      "cssClass": "las la-chart-line",
+      "cssClass": "lab la-chart-line",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3846,7 +3846,7 @@
     {
       "name": "chrome",
       "displayName": "Chrome",
-      "cssClass": "las la-chrome",
+      "cssClass": "lab la-chrome",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -3860,7 +3860,7 @@
     {
       "name": "chromecast",
       "displayName": "Chromecast",
-      "cssClass": "las la-chromecast",
+      "cssClass": "lab la-chromecast",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4216,7 +4216,7 @@
     {
       "name": "cloudscale",
       "displayName": "Cloudscale",
-      "cssClass": "las la-cloudscale",
+      "cssClass": "lab la-cloudscale",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4230,7 +4230,7 @@
     {
       "name": "cloudsmith",
       "displayName": "Cloudsmith",
-      "cssClass": "las la-cloudsmith",
+      "cssClass": "lab la-cloudsmith",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4244,7 +4244,7 @@
     {
       "name": "cloudversify",
       "displayName": "Cloudversify",
-      "cssClass": "las la-cloudversify",
+      "cssClass": "lab la-cloudversify",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4314,7 +4314,7 @@
     {
       "name": "codepen",
       "displayName": "Codepen",
-      "cssClass": "las la-codepen",
+      "cssClass": "lab la-codepen",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4328,7 +4328,7 @@
     {
       "name": "codiepie",
       "displayName": "Codiepie",
-      "cssClass": "las la-codiepie",
+      "cssClass": "lab la-codiepie",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4653,7 +4653,7 @@
     {
       "name": "confluence",
       "displayName": "Confluence",
-      "cssClass": "las la-confluence",
+      "cssClass": "lab la-confluence",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4667,7 +4667,7 @@
     {
       "name": "connectdevelop",
       "displayName": "Connectdevelop",
-      "cssClass": "las la-connectdevelop",
+      "cssClass": "lab la-connectdevelop",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4681,7 +4681,7 @@
     {
       "name": "contao",
       "displayName": "Contao",
-      "cssClass": "las la-contao",
+      "cssClass": "lab la-contao",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4748,7 +4748,7 @@
     {
       "name": "cotton-bureau",
       "displayName": "Cotton Bureau",
-      "cssClass": "las la-cotton-bureau",
+      "cssClass": "lab la-cotton-bureau",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4773,7 +4773,7 @@
     {
       "name": "cpanel",
       "displayName": "Cpanel",
-      "cssClass": "las la-cpanel",
+      "cssClass": "lab la-cpanel",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4787,7 +4787,7 @@
     {
       "name": "creative-commons",
       "displayName": "Creative Commons",
-      "cssClass": "las la-creative-commons",
+      "cssClass": "lab la-creative-commons",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4802,7 +4802,7 @@
     {
       "name": "creative-commons-by",
       "displayName": "Creative Commons By",
-      "cssClass": "las la-creative-commons-by",
+      "cssClass": "lab la-creative-commons-by",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4818,7 +4818,7 @@
     {
       "name": "creative-commons-nc",
       "displayName": "Creative Commons Nc",
-      "cssClass": "las la-creative-commons-nc",
+      "cssClass": "lab la-creative-commons-nc",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4834,7 +4834,7 @@
     {
       "name": "creative-commons-nc-eu",
       "displayName": "Creative Commons Nc Eu",
-      "cssClass": "las la-creative-commons-nc-eu",
+      "cssClass": "lab la-creative-commons-nc-eu",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4851,7 +4851,7 @@
     {
       "name": "creative-commons-nc-jp",
       "displayName": "Creative Commons Nc Jp",
-      "cssClass": "las la-creative-commons-nc-jp",
+      "cssClass": "lab la-creative-commons-nc-jp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4868,7 +4868,7 @@
     {
       "name": "creative-commons-nd",
       "displayName": "Creative Commons Nd",
-      "cssClass": "las la-creative-commons-nd",
+      "cssClass": "lab la-creative-commons-nd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4884,7 +4884,7 @@
     {
       "name": "creative-commons-pd",
       "displayName": "Creative Commons Pd",
-      "cssClass": "las la-creative-commons-pd",
+      "cssClass": "lab la-creative-commons-pd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4900,7 +4900,7 @@
     {
       "name": "creative-commons-pd-alt",
       "displayName": "Creative Commons Pd Alternative",
-      "cssClass": "las la-creative-commons-pd-alt",
+      "cssClass": "lab la-creative-commons-pd-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4917,7 +4917,7 @@
     {
       "name": "creative-commons-remix",
       "displayName": "Creative Commons Remix",
-      "cssClass": "las la-creative-commons-remix",
+      "cssClass": "lab la-creative-commons-remix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4933,7 +4933,7 @@
     {
       "name": "creative-commons-sa",
       "displayName": "Creative Commons Sa",
-      "cssClass": "las la-creative-commons-sa",
+      "cssClass": "lab la-creative-commons-sa",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4949,7 +4949,7 @@
     {
       "name": "creative-commons-sampling",
       "displayName": "Creative Commons Sampling",
-      "cssClass": "las la-creative-commons-sampling",
+      "cssClass": "lab la-creative-commons-sampling",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4965,7 +4965,7 @@
     {
       "name": "creative-commons-sampling-plus",
       "displayName": "Creative Commons Sampling Plus",
-      "cssClass": "las la-creative-commons-sampling-plus",
+      "cssClass": "lab la-creative-commons-sampling-plus",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4982,7 +4982,7 @@
     {
       "name": "creative-commons-share",
       "displayName": "Creative Commons Share",
-      "cssClass": "las la-creative-commons-share",
+      "cssClass": "lab la-creative-commons-share",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -4998,7 +4998,7 @@
     {
       "name": "creative-commons-zero",
       "displayName": "Creative Commons Zero",
-      "cssClass": "las la-creative-commons-zero",
+      "cssClass": "lab la-creative-commons-zero",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5037,7 +5037,7 @@
     {
       "name": "critical-role",
       "displayName": "Critical Role",
-      "cssClass": "las la-critical-role",
+      "cssClass": "lab la-critical-role",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5123,7 +5123,7 @@
     {
       "name": "css3",
       "displayName": "Css3",
-      "cssClass": "las la-css3",
+      "cssClass": "lab la-css3",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5137,7 +5137,7 @@
     {
       "name": "css3-alt",
       "displayName": "Css3 Alternative",
-      "cssClass": "las la-css3-alt",
+      "cssClass": "lab la-css3-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5196,7 +5196,7 @@
     {
       "name": "cuttlefish",
       "displayName": "Cuttlefish",
-      "cssClass": "las la-cuttlefish",
+      "cssClass": "lab la-cuttlefish",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5210,7 +5210,7 @@
     {
       "name": "d-and-d",
       "displayName": "D And D",
-      "cssClass": "las la-d-and-d",
+      "cssClass": "lab la-d-and-d",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5224,7 +5224,7 @@
     {
       "name": "d-and-d-beyond",
       "displayName": "D And D Beyond",
-      "cssClass": "las la-d-and-d-beyond",
+      "cssClass": "lab la-d-and-d-beyond",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5249,7 +5249,7 @@
     {
       "name": "dashcube",
       "displayName": "Dashcube",
-      "cssClass": "las la-dashcube",
+      "cssClass": "lab la-dashcube",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5311,7 +5311,7 @@
     {
       "name": "delicious",
       "displayName": "Delicious",
-      "cssClass": "las la-delicious",
+      "cssClass": "lab la-delicious",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5335,7 +5335,7 @@
     {
       "name": "deploydog",
       "displayName": "Deploydog",
-      "cssClass": "las la-deploydog",
+      "cssClass": "lab la-deploydog",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5349,7 +5349,7 @@
     {
       "name": "deskpro",
       "displayName": "Deskpro",
-      "cssClass": "las la-deskpro",
+      "cssClass": "lab la-deskpro",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5377,7 +5377,7 @@
     {
       "name": "dev",
       "displayName": "Dev",
-      "cssClass": "las la-dev",
+      "cssClass": "lab la-dev",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5391,7 +5391,7 @@
     {
       "name": "deviantart",
       "displayName": "Deviantart",
-      "cssClass": "las la-deviantart",
+      "cssClass": "lab la-deviantart",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5557,7 +5557,7 @@
     {
       "name": "digg",
       "displayName": "Digg",
-      "cssClass": "las la-digg",
+      "cssClass": "lab la-digg",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5586,7 +5586,7 @@
     {
       "name": "digital-tachograph",
       "displayName": "Digital Tachograph",
-      "cssClass": "las la-digital-tachograph",
+      "cssClass": "lab la-digital-tachograph",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5611,7 +5611,7 @@
     {
       "name": "discord",
       "displayName": "Discord",
-      "cssClass": "las la-discord",
+      "cssClass": "lab la-discord",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5625,7 +5625,7 @@
     {
       "name": "discourse",
       "displayName": "Discourse",
-      "cssClass": "las la-discourse",
+      "cssClass": "lab la-discourse",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5677,7 +5677,7 @@
     {
       "name": "dochub",
       "displayName": "Dochub",
-      "cssClass": "las la-dochub",
+      "cssClass": "lab la-dochub",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5691,7 +5691,7 @@
     {
       "name": "docker",
       "displayName": "Docker",
-      "cssClass": "las la-docker",
+      "cssClass": "lab la-docker",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5846,7 +5846,7 @@
     {
       "name": "draft2digital",
       "displayName": "Draft2digital",
-      "cssClass": "las la-draft2digital",
+      "cssClass": "lab la-draft2digital",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5892,7 +5892,7 @@
     {
       "name": "dribbble",
       "displayName": "Dribbble",
-      "cssClass": "las la-dribbble",
+      "cssClass": "lab la-dribbble",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5906,7 +5906,7 @@
     {
       "name": "dribbble-square",
       "displayName": "Dribbble Square",
-      "cssClass": "las la-dribbble-square",
+      "cssClass": "lab la-dribbble-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -5954,7 +5954,7 @@
     {
       "name": "dropbox",
       "displayName": "Dropbox",
-      "cssClass": "las la-dropbox",
+      "cssClass": "lab la-dropbox",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6004,7 +6004,7 @@
     {
       "name": "drupal",
       "displayName": "Drupal",
-      "cssClass": "las la-drupal",
+      "cssClass": "lab la-drupal",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6059,7 +6059,7 @@
     {
       "name": "dyalog",
       "displayName": "Dyalog",
-      "cssClass": "las la-dyalog",
+      "cssClass": "lab la-dyalog",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6073,7 +6073,7 @@
     {
       "name": "earlybirds",
       "displayName": "Earlybirds",
-      "cssClass": "las la-earlybirds",
+      "cssClass": "lab la-earlybirds",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6087,7 +6087,7 @@
     {
       "name": "ebay",
       "displayName": "Ebay",
-      "cssClass": "las la-ebay",
+      "cssClass": "lab la-ebay",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6101,7 +6101,7 @@
     {
       "name": "edge",
       "displayName": "Edge",
-      "cssClass": "las la-edge",
+      "cssClass": "lab la-edge",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6167,7 +6167,7 @@
     {
       "name": "elementor",
       "displayName": "Elementor",
-      "cssClass": "las la-elementor",
+      "cssClass": "lab la-elementor",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6209,7 +6209,7 @@
     {
       "name": "ello",
       "displayName": "Ello",
-      "cssClass": "las la-ello",
+      "cssClass": "lab la-ello",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6223,7 +6223,7 @@
     {
       "name": "ember",
       "displayName": "Ember",
-      "cssClass": "las la-ember",
+      "cssClass": "lab la-ember",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6237,7 +6237,7 @@
     {
       "name": "empire",
       "displayName": "Empire",
-      "cssClass": "las la-empire",
+      "cssClass": "lab la-empire",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6353,7 +6353,7 @@
     {
       "name": "envira",
       "displayName": "Envira",
-      "cssClass": "las la-envira",
+      "cssClass": "lab la-envira",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6387,7 +6387,7 @@
     {
       "name": "erlang",
       "displayName": "Erlang",
-      "cssClass": "las la-erlang",
+      "cssClass": "lab la-erlang",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6425,7 +6425,7 @@
     {
       "name": "etsy",
       "displayName": "Etsy",
-      "cssClass": "las la-etsy",
+      "cssClass": "lab la-etsy",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6470,7 +6470,7 @@
     {
       "name": "evernote",
       "displayName": "Evernote",
-      "cssClass": "las la-evernote",
+      "cssClass": "lab la-evernote",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6575,7 +6575,7 @@
     {
       "name": "expeditedssl",
       "displayName": "Expeditedssl",
-      "cssClass": "las la-expeditedssl",
+      "cssClass": "lab la-expeditedssl",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6796,7 +6796,7 @@
     {
       "name": "fantasy-flight-games",
       "displayName": "Fantasy Flight Games",
-      "cssClass": "las la-fantasy-flight-games",
+      "cssClass": "lab la-fantasy-flight-games",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6869,7 +6869,7 @@
     {
       "name": "fedex",
       "displayName": "Fedex",
-      "cssClass": "las la-fedex",
+      "cssClass": "lab la-fedex",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6883,7 +6883,7 @@
     {
       "name": "fedora",
       "displayName": "Fedora",
-      "cssClass": "las la-fedora",
+      "cssClass": "lab la-fedora",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -6928,7 +6928,7 @@
     {
       "name": "figma",
       "displayName": "Figma",
-      "cssClass": "las la-figma",
+      "cssClass": "lab la-figma",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -7740,7 +7740,7 @@
     {
       "name": "firefox",
       "displayName": "Firefox",
-      "cssClass": "las la-firefox",
+      "cssClass": "lab la-firefox",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -7800,7 +7800,7 @@
     {
       "name": "firstdraft",
       "displayName": "Firstdraft",
-      "cssClass": "las la-firstdraft",
+      "cssClass": "lab la-firstdraft",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -7911,7 +7911,7 @@
     {
       "name": "flickr",
       "displayName": "Flickr",
-      "cssClass": "las la-flickr",
+      "cssClass": "lab la-flickr",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -7925,7 +7925,7 @@
     {
       "name": "flipboard",
       "displayName": "Flipboard",
-      "cssClass": "las la-flipboard",
+      "cssClass": "lab la-flipboard",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -7973,7 +7973,7 @@
     {
       "name": "fly",
       "displayName": "Fly",
-      "cssClass": "las la-fly",
+      "cssClass": "lab la-fly",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8102,7 +8102,7 @@
     {
       "name": "font-awesome",
       "displayName": "Font Awesome",
-      "cssClass": "las la-font-awesome",
+      "cssClass": "lab la-font-awesome",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8117,7 +8117,7 @@
     {
       "name": "font-awesome-alt",
       "displayName": "Font Awesome Alternative",
-      "cssClass": "las la-font-awesome-alt",
+      "cssClass": "lab la-font-awesome-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8133,7 +8133,7 @@
     {
       "name": "font-awesome-flag",
       "displayName": "Font Awesome Flag",
-      "cssClass": "las la-font-awesome-flag",
+      "cssClass": "lab la-font-awesome-flag",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8149,7 +8149,7 @@
     {
       "name": "font-awesome-logo-full",
       "displayName": "Font Awesome Logo Full",
-      "cssClass": "las la-font-awesome-logo-full",
+      "cssClass": "lab la-font-awesome-logo-full",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8166,7 +8166,7 @@
     {
       "name": "fonticons",
       "displayName": "Fonticons",
-      "cssClass": "las la-fonticons",
+      "cssClass": "lab la-fonticons",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8180,7 +8180,7 @@
     {
       "name": "fonticons-fi",
       "displayName": "Fonticons Fi",
-      "cssClass": "las la-fonticons-fi",
+      "cssClass": "lab la-fonticons-fi",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8206,7 +8206,7 @@
     {
       "name": "fort-awesome",
       "displayName": "Fort Awesome",
-      "cssClass": "las la-fort-awesome",
+      "cssClass": "lab la-fort-awesome",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8221,7 +8221,7 @@
     {
       "name": "fort-awesome-alt",
       "displayName": "Fort Awesome Alternative",
-      "cssClass": "las la-fort-awesome-alt",
+      "cssClass": "lab la-fort-awesome-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8237,7 +8237,7 @@
     {
       "name": "forumbee",
       "displayName": "Forumbee",
-      "cssClass": "las la-forumbee",
+      "cssClass": "lab la-forumbee",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8261,7 +8261,7 @@
     {
       "name": "foursquare",
       "displayName": "Foursquare",
-      "cssClass": "las la-foursquare",
+      "cssClass": "lab la-foursquare",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8275,7 +8275,7 @@
     {
       "name": "free-code-camp",
       "displayName": "Free Code Camp",
-      "cssClass": "las la-free-code-camp",
+      "cssClass": "lab la-free-code-camp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8291,7 +8291,7 @@
     {
       "name": "freebsd",
       "displayName": "Freebsd",
-      "cssClass": "las la-freebsd",
+      "cssClass": "lab la-freebsd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8364,7 +8364,7 @@
     {
       "name": "fulcrum",
       "displayName": "Fulcrum",
-      "cssClass": "las la-fulcrum",
+      "cssClass": "lab la-fulcrum",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8419,7 +8419,7 @@
     {
       "name": "galactic-republic",
       "displayName": "Galactic Republic",
-      "cssClass": "las la-galactic-republic",
+      "cssClass": "lab la-galactic-republic",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8434,7 +8434,7 @@
     {
       "name": "galactic-senate",
       "displayName": "Galactic Senate",
-      "cssClass": "las la-galactic-senate",
+      "cssClass": "lab la-galactic-senate",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8530,7 +8530,7 @@
     {
       "name": "genderless",
       "displayName": "Genderless",
-      "cssClass": "las la-genderless",
+      "cssClass": "lab la-genderless",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8544,7 +8544,7 @@
     {
       "name": "get-pocket",
       "displayName": "Get Pocket",
-      "cssClass": "las la-get-pocket",
+      "cssClass": "lab la-get-pocket",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8559,7 +8559,7 @@
     {
       "name": "gg",
       "displayName": "Gg",
-      "cssClass": "las la-gg",
+      "cssClass": "lab la-gg",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8573,7 +8573,7 @@
     {
       "name": "gg-circle",
       "displayName": "Gg Circle",
-      "cssClass": "las la-gg-circle",
+      "cssClass": "lab la-gg-circle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8618,7 +8618,7 @@
     {
       "name": "git",
       "displayName": "Git",
-      "cssClass": "las la-git",
+      "cssClass": "lab la-git",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8632,7 +8632,7 @@
     {
       "name": "git-alt",
       "displayName": "Git Alternative",
-      "cssClass": "las la-git-alt",
+      "cssClass": "lab la-git-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8647,7 +8647,7 @@
     {
       "name": "git-square",
       "displayName": "Git Square",
-      "cssClass": "las la-git-square",
+      "cssClass": "lab la-git-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8706,7 +8706,7 @@
     {
       "name": "gitkraken",
       "displayName": "Gitkraken",
-      "cssClass": "las la-gitkraken",
+      "cssClass": "lab la-gitkraken",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8720,7 +8720,7 @@
     {
       "name": "gitlab",
       "displayName": "Gitlab",
-      "cssClass": "las la-gitlab",
+      "cssClass": "lab la-gitlab",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8734,7 +8734,7 @@
     {
       "name": "gitter",
       "displayName": "Gitter",
-      "cssClass": "las la-gitter",
+      "cssClass": "lab la-gitter",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8748,7 +8748,7 @@
     {
       "name": "gittip",
       "displayName": "Gittip",
-      "cssClass": "las la-gittip",
+      "cssClass": "lab la-gittip",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8827,7 +8827,7 @@
     {
       "name": "glide",
       "displayName": "Glide",
-      "cssClass": "las la-glide",
+      "cssClass": "lab la-glide",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8841,7 +8841,7 @@
     {
       "name": "glide-g",
       "displayName": "Glide G",
-      "cssClass": "las la-glide-g",
+      "cssClass": "lab la-glide-g",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8909,7 +8909,7 @@
     {
       "name": "gofore",
       "displayName": "Gofore",
-      "cssClass": "las la-gofore",
+      "cssClass": "lab la-gofore",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8934,7 +8934,7 @@
     {
       "name": "goodreads",
       "displayName": "Goodreads",
-      "cssClass": "las la-goodreads",
+      "cssClass": "lab la-goodreads",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -8948,7 +8948,7 @@
     {
       "name": "goodreads-g",
       "displayName": "Goodreads G",
-      "cssClass": "las la-goodreads-g",
+      "cssClass": "lab la-goodreads-g",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9120,7 +9120,7 @@
     {
       "name": "gratipay",
       "displayName": "Gratipay",
-      "cssClass": "las la-gratipay",
+      "cssClass": "lab la-gratipay",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9134,7 +9134,7 @@
     {
       "name": "grav",
       "displayName": "Grav",
-      "cssClass": "las la-grav",
+      "cssClass": "lab la-grav",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9452,7 +9452,7 @@
     {
       "name": "gripfire",
       "displayName": "Gripfire",
-      "cssClass": "las la-gripfire",
+      "cssClass": "lab la-gripfire",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9476,7 +9476,7 @@
     {
       "name": "grunt",
       "displayName": "Grunt",
-      "cssClass": "las la-grunt",
+      "cssClass": "lab la-grunt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9500,7 +9500,7 @@
     {
       "name": "gulp",
       "displayName": "Gulp",
-      "cssClass": "las la-gulp",
+      "cssClass": "lab la-gulp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9524,7 +9524,7 @@
     {
       "name": "hacker-news",
       "displayName": "Hacker News",
-      "cssClass": "las la-hacker-news",
+      "cssClass": "lab la-hacker-news",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9539,7 +9539,7 @@
     {
       "name": "hacker-news-square",
       "displayName": "Hacker News Square",
-      "cssClass": "las la-hacker-news-square",
+      "cssClass": "lab la-hacker-news-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -9555,7 +9555,7 @@
     {
       "name": "hackerrank",
       "displayName": "Hackerrank",
-      "cssClass": "las la-hackerrank",
+      "cssClass": "lab la-hackerrank",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10343,7 +10343,7 @@
     {
       "name": "hips",
       "displayName": "Hips",
-      "cssClass": "las la-hips",
+      "cssClass": "lab la-hips",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10357,7 +10357,7 @@
     {
       "name": "hire-a-helper",
       "displayName": "Hire A Helper",
-      "cssClass": "las la-hire-a-helper",
+      "cssClass": "lab la-hire-a-helper",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10418,7 +10418,7 @@
     {
       "name": "hooli",
       "displayName": "Hooli",
-      "cssClass": "las la-hooli",
+      "cssClass": "lab la-hooli",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10432,7 +10432,7 @@
     {
       "name": "hornbill",
       "displayName": "Hornbill",
-      "cssClass": "las la-hornbill",
+      "cssClass": "lab la-hornbill",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10563,7 +10563,7 @@
     {
       "name": "hotjar",
       "displayName": "Hotjar",
-      "cssClass": "las la-hotjar",
+      "cssClass": "lab la-hotjar",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10681,7 +10681,7 @@
     {
       "name": "houzz",
       "displayName": "Houzz",
-      "cssClass": "las la-houzz",
+      "cssClass": "lab la-houzz",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10705,7 +10705,7 @@
     {
       "name": "html5",
       "displayName": "Html5",
-      "cssClass": "las la-html5",
+      "cssClass": "lab la-html5",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10719,7 +10719,7 @@
     {
       "name": "hubspot",
       "displayName": "Hubspot",
-      "cssClass": "las la-hubspot",
+      "cssClass": "lab la-hubspot",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10878,7 +10878,7 @@
     {
       "name": "imdb",
       "displayName": "Imdb",
-      "cssClass": "las la-imdb",
+      "cssClass": "lab la-imdb",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -10991,7 +10991,7 @@
     {
       "name": "intercom",
       "displayName": "Intercom",
-      "cssClass": "las la-intercom",
+      "cssClass": "lab la-intercom",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11005,7 +11005,7 @@
     {
       "name": "internet-explorer",
       "displayName": "Internet Explorer",
-      "cssClass": "las la-internet-explorer",
+      "cssClass": "lab la-internet-explorer",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11030,7 +11030,7 @@
     {
       "name": "invision",
       "displayName": "Invision",
-      "cssClass": "las la-invision",
+      "cssClass": "lab la-invision",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11044,7 +11044,7 @@
     {
       "name": "ioxhost",
       "displayName": "Ioxhost",
-      "cssClass": "las la-ioxhost",
+      "cssClass": "lab la-ioxhost",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11072,7 +11072,7 @@
     {
       "name": "itch-io",
       "displayName": "Itch Io",
-      "cssClass": "las la-itch-io",
+      "cssClass": "lab la-itch-io",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11087,7 +11087,7 @@
     {
       "name": "itunes",
       "displayName": "Itunes",
-      "cssClass": "las la-itunes",
+      "cssClass": "lab la-itunes",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11101,7 +11101,7 @@
     {
       "name": "itunes-note",
       "displayName": "Itunes Note",
-      "cssClass": "las la-itunes-note",
+      "cssClass": "lab la-itunes-note",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11116,7 +11116,7 @@
     {
       "name": "java",
       "displayName": "Java",
-      "cssClass": "las la-java",
+      "cssClass": "lab la-java",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11151,7 +11151,7 @@
     {
       "name": "jenkins",
       "displayName": "Jenkins",
-      "cssClass": "las la-jenkins",
+      "cssClass": "lab la-jenkins",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11165,7 +11165,7 @@
     {
       "name": "jira",
       "displayName": "Jira",
-      "cssClass": "las la-jira",
+      "cssClass": "lab la-jira",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11179,7 +11179,7 @@
     {
       "name": "joget",
       "displayName": "Joget",
-      "cssClass": "las la-joget",
+      "cssClass": "lab la-joget",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11203,7 +11203,7 @@
     {
       "name": "joomla",
       "displayName": "Joomla",
-      "cssClass": "las la-joomla",
+      "cssClass": "lab la-joomla",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11238,7 +11238,7 @@
     {
       "name": "js",
       "displayName": "JavaScript",
-      "cssClass": "las la-js",
+      "cssClass": "lab la-js",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11252,7 +11252,7 @@
     {
       "name": "js-square",
       "displayName": "JavaScript Square",
-      "cssClass": "las la-js-square",
+      "cssClass": "lab la-js-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11267,7 +11267,7 @@
     {
       "name": "jsfiddle",
       "displayName": "Jsfiddle",
-      "cssClass": "las la-jsfiddle",
+      "cssClass": "lab la-jsfiddle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11291,7 +11291,7 @@
     {
       "name": "kaggle",
       "displayName": "Kaggle",
-      "cssClass": "las la-kaggle",
+      "cssClass": "lab la-kaggle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11315,7 +11315,7 @@
     {
       "name": "keybase",
       "displayName": "Keybase",
-      "cssClass": "las la-keybase",
+      "cssClass": "lab la-keybase",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11359,7 +11359,7 @@
     {
       "name": "keycdn",
       "displayName": "Keycdn",
-      "cssClass": "las la-keycdn",
+      "cssClass": "lab la-keycdn",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11383,7 +11383,7 @@
     {
       "name": "kickstarter",
       "displayName": "Kickstarter",
-      "cssClass": "las la-kickstarter",
+      "cssClass": "lab la-kickstarter",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11397,7 +11397,7 @@
     {
       "name": "kickstarter-k",
       "displayName": "Kickstarter K",
-      "cssClass": "las la-kickstarter-k",
+      "cssClass": "lab la-kickstarter-k",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11550,7 +11550,7 @@
     {
       "name": "laravel",
       "displayName": "Laravel",
-      "cssClass": "las la-laravel",
+      "cssClass": "lab la-laravel",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11564,7 +11564,7 @@
     {
       "name": "lastfm",
       "displayName": "Lastfm",
-      "cssClass": "las la-lastfm",
+      "cssClass": "lab la-lastfm",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11578,7 +11578,7 @@
     {
       "name": "lastfm-square",
       "displayName": "Lastfm Square",
-      "cssClass": "las la-lastfm-square",
+      "cssClass": "lab la-lastfm-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11673,7 +11673,7 @@
     {
       "name": "leanpub",
       "displayName": "Leanpub",
-      "cssClass": "las la-leanpub",
+      "cssClass": "lab la-leanpub",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11731,7 +11731,7 @@
     {
       "name": "less",
       "displayName": "Less",
-      "cssClass": "las la-less",
+      "cssClass": "lab la-less",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11745,7 +11745,7 @@
     {
       "name": "less-than",
       "displayName": "Less Than",
-      "cssClass": "las la-less-than",
+      "cssClass": "lab la-less-than",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11760,7 +11760,7 @@
     {
       "name": "less-than-equal",
       "displayName": "Less Than Equal",
-      "cssClass": "las la-less-than-equal",
+      "cssClass": "lab la-less-than-equal",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11912,7 +11912,7 @@
     {
       "name": "line",
       "displayName": "Line",
-      "cssClass": "las la-line",
+      "cssClass": "lab la-line",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -11926,7 +11926,7 @@
     {
       "name": "line-chart",
       "displayName": "Line Chart",
-      "cssClass": "las la-line-chart",
+      "cssClass": "lab la-line-chart",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12009,7 +12009,7 @@
     {
       "name": "linux",
       "displayName": "Linux",
-      "cssClass": "las la-linux",
+      "cssClass": "lab la-linux",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12275,7 +12275,7 @@
     {
       "name": "luggage-cart",
       "displayName": "Luggage Cart",
-      "cssClass": "las la-luggage-cart",
+      "cssClass": "lab la-luggage-cart",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12290,7 +12290,7 @@
     {
       "name": "lyft",
       "displayName": "Lyft",
-      "cssClass": "las la-lyft",
+      "cssClass": "lab la-lyft",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12304,7 +12304,7 @@
     {
       "name": "magento",
       "displayName": "Magento",
-      "cssClass": "las la-magento",
+      "cssClass": "lab la-magento",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12391,7 +12391,7 @@
     {
       "name": "mailchimp",
       "displayName": "Mailchimp",
-      "cssClass": "las la-mailchimp",
+      "cssClass": "lab la-mailchimp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12415,7 +12415,7 @@
     {
       "name": "mandalorian",
       "displayName": "Mandalorian",
-      "cssClass": "las la-mandalorian",
+      "cssClass": "lab la-mandalorian",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12527,7 +12527,7 @@
     {
       "name": "markdown",
       "displayName": "Markdown",
-      "cssClass": "las la-markdown",
+      "cssClass": "lab la-markdown",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12615,7 +12615,7 @@
     {
       "name": "mastodon",
       "displayName": "Mastodon",
-      "cssClass": "las la-mastodon",
+      "cssClass": "lab la-mastodon",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12629,7 +12629,7 @@
     {
       "name": "maxcdn",
       "displayName": "Maxcdn",
-      "cssClass": "las la-maxcdn",
+      "cssClass": "lab la-maxcdn",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12643,7 +12643,7 @@
     {
       "name": "mdb",
       "displayName": "Mdb",
-      "cssClass": "las la-mdb",
+      "cssClass": "lab la-mdb",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12657,7 +12657,7 @@
     {
       "name": "meanpath",
       "displayName": "Meanpath",
-      "cssClass": "las la-meanpath",
+      "cssClass": "lab la-meanpath",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12681,7 +12681,7 @@
     {
       "name": "medapps",
       "displayName": "Medapps",
-      "cssClass": "las la-medapps",
+      "cssClass": "lab la-medapps",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12695,7 +12695,7 @@
     {
       "name": "medium",
       "displayName": "Medium",
-      "cssClass": "las la-medium",
+      "cssClass": "lab la-medium",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12709,7 +12709,7 @@
     {
       "name": "medium-m",
       "displayName": "Medium M",
-      "cssClass": "las la-medium-m",
+      "cssClass": "lab la-medium-m",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12737,7 +12737,7 @@
     {
       "name": "medrt",
       "displayName": "Medrt",
-      "cssClass": "las la-medrt",
+      "cssClass": "lab la-medrt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12751,7 +12751,7 @@
     {
       "name": "meetup",
       "displayName": "Meetup",
-      "cssClass": "las la-meetup",
+      "cssClass": "lab la-meetup",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12765,7 +12765,7 @@
     {
       "name": "megaport",
       "displayName": "Megaport",
-      "cssClass": "las la-megaport",
+      "cssClass": "lab la-megaport",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -12854,7 +12854,7 @@
     {
       "name": "mendeley",
       "displayName": "Mendeley",
-      "cssClass": "las la-mendeley",
+      "cssClass": "lab la-mendeley",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13072,7 +13072,7 @@
     {
       "name": "mix",
       "displayName": "Mix",
-      "cssClass": "las la-mix",
+      "cssClass": "lab la-mix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13086,7 +13086,7 @@
     {
       "name": "mixcloud",
       "displayName": "Mixcloud",
-      "cssClass": "las la-mixcloud",
+      "cssClass": "lab la-mixcloud",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13100,7 +13100,7 @@
     {
       "name": "mizuni",
       "displayName": "Mizuni",
-      "cssClass": "las la-mizuni",
+      "cssClass": "lab la-mizuni",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13154,7 +13154,7 @@
     {
       "name": "modx",
       "displayName": "Modx",
-      "cssClass": "las la-modx",
+      "cssClass": "lab la-modx",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13168,7 +13168,7 @@
     {
       "name": "monero",
       "displayName": "Monero",
-      "cssClass": "las la-monero",
+      "cssClass": "lab la-monero",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13409,7 +13409,7 @@
     {
       "name": "napster",
       "displayName": "Napster",
-      "cssClass": "las la-napster",
+      "cssClass": "lab la-napster",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13437,7 +13437,7 @@
     {
       "name": "neos",
       "displayName": "Neos",
-      "cssClass": "las la-neos",
+      "cssClass": "lab la-neos",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13502,7 +13502,7 @@
     {
       "name": "nimblr",
       "displayName": "Nimblr",
-      "cssClass": "las la-nimblr",
+      "cssClass": "lab la-nimblr",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13584,7 +13584,7 @@
     {
       "name": "ns8",
       "displayName": "Ns8",
-      "cssClass": "las la-ns8",
+      "cssClass": "lab la-ns8",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13598,7 +13598,7 @@
     {
       "name": "nutritionix",
       "displayName": "Nutritionix",
-      "cssClass": "las la-nutritionix",
+      "cssClass": "lab la-nutritionix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13634,7 +13634,7 @@
     {
       "name": "odnoklassniki",
       "displayName": "Odnoklassniki",
-      "cssClass": "las la-odnoklassniki",
+      "cssClass": "lab la-odnoklassniki",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13648,7 +13648,7 @@
     {
       "name": "odnoklassniki-square",
       "displayName": "Odnoklassniki Square",
-      "cssClass": "las la-odnoklassniki-square",
+      "cssClass": "lab la-odnoklassniki-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13674,7 +13674,7 @@
     {
       "name": "old-republic",
       "displayName": "Old Republic",
-      "cssClass": "las la-old-republic",
+      "cssClass": "lab la-old-republic",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13699,7 +13699,7 @@
     {
       "name": "opencart",
       "displayName": "Opencart",
-      "cssClass": "las la-opencart",
+      "cssClass": "lab la-opencart",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13713,7 +13713,7 @@
     {
       "name": "openid",
       "displayName": "Openid",
-      "cssClass": "las la-openid",
+      "cssClass": "lab la-openid",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13727,7 +13727,7 @@
     {
       "name": "opera",
       "displayName": "Opera",
-      "cssClass": "las la-opera",
+      "cssClass": "lab la-opera",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13741,7 +13741,7 @@
     {
       "name": "optin-monster",
       "displayName": "Optin Monster",
-      "cssClass": "las la-optin-monster",
+      "cssClass": "lab la-optin-monster",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13756,7 +13756,7 @@
     {
       "name": "orcid",
       "displayName": "Orcid",
-      "cssClass": "las la-orcid",
+      "cssClass": "lab la-orcid",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13770,7 +13770,7 @@
     {
       "name": "osi",
       "displayName": "Osi",
-      "cssClass": "las la-osi",
+      "cssClass": "lab la-osi",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13804,7 +13804,7 @@
     {
       "name": "page4",
       "displayName": "Page4",
-      "cssClass": "las la-page4",
+      "cssClass": "lab la-page4",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13818,7 +13818,7 @@
     {
       "name": "pagelines",
       "displayName": "Pagelines",
-      "cssClass": "las la-pagelines",
+      "cssClass": "lab la-pagelines",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -13874,7 +13874,7 @@
     {
       "name": "palfed",
       "displayName": "Palfed",
-      "cssClass": "las la-palfed",
+      "cssClass": "lab la-palfed",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14010,7 +14010,7 @@
     {
       "name": "patreon",
       "displayName": "Patreon",
-      "cssClass": "las la-patreon",
+      "cssClass": "lab la-patreon",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14220,7 +14220,7 @@
     {
       "name": "penny-arcade",
       "displayName": "Penny Arcade",
-      "cssClass": "las la-penny-arcade",
+      "cssClass": "lab la-penny-arcade",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14281,7 +14281,7 @@
     {
       "name": "periscope",
       "displayName": "Periscope",
-      "cssClass": "las la-periscope",
+      "cssClass": "lab la-periscope",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14306,7 +14306,7 @@
     {
       "name": "phabricator",
       "displayName": "Phabricator",
-      "cssClass": "las la-phabricator",
+      "cssClass": "lab la-phabricator",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14320,7 +14320,7 @@
     {
       "name": "phoenix-framework",
       "displayName": "Phoenix Framework",
-      "cssClass": "las la-phoenix-framework",
+      "cssClass": "lab la-phoenix-framework",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14335,7 +14335,7 @@
     {
       "name": "phoenix-squadron",
       "displayName": "Phoenix Squadron",
-      "cssClass": "las la-phoenix-squadron",
+      "cssClass": "lab la-phoenix-squadron",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14506,7 +14506,7 @@
     {
       "name": "pied-piper",
       "displayName": "Pied Piper",
-      "cssClass": "las la-pied-piper",
+      "cssClass": "lab la-pied-piper",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14521,7 +14521,7 @@
     {
       "name": "pied-piper-alt",
       "displayName": "Pied Piper Alternative",
-      "cssClass": "las la-pied-piper-alt",
+      "cssClass": "lab la-pied-piper-alt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14537,7 +14537,7 @@
     {
       "name": "pied-piper-hat",
       "displayName": "Pied Piper Hat",
-      "cssClass": "las la-pied-piper-hat",
+      "cssClass": "lab la-pied-piper-hat",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14553,7 +14553,7 @@
     {
       "name": "pied-piper-pp",
       "displayName": "Pied Piper Pp",
-      "cssClass": "las la-pied-piper-pp",
+      "cssClass": "lab la-pied-piper-pp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14569,7 +14569,7 @@
     {
       "name": "piggy-bank",
       "displayName": "Piggy Bank",
-      "cssClass": "las la-piggy-bank",
+      "cssClass": "lab la-piggy-bank",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -14755,7 +14755,7 @@
     {
       "name": "playstation",
       "displayName": "Playstation",
-      "cssClass": "las la-playstation",
+      "cssClass": "lab la-playstation",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15032,7 +15032,7 @@
     {
       "name": "product-hunt",
       "displayName": "Product Hunt",
-      "cssClass": "las la-product-hunt",
+      "cssClass": "lab la-product-hunt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15058,7 +15058,7 @@
     {
       "name": "pushed",
       "displayName": "Pushed",
-      "cssClass": "las la-pushed",
+      "cssClass": "lab la-pushed",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15097,7 +15097,7 @@
     {
       "name": "qq",
       "displayName": "Qq",
-      "cssClass": "las la-qq",
+      "cssClass": "lab la-qq",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15174,7 +15174,7 @@
     {
       "name": "quinscape",
       "displayName": "Quinscape",
-      "cssClass": "las la-quinscape",
+      "cssClass": "lab la-quinscape",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15188,7 +15188,7 @@
     {
       "name": "quora",
       "displayName": "Quora",
-      "cssClass": "las la-quora",
+      "cssClass": "lab la-quora",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15242,7 +15242,7 @@
     {
       "name": "r-project",
       "displayName": "R Project",
-      "cssClass": "las la-r-project",
+      "cssClass": "lab la-r-project",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15323,7 +15323,7 @@
     {
       "name": "raspberry-pi",
       "displayName": "Raspberry Pi",
-      "cssClass": "las la-raspberry-pi",
+      "cssClass": "lab la-raspberry-pi",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15338,7 +15338,7 @@
     {
       "name": "ravelry",
       "displayName": "Ravelry",
-      "cssClass": "las la-ravelry",
+      "cssClass": "lab la-ravelry",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15380,7 +15380,7 @@
     {
       "name": "readme",
       "displayName": "Readme",
-      "cssClass": "las la-readme",
+      "cssClass": "lab la-readme",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15394,7 +15394,7 @@
     {
       "name": "rebel",
       "displayName": "Rebel",
-      "cssClass": "las la-rebel",
+      "cssClass": "lab la-rebel",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15429,7 +15429,7 @@
     {
       "name": "recycle",
       "displayName": "Recycle",
-      "cssClass": "las la-recycle",
+      "cssClass": "lab la-recycle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15443,7 +15443,7 @@
     {
       "name": "red-river",
       "displayName": "Red River",
-      "cssClass": "las la-red-river",
+      "cssClass": "lab la-red-river",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15502,7 +15502,7 @@
     {
       "name": "redhat",
       "displayName": "Redhat",
-      "cssClass": "las la-redhat",
+      "cssClass": "lab la-redhat",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15586,7 +15586,7 @@
     {
       "name": "renren",
       "displayName": "Renren",
-      "cssClass": "las la-renren",
+      "cssClass": "lab la-renren",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15649,7 +15649,7 @@
     {
       "name": "replyd",
       "displayName": "Replyd",
-      "cssClass": "las la-replyd",
+      "cssClass": "lab la-replyd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15673,7 +15673,7 @@
     {
       "name": "researchgate",
       "displayName": "Researchgate",
-      "cssClass": "las la-researchgate",
+      "cssClass": "lab la-researchgate",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15687,7 +15687,7 @@
     {
       "name": "resistance",
       "displayName": "Resistance",
-      "cssClass": "las la-resistance",
+      "cssClass": "lab la-resistance",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15701,7 +15701,7 @@
     {
       "name": "resolving",
       "displayName": "Resolving",
-      "cssClass": "las la-resolving",
+      "cssClass": "lab la-resolving",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15739,7 +15739,7 @@
     {
       "name": "rev",
       "displayName": "Rev",
-      "cssClass": "las la-rev",
+      "cssClass": "lab la-rev",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15813,7 +15813,7 @@
     {
       "name": "rocketchat",
       "displayName": "Rocketchat",
-      "cssClass": "las la-rocketchat",
+      "cssClass": "lab la-rocketchat",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -15827,7 +15827,7 @@
     {
       "name": "rockrms",
       "displayName": "Rockrms",
-      "cssClass": "las la-rockrms",
+      "cssClass": "lab la-rockrms",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16017,7 +16017,7 @@
     {
       "name": "s15",
       "displayName": "S15",
-      "cssClass": "las la-s15",
+      "cssClass": "lab la-s15",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16061,7 +16061,7 @@
     {
       "name": "safari",
       "displayName": "Safari",
-      "cssClass": "las la-safari",
+      "cssClass": "lab la-safari",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16075,7 +16075,7 @@
     {
       "name": "salesforce",
       "displayName": "Salesforce",
-      "cssClass": "las la-salesforce",
+      "cssClass": "lab la-salesforce",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16089,7 +16089,7 @@
     {
       "name": "sass",
       "displayName": "Sass",
-      "cssClass": "las la-sass",
+      "cssClass": "lab la-sass",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16146,7 +16146,7 @@
     {
       "name": "schlix",
       "displayName": "Schlix",
-      "cssClass": "las la-schlix",
+      "cssClass": "lab la-schlix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16190,7 +16190,7 @@
     {
       "name": "scribd",
       "displayName": "Scribd",
-      "cssClass": "las la-scribd",
+      "cssClass": "lab la-scribd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16295,7 +16295,7 @@
     {
       "name": "searchengin",
       "displayName": "Searchengin",
-      "cssClass": "las la-searchengin",
+      "cssClass": "lab la-searchengin",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16323,7 +16323,7 @@
     {
       "name": "sellcast",
       "displayName": "Sellcast",
-      "cssClass": "las la-sellcast",
+      "cssClass": "lab la-sellcast",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16337,7 +16337,7 @@
     {
       "name": "sellsy",
       "displayName": "Sellsy",
-      "cssClass": "las la-sellsy",
+      "cssClass": "lab la-sellsy",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16395,7 +16395,7 @@
     {
       "name": "servicestack",
       "displayName": "Servicestack",
-      "cssClass": "las la-servicestack",
+      "cssClass": "lab la-servicestack",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16578,7 +16578,7 @@
     {
       "name": "shirtsinbulk",
       "displayName": "Shirtsinbulk",
-      "cssClass": "las la-shirtsinbulk",
+      "cssClass": "lab la-shirtsinbulk",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16636,7 +16636,7 @@
     {
       "name": "shopware",
       "displayName": "Shopware",
-      "cssClass": "las la-shopware",
+      "cssClass": "lab la-shopware",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16787,7 +16787,7 @@
     {
       "name": "simplybuilt",
       "displayName": "Simplybuilt",
-      "cssClass": "las la-simplybuilt",
+      "cssClass": "lab la-simplybuilt",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16801,7 +16801,7 @@
     {
       "name": "sistrix",
       "displayName": "Sistrix",
-      "cssClass": "las la-sistrix",
+      "cssClass": "lab la-sistrix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16825,7 +16825,7 @@
     {
       "name": "sith",
       "displayName": "Sith",
-      "cssClass": "las la-sith",
+      "cssClass": "lab la-sith",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16849,7 +16849,7 @@
     {
       "name": "sketch",
       "displayName": "Sketch",
-      "cssClass": "las la-sketch",
+      "cssClass": "lab la-sketch",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16905,7 +16905,7 @@
     {
       "name": "skyatlas",
       "displayName": "Skyatlas",
-      "cssClass": "las la-skyatlas",
+      "cssClass": "lab la-skyatlas",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16919,7 +16919,7 @@
     {
       "name": "skype",
       "displayName": "Skype",
-      "cssClass": "las la-skype",
+      "cssClass": "lab la-skype",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16933,7 +16933,7 @@
     {
       "name": "slack",
       "displayName": "Slack",
-      "cssClass": "las la-slack",
+      "cssClass": "lab la-slack",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -16947,7 +16947,7 @@
     {
       "name": "slack-hash",
       "displayName": "Slack Hash",
-      "cssClass": "las la-slack-hash",
+      "cssClass": "lab la-slack-hash",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17010,7 +17010,7 @@
     {
       "name": "slideshare",
       "displayName": "Slideshare",
-      "cssClass": "las la-slideshare",
+      "cssClass": "lab la-slideshare",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17572,7 +17572,7 @@
     {
       "name": "soundcloud",
       "displayName": "Soundcloud",
-      "cssClass": "las la-soundcloud",
+      "cssClass": "lab la-soundcloud",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17586,7 +17586,7 @@
     {
       "name": "sourcetree",
       "displayName": "Sourcetree",
-      "cssClass": "las la-sourcetree",
+      "cssClass": "lab la-sourcetree",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17621,7 +17621,7 @@
     {
       "name": "speakap",
       "displayName": "Speakap",
-      "cssClass": "las la-speakap",
+      "cssClass": "lab la-speakap",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17635,7 +17635,7 @@
     {
       "name": "speaker-deck",
       "displayName": "Speaker Deck",
-      "cssClass": "las la-speaker-deck",
+      "cssClass": "lab la-speaker-deck",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17779,7 +17779,7 @@
     {
       "name": "squarespace",
       "displayName": "Squarespace",
-      "cssClass": "las la-squarespace",
+      "cssClass": "lab la-squarespace",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17793,7 +17793,7 @@
     {
       "name": "stack-exchange",
       "displayName": "Stack Exchange",
-      "cssClass": "las la-stack-exchange",
+      "cssClass": "lab la-stack-exchange",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17823,7 +17823,7 @@
     {
       "name": "stackpath",
       "displayName": "Stackpath",
-      "cssClass": "las la-stackpath",
+      "cssClass": "lab la-stackpath",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17982,7 +17982,7 @@
     {
       "name": "staylinked",
       "displayName": "Staylinked",
-      "cssClass": "las la-staylinked",
+      "cssClass": "lab la-staylinked",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -17996,7 +17996,7 @@
     {
       "name": "steam",
       "displayName": "Steam",
-      "cssClass": "las la-steam",
+      "cssClass": "lab la-steam",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18010,7 +18010,7 @@
     {
       "name": "steam-square",
       "displayName": "Steam Square",
-      "cssClass": "las la-steam-square",
+      "cssClass": "lab la-steam-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18025,7 +18025,7 @@
     {
       "name": "steam-symbol",
       "displayName": "Steam Symbol",
-      "cssClass": "las la-steam-symbol",
+      "cssClass": "lab la-steam-symbol",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18084,7 +18084,7 @@
     {
       "name": "sticker-mule",
       "displayName": "Sticker Mule",
-      "cssClass": "las la-sticker-mule",
+      "cssClass": "lab la-sticker-mule",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18210,7 +18210,7 @@
     {
       "name": "strava",
       "displayName": "Strava",
-      "cssClass": "las la-strava",
+      "cssClass": "lab la-strava",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18259,7 +18259,7 @@
     {
       "name": "stripe",
       "displayName": "Stripe",
-      "cssClass": "las la-stripe",
+      "cssClass": "lab la-stripe",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18273,7 +18273,7 @@
     {
       "name": "stripe-s",
       "displayName": "Stripe S",
-      "cssClass": "las la-stripe-s",
+      "cssClass": "lab la-stripe-s",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18297,7 +18297,7 @@
     {
       "name": "studiovinari",
       "displayName": "Studiovinari",
-      "cssClass": "las la-studiovinari",
+      "cssClass": "lab la-studiovinari",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18311,7 +18311,7 @@
     {
       "name": "stumbleupon",
       "displayName": "Stumbleupon",
-      "cssClass": "las la-stumbleupon",
+      "cssClass": "lab la-stumbleupon",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18325,7 +18325,7 @@
     {
       "name": "stumbleupon-circle",
       "displayName": "Stumbleupon Circle",
-      "cssClass": "las la-stumbleupon-circle",
+      "cssClass": "lab la-stumbleupon-circle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18419,7 +18419,7 @@
     {
       "name": "superpowers",
       "displayName": "Superpowers",
-      "cssClass": "las la-superpowers",
+      "cssClass": "lab la-superpowers",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18447,7 +18447,7 @@
     {
       "name": "supple",
       "displayName": "Supple",
-      "cssClass": "las la-supple",
+      "cssClass": "lab la-supple",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18485,7 +18485,7 @@
     {
       "name": "suse",
       "displayName": "Suse",
-      "cssClass": "las la-suse",
+      "cssClass": "lab la-suse",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18509,7 +18509,7 @@
     {
       "name": "swift",
       "displayName": "Swift",
-      "cssClass": "las la-swift",
+      "cssClass": "lab la-swift",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18544,7 +18544,7 @@
     {
       "name": "symfony",
       "displayName": "Symfony",
-      "cssClass": "las la-symfony",
+      "cssClass": "lab la-symfony",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18758,7 +18758,7 @@
     {
       "name": "teamspeak",
       "displayName": "Teamspeak",
-      "cssClass": "las la-teamspeak",
+      "cssClass": "lab la-teamspeak",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18801,7 +18801,7 @@
     {
       "name": "telegram",
       "displayName": "Telegram",
-      "cssClass": "las la-telegram",
+      "cssClass": "lab la-telegram",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18815,7 +18815,7 @@
     {
       "name": "telegram-plane",
       "displayName": "Telegram Plane",
-      "cssClass": "las la-telegram-plane",
+      "cssClass": "lab la-telegram-plane",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18870,7 +18870,7 @@
     {
       "name": "tencent-weibo",
       "displayName": "Tencent Weibo",
-      "cssClass": "las la-tencent-weibo",
+      "cssClass": "lab la-tencent-weibo",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -18977,7 +18977,7 @@
     {
       "name": "the-red-yeti",
       "displayName": "The Red Yeti",
-      "cssClass": "las la-the-red-yeti",
+      "cssClass": "lab la-the-red-yeti",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19004,7 +19004,7 @@
     {
       "name": "themeco",
       "displayName": "Themeco",
-      "cssClass": "las la-themeco",
+      "cssClass": "lab la-themeco",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19018,7 +19018,7 @@
     {
       "name": "themeisle",
       "displayName": "Themeisle",
-      "cssClass": "las la-themeisle",
+      "cssClass": "lab la-themeisle",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19152,7 +19152,7 @@
     {
       "name": "think-peaks",
       "displayName": "Think Peaks",
-      "cssClass": "las la-think-peaks",
+      "cssClass": "lab la-think-peaks",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19372,7 +19372,7 @@
     {
       "name": "toggle-down",
       "displayName": "Toggle Down",
-      "cssClass": "las la-toggle-down",
+      "cssClass": "lab la-toggle-down",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19387,7 +19387,7 @@
     {
       "name": "toggle-left",
       "displayName": "Toggle Left",
-      "cssClass": "las la-toggle-left",
+      "cssClass": "lab la-toggle-left",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19440,7 +19440,7 @@
     {
       "name": "toggle-right",
       "displayName": "Toggle Right",
-      "cssClass": "las la-toggle-right",
+      "cssClass": "lab la-toggle-right",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19455,7 +19455,7 @@
     {
       "name": "toggle-up",
       "displayName": "Toggle Up",
-      "cssClass": "las la-toggle-up",
+      "cssClass": "lab la-toggle-up",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19560,7 +19560,7 @@
     {
       "name": "trade-federation",
       "displayName": "Trade Federation",
-      "cssClass": "las la-trade-federation",
+      "cssClass": "lab la-trade-federation",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19735,7 +19735,7 @@
     {
       "name": "trello",
       "displayName": "Trello",
-      "cssClass": "las la-trello",
+      "cssClass": "lab la-trello",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19749,7 +19749,7 @@
     {
       "name": "tripadvisor",
       "displayName": "Tripadvisor",
-      "cssClass": "las la-tripadvisor",
+      "cssClass": "lab la-tripadvisor",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19877,7 +19877,7 @@
     {
       "name": "tumblr",
       "displayName": "Tumblr",
-      "cssClass": "las la-tumblr",
+      "cssClass": "lab la-tumblr",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19891,7 +19891,7 @@
     {
       "name": "tumblr-square",
       "displayName": "Tumblr Square",
-      "cssClass": "las la-tumblr-square",
+      "cssClass": "lab la-tumblr-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19927,7 +19927,7 @@
     {
       "name": "twitch",
       "displayName": "Twitch",
-      "cssClass": "las la-twitch",
+      "cssClass": "lab la-twitch",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19970,7 +19970,7 @@
     {
       "name": "typo3",
       "displayName": "Typo3",
-      "cssClass": "las la-typo3",
+      "cssClass": "lab la-typo3",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19984,7 +19984,7 @@
     {
       "name": "uber",
       "displayName": "Uber",
-      "cssClass": "las la-uber",
+      "cssClass": "lab la-uber",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -19998,7 +19998,7 @@
     {
       "name": "ubuntu",
       "displayName": "Ubuntu",
-      "cssClass": "las la-ubuntu",
+      "cssClass": "lab la-ubuntu",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20012,7 +20012,7 @@
     {
       "name": "uikit",
       "displayName": "Uikit",
-      "cssClass": "las la-uikit",
+      "cssClass": "lab la-uikit",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20026,7 +20026,7 @@
     {
       "name": "umbraco",
       "displayName": "Umbraco",
-      "cssClass": "las la-umbraco",
+      "cssClass": "lab la-umbraco",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20108,7 +20108,7 @@
     {
       "name": "uniregistry",
       "displayName": "Uniregistry",
-      "cssClass": "las la-uniregistry",
+      "cssClass": "lab la-uniregistry",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20194,7 +20194,7 @@
     {
       "name": "untappd",
       "displayName": "Untappd",
-      "cssClass": "las la-untappd",
+      "cssClass": "lab la-untappd",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20222,7 +20222,7 @@
     {
       "name": "ups",
       "displayName": "Ups",
-      "cssClass": "las la-ups",
+      "cssClass": "lab la-ups",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20591,7 +20591,7 @@
     {
       "name": "usps",
       "displayName": "Usps",
-      "cssClass": "las la-usps",
+      "cssClass": "lab la-usps",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20605,7 +20605,7 @@
     {
       "name": "ussunnah",
       "displayName": "Ussunnah",
-      "cssClass": "las la-ussunnah",
+      "cssClass": "lab la-ussunnah",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20648,7 +20648,7 @@
     {
       "name": "vaadin",
       "displayName": "Vaadin",
-      "cssClass": "las la-vaadin",
+      "cssClass": "lab la-vaadin",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20735,7 +20735,7 @@
     {
       "name": "viacoin",
       "displayName": "Viacoin",
-      "cssClass": "las la-viacoin",
+      "cssClass": "lab la-viacoin",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20749,7 +20749,7 @@
     {
       "name": "viadeo",
       "displayName": "Viadeo",
-      "cssClass": "las la-viadeo",
+      "cssClass": "lab la-viadeo",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20763,7 +20763,7 @@
     {
       "name": "viadeo-square",
       "displayName": "Viadeo Square",
-      "cssClass": "las la-viadeo-square",
+      "cssClass": "lab la-viadeo-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20806,7 +20806,7 @@
     {
       "name": "viber",
       "displayName": "Viber",
-      "cssClass": "las la-viber",
+      "cssClass": "lab la-viber",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20862,7 +20862,7 @@
     {
       "name": "vimeo",
       "displayName": "Vimeo",
-      "cssClass": "las la-vimeo",
+      "cssClass": "lab la-vimeo",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20876,7 +20876,7 @@
     {
       "name": "vimeo-square",
       "displayName": "Vimeo Square",
-      "cssClass": "las la-vimeo-square",
+      "cssClass": "lab la-vimeo-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20891,7 +20891,7 @@
     {
       "name": "vimeo-v",
       "displayName": "Vimeo V",
-      "cssClass": "las la-vimeo-v",
+      "cssClass": "lab la-vimeo-v",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20905,7 +20905,7 @@
     {
       "name": "vine",
       "displayName": "Vine",
-      "cssClass": "las la-vine",
+      "cssClass": "lab la-vine",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20919,7 +20919,7 @@
     {
       "name": "vk",
       "displayName": "Vk",
-      "cssClass": "las la-vk",
+      "cssClass": "lab la-vk",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -20933,7 +20933,7 @@
     {
       "name": "vnv",
       "displayName": "Vnv",
-      "cssClass": "las la-vnv",
+      "cssClass": "lab la-vnv",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21141,7 +21141,7 @@
     {
       "name": "waze",
       "displayName": "Waze",
-      "cssClass": "las la-waze",
+      "cssClass": "lab la-waze",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21155,7 +21155,7 @@
     {
       "name": "wechat",
       "displayName": "Wechat",
-      "cssClass": "las la-wechat",
+      "cssClass": "lab la-wechat",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21169,7 +21169,7 @@
     {
       "name": "weebly",
       "displayName": "Weebly",
-      "cssClass": "las la-weebly",
+      "cssClass": "lab la-weebly",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21183,7 +21183,7 @@
     {
       "name": "weibo",
       "displayName": "Weibo",
-      "cssClass": "las la-weibo",
+      "cssClass": "lab la-weibo",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21218,7 +21218,7 @@
     {
       "name": "weixin",
       "displayName": "Weixin",
-      "cssClass": "las la-weixin",
+      "cssClass": "lab la-weixin",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21232,7 +21232,7 @@
     {
       "name": "whatsapp",
       "displayName": "Whatsapp",
-      "cssClass": "las la-whatsapp",
+      "cssClass": "lab la-whatsapp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21246,7 +21246,7 @@
     {
       "name": "whatsapp-square",
       "displayName": "Whatsapp Square",
-      "cssClass": "las la-whatsapp-square",
+      "cssClass": "lab la-whatsapp-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21290,7 +21290,7 @@
     {
       "name": "whmcs",
       "displayName": "Whmcs",
-      "cssClass": "las la-whmcs",
+      "cssClass": "lab la-whmcs",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21318,7 +21318,7 @@
     {
       "name": "wikipedia-w",
       "displayName": "Wikipedia W",
-      "cssClass": "las la-wikipedia-w",
+      "cssClass": "lab la-wikipedia-w",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21484,7 +21484,7 @@
     {
       "name": "wix",
       "displayName": "Wix",
-      "cssClass": "las la-wix",
+      "cssClass": "lab la-wix",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21515,7 +21515,7 @@
     {
       "name": "wolf-pack-battalion",
       "displayName": "Wolf Pack Battalion",
-      "cssClass": "las la-wolf-pack-battalion",
+      "cssClass": "lab la-wolf-pack-battalion",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21552,7 +21552,7 @@
     {
       "name": "wordpress",
       "displayName": "Wordpress",
-      "cssClass": "las la-wordpress",
+      "cssClass": "lab la-wordpress",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21566,7 +21566,7 @@
     {
       "name": "wordpress-simple",
       "displayName": "Wordpress Simple",
-      "cssClass": "las la-wordpress-simple",
+      "cssClass": "lab la-wordpress-simple",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21581,7 +21581,7 @@
     {
       "name": "wpbeginner",
       "displayName": "Wpbeginner",
-      "cssClass": "las la-wpbeginner",
+      "cssClass": "lab la-wpbeginner",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21595,7 +21595,7 @@
     {
       "name": "wpexplorer",
       "displayName": "Wpexplorer",
-      "cssClass": "las la-wpexplorer",
+      "cssClass": "lab la-wpexplorer",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21609,7 +21609,7 @@
     {
       "name": "wpforms",
       "displayName": "Wpforms",
-      "cssClass": "las la-wpforms",
+      "cssClass": "lab la-wpforms",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21623,7 +21623,7 @@
     {
       "name": "wpressr",
       "displayName": "Wpressr",
-      "cssClass": "las la-wpressr",
+      "cssClass": "lab la-wpressr",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21661,7 +21661,7 @@
     {
       "name": "xbox",
       "displayName": "Xbox",
-      "cssClass": "las la-xbox",
+      "cssClass": "lab la-xbox",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21675,7 +21675,7 @@
     {
       "name": "xing",
       "displayName": "Xing",
-      "cssClass": "las la-xing",
+      "cssClass": "lab la-xing",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21689,7 +21689,7 @@
     {
       "name": "xing-square",
       "displayName": "Xing Square",
-      "cssClass": "las la-xing-square",
+      "cssClass": "lab la-xing-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21704,7 +21704,7 @@
     {
       "name": "y-combinator",
       "displayName": "Y Combinator",
-      "cssClass": "las la-y-combinator",
+      "cssClass": "lab la-y-combinator",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21718,7 +21718,7 @@
     {
       "name": "y-combinator-square",
       "displayName": "Y Combinator Square",
-      "cssClass": "las la-y-combinator-square",
+      "cssClass": "lab la-y-combinator-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21733,7 +21733,7 @@
     {
       "name": "yahoo",
       "displayName": "Yahoo",
-      "cssClass": "las la-yahoo",
+      "cssClass": "lab la-yahoo",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21747,7 +21747,7 @@
     {
       "name": "yammer",
       "displayName": "Yammer",
-      "cssClass": "las la-yammer",
+      "cssClass": "lab la-yammer",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21761,7 +21761,7 @@
     {
       "name": "yandex",
       "displayName": "Yandex",
-      "cssClass": "las la-yandex",
+      "cssClass": "lab la-yandex",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21775,7 +21775,7 @@
     {
       "name": "yandex-international",
       "displayName": "Yandex International",
-      "cssClass": "las la-yandex-international",
+      "cssClass": "lab la-yandex-international",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21790,7 +21790,7 @@
     {
       "name": "yarn",
       "displayName": "Yarn",
-      "cssClass": "las la-yarn",
+      "cssClass": "lab la-yarn",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21804,7 +21804,7 @@
     {
       "name": "yc",
       "displayName": "Yc",
-      "cssClass": "las la-yc",
+      "cssClass": "lab la-yc",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21818,7 +21818,7 @@
     {
       "name": "yc-square",
       "displayName": "Yc Square",
-      "cssClass": "las la-yc-square",
+      "cssClass": "lab la-yc-square",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21833,7 +21833,7 @@
     {
       "name": "yelp",
       "displayName": "Yelp",
-      "cssClass": "las la-yelp",
+      "cssClass": "lab la-yelp",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21879,7 +21879,7 @@
     {
       "name": "yoast",
       "displayName": "Yoast",
-      "cssClass": "las la-yoast",
+      "cssClass": "lab la-yoast",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
@@ -21937,7 +21937,7 @@
     {
       "name": "zhihu",
       "displayName": "Zhihu",
-      "cssClass": "las la-zhihu",
+      "cssClass": "lab la-zhihu",
       "iconType": "solid",
       "category": "brand",
       "keywords": [
