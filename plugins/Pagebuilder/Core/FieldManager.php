@@ -10,6 +10,7 @@ use Plugins\Pagebuilder\Core\Fields\MultiSelectField;
 use Plugins\Pagebuilder\Core\Fields\ToggleField;
 use Plugins\Pagebuilder\Core\Fields\ColorField;
 use Plugins\Pagebuilder\Core\Fields\IconField;
+use Plugins\Pagebuilder\Core\Fields\IconInputField;
 use Plugins\Pagebuilder\Core\Fields\ImageField;
 use Plugins\Pagebuilder\Core\Fields\UrlField;
 use Plugins\Pagebuilder\Core\Fields\EmailField;
@@ -124,6 +125,16 @@ class FieldManager
     public static function ICON(): IconField
     {
         return new IconField();
+    }
+
+    /**
+     * Create a visual icon input field with modal selector
+     *
+     * @return IconInputField
+     */
+    public static function ICON_INPUT(): IconInputField
+    {
+        return IconInputField::create();
     }
 
     /**

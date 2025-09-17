@@ -124,6 +124,34 @@ abstract class BaseField
     }
 
     /**
+     * Set conditional display based on another field's value
+     *
+     * @param string $field Field name to depend on
+     * @param mixed $value Expected value
+     * @param string $operator Comparison operator (=, !=, in, not_in, not_empty, empty)
+     * @return static
+     */
+    public function dependsOn(string $field, mixed $value, string $operator = '='): static
+    {
+        $this->condition = [
+            'field' => $field,
+            'value' => $value,
+            'operator' => $operator
+        ];
+        return $this;
+    }
+
+    /**
+     * Get the current condition
+     *
+     * @return array<string, mixed>
+     */
+    public function getCondition(): array
+    {
+        return $this->condition;
+    }
+
+    /**
      * Set validation rules
      *
      * @param array<string, mixed> $validation Validation rules

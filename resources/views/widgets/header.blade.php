@@ -3,6 +3,13 @@
         <div class="grid md:grid-cols-2 gap-8 items-center">
             <!-- Left Content -->
             <div class="space-y-6">
+                @if($helper->generalSettings('header_icon'))
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="{{ $helper->generalSettings('header_icon') }} text-2xl text-blue-600" aria-hidden="true"></i>
+                    </div>
+                </div>
+                @endif
                 <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
                     {!! $helper->getText('general', 'title', 'Turn Raw Data Into <span class="text-blue-600">Actionable Insights</span> Instantly') !!}
                 </h1>
@@ -19,22 +26,17 @@
                         {{ $helper->generalSettings('secondary_button_text', 'Watch Demo') }}
                     </button>
                 </div>
-
                 <!-- Trust Indicators -->
+                @if(!empty($helper->generalSettings('cta_list_items')))
                 <div class="flex flex-wrap gap-4 text-sm text-gray-500">
-                    <div class="flex items-center">
-                        <span class="text-green-500 mr-2">✓</span>
-                        No Credit Card Required
-                    </div>
-                    <div class="flex items-center">
-                        <span class="text-green-500 mr-2">✓</span>
-                        14-Day Free Trial
-                    </div>
-                    <div class="flex items-center">
-                        <span class="text-green-500 mr-2">✓</span>
-                        Setup in 5 Minutes
-                    </div>
+                    @foreach($helper->generalSettings('cta_list_items') as $item)
+                        <div class="flex items-center">
+                            <span class="text-green-500 mr-2">✓</span>
+                            {{$item['list_text']}}
+                        </div>
+                    @endforeach
                 </div>
+                @endif
             </div>
 
             <!-- Right Content - Placeholder Image -->

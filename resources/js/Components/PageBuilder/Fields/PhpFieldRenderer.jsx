@@ -14,6 +14,9 @@ import NumberFieldComponent from './NumberFieldComponent';
 import UrlFieldComponent from './UrlFieldComponent';
 import ColorFieldComponent from './ColorFieldComponent';
 import RangeFieldComponent from './RangeFieldComponent';
+import ImageFieldComponent from './ImageFieldComponent';
+import RepeaterFieldComponent from './RepeaterFieldComponent';
+import IconInputField from './IconInputField';
 
 // Import existing complex components
 import ButtonPresetSelector from './ButtonPresetSelector';
@@ -139,6 +142,16 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
           />
         );
 
+      case 'image':
+        return (
+          <ImageFieldComponent
+            fieldKey={fieldKey}
+            fieldConfig={fieldConfig}
+            value={value}
+            onChange={onChange}
+          />
+        );
+
       case 'gradient':
         return (
           <EnhancedGradientPicker
@@ -239,6 +252,26 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
           />
         );
 
+      case 'repeater':
+        return (
+          <RepeaterFieldComponent
+            fieldKey={fieldKey}
+            fieldConfig={fieldConfig}
+            value={value}
+            onChange={onChange}
+          />
+        );
+
+      case 'icon_input':
+        return (
+          <IconInputField
+            fieldKey={fieldKey}
+            fieldConfig={fieldConfig}
+            value={value}
+            onChange={onChange}
+          />
+        );
+
       default:
         return (
           <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-md">
@@ -260,13 +293,13 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
 
   return (
     <div className="field-wrapper">
-      {/* Field Label - only show for non-checkbox/toggle fields */}
-      {!['checkbox', 'toggle', 'divider'].includes(type) && label && (
+      {/* Field Label - only show for non-checkbox/toggle fields and fields that handle their own labels */}
+      {!['checkbox', 'toggle', 'divider', 'repeater', 'image'].includes(type) && label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}
         </label>
       )}
-      
+
       {/* Field Component */}
       <div className="field-component">
         {renderField()}

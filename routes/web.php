@@ -86,18 +86,49 @@ Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
     // Column CSS Generation Routes
     Route::post('/columns/css/generate', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateCSS'])
         ->name('api.page-builder.column-css.generate');
-    
-    Route::post('/columns/css/generate-multiple', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateMultipleCSS'])
-        ->name('api.page-builder.column-css.generate-multiple');
-    
-    Route::post('/columns/css/classes', [App\Http\Controllers\Admin\ColumnCSSController::class, 'getColumnClasses'])
-        ->name('api.page-builder.column-css.classes');
-    
-    Route::post('/columns/css/preview', [App\Http\Controllers\Admin\ColumnCSSController::class, 'previewColumn'])
-        ->name('api.page-builder.column-css.preview');
-    
-    Route::post('/columns/css/clear-cache', [App\Http\Controllers\Admin\ColumnCSSController::class, 'clearCache'])
-        ->name('api.page-builder.column-css.clear-cache');
+});
+
+// Media Upload API Routes
+Route::prefix('api/media')->middleware(['admin'])->group(function () {
+    Route::post('/upload', [App\Http\Controllers\MediaUploadController::class, 'upload'])
+        ->name('api.media.upload');
+
+    Route::get('/', [App\Http\Controllers\MediaUploadController::class, 'index'])
+        ->name('api.media.index');
+
+    Route::put('/{media}/metadata', [App\Http\Controllers\MediaUploadController::class, 'updateMetadata'])
+        ->name('api.media.update-metadata');
+});
+
+// Icon API Routes
+Route::prefix('api/icons')->group(function () {
+    Route::get('/', [App\Http\Controllers\API\IconController::class, 'index'])
+        ->name('api.icons.index');
+
+    Route::get('/popular', [App\Http\Controllers\API\IconController::class, 'popular'])
+        ->name('api.icons.popular');
+
+    Route::get('/categories', [App\Http\Controllers\API\IconController::class, 'categories'])
+        ->name('api.icons.categories');
+
+    Route::get('/search', [App\Http\Controllers\API\IconController::class, 'search'])
+        ->name('api.icons.search');
+
+    Route::post('/validate', [App\Http\Controllers\API\IconController::class, 'validate'])
+        ->name('api.icons.validate');
+
+    Route::get('/category/{category}', [App\Http\Controllers\API\IconController::class, 'byCategory'])
+        ->name('api.icons.by-category');
+
+    Route::get('/{iconClass}', [App\Http\Controllers\API\IconController::class, 'show'])
+        ->name('api.icons.show');
+
+    Route::delete('/cache', [App\Http\Controllers\API\IconController::class, 'clearCache'])
+        ->name('api.icons.clear-cache')
+        ->middleware(['admin']);
+
+    Route::delete('/{media}', [App\Http\Controllers\MediaUploadController::class, 'destroy'])
+        ->name('api.media.destroy');
 });
 
 // Frontend Routes - Page URLs without /page/ prefix for better SEO  

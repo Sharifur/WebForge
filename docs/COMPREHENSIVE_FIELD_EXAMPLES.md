@@ -201,6 +201,204 @@ Multi-line text input with row control.
 )
 ```
 
+### Repeater Field
+Dynamic repeater field for managing arrays of data with full field type support.
+
+**Key Concepts:**
+- **fieldId**: Internal data key for accessing values (e.g., `$item['image']`, `$item['title']`)
+- **label**: User-visible text in the interface
+- **Conditional Fields**: Fields can show/hide based on other field values
+- **Universal Support**: Any FieldManager field type works
+
+```jsx
+<RepeaterFieldComponent
+  fieldKey="gallery_items"
+  fieldConfig={{
+    label: 'Gallery Items',
+    itemLabel: 'Gallery Item',
+    addButtonText: 'Add Gallery Item',
+    min: 1,
+    max: 10,
+    required: true,
+    fields: {
+      image: {
+        type: 'image',
+        label: 'Image',
+        required: true
+      },
+      caption: {
+        type: 'text',
+        label: 'Caption',
+        placeholder: 'Enter image caption...'
+      },
+      type: {
+        type: 'select',
+        label: 'Display Type',
+        options: {
+          standard: 'Standard',
+          featured: 'Featured'
+        },
+        default: 'standard'
+      },
+      featured_text: {
+        type: 'text',
+        label: 'Featured Text',
+        condition: {
+          field: 'type',
+          value: 'featured',
+          operator: '='
+        }
+      }
+    }
+  }}
+  value={settings.gallery_items || []}
+  onChange={(value) => updateSetting('gallery_items', value)}
+/>
+```
+
+**PHP Field Definition (Flexible setFields Method):**
+```php
+->registerField('gallery_items', FieldManager::REPEATER()
+    ->setLabel('Gallery Items')
+    ->setItemLabel('Gallery Item')
+    ->setAddButtonText('Add Gallery Item')
+    ->setMin(1)
+    ->setMax(10)
+    ->setRequired(true)
+    ->setFields([
+        // fieldId => FieldManager field object
+        'image' => FieldManager::IMAGE()
+            ->setLabel('Image')
+            ->setRequired(true),
+        'caption' => FieldManager::TEXT()
+            ->setLabel('Caption')
+            ->setPlaceholder('Enter image caption...'),
+        'type' => FieldManager::SELECT()
+            ->setLabel('Display Type')
+            ->setOptions([
+                'standard' => 'Standard',
+                'featured' => 'Featured'
+            ])
+            ->setDefault('standard'),
+        'featured_text' => FieldManager::TEXT()
+            ->setLabel('Featured Text')
+            ->dependsOn('type', 'featured') // Conditional field
+    ])
+)
+```
+
+**Complex Conditional Example:**
+```php
+->setFields([
+    'content_type' => FieldManager::SELECT()
+        ->setLabel('Content Type')
+        ->setOptions([
+            'text' => 'Text Only',
+            'image' => 'Image',
+            'video' => 'Video',
+            'gallery' => 'Image Gallery'
+        ]),
+
+    // Text fields (show when content_type = text)
+    'title' => FieldManager::TEXT()
+        ->setLabel('Title')
+        ->dependsOn('content_type', 'text'),
+    'description' => FieldManager::TEXTAREA()
+        ->setLabel('Description')
+        ->dependsOn('content_type', 'text'),
+
+    // Image field (show when content_type = image)
+    'image' => FieldManager::IMAGE()
+        ->setLabel('Image')
+        ->dependsOn('content_type', 'image'),
+
+    // Video field (show when content_type = video)
+    'video_url' => FieldManager::URL()
+        ->setLabel('Video URL')
+        ->dependsOn('content_type', 'video'),
+
+    // Gallery repeater (show when content_type = gallery)
+    'images' => FieldManager::REPEATER()
+        ->setFields([
+            'image' => FieldManager::IMAGE()->setLabel('Image'),
+            'alt' => FieldManager::TEXT()->setLabel('Alt Text')
+        ])
+        ->dependsOn('content_type', 'gallery')
+])
+```
+
+**Advanced Field Types Support:**
+```php
+->setFields([
+    // Complex field types work seamlessly
+    'typography' => FieldManager::TYPOGRAPHY_GROUP()
+        ->setLabel('Text Typography')
+        ->setResponsive(true),
+    'background' => FieldManager::BACKGROUND_GROUP()
+        ->setLabel('Item Background'),
+    'spacing' => FieldManager::DIMENSION()
+        ->setLabel('Item Spacing')
+        ->setResponsive(true),
+    'custom_css' => FieldManager::TEXTAREA()
+        ->setLabel('Custom CSS')
+        ->setRows(4)
+])
+```
+
+**Template Usage:**
+```php
+// Access repeater data in widget templates
+@foreach($widget_data['gallery_items'] as $item)
+<div class="gallery-item">
+    @if($item['image'])
+        <img src="{{ $item['image'] }}" alt="{{ $item['caption'] ?? '' }}">
+    @endif
+
+    @if($item['caption'])
+        <p class="caption">{{ $item['caption'] }}</p>
+    @endif
+
+    @if($item['type'] === 'featured' && $item['featured_text'])
+        <div class="featured-badge">{{ $item['featured_text'] }}</div>
+    @endif
+</div>
+@endforeach
+```
+
+**Individual Field Addition (Alternative Method):**
+```php
+FieldManager::REPEATER()
+    ->setLabel('Team Members')
+    ->addField('photo', FieldManager::IMAGE()->setLabel('Photo'))
+    ->addField('name', FieldManager::TEXT()->setLabel('Full Name')->setRequired(true))
+    ->addField('position', FieldManager::TEXT()->setLabel('Position'))
+    ->addField('bio', FieldManager::TEXTAREA()->setLabel('Biography'))
+    ->addField('social_links', FieldManager::REPEATER()
+        ->setLabel('Social Links')
+        ->setFields([
+            'platform' => FieldManager::SELECT()
+                ->setLabel('Platform')
+                ->setOptions([
+                    'twitter' => 'Twitter',
+                    'linkedin' => 'LinkedIn',
+                    'github' => 'GitHub'
+                ]),
+            'url' => FieldManager::URL()->setLabel('Profile URL')
+        ])
+    )
+```
+
+**Conditional Logic Operators:**
+```php
+// Available operators for dependsOn() method
+->dependsOn('field_name', 'value', '=')       // Equal (default)
+->dependsOn('field_name', 'value', '!=')      // Not equal
+->dependsOn('field_name', ['val1', 'val2'], 'in')     // In array
+->dependsOn('field_name', ['val1', 'val2'], 'not_in') // Not in array
+->dependsOn('field_name', null, 'not_empty')          // Not empty
+->dependsOn('field_name', null, 'empty')              // Empty
+```
+
 ## Enhanced Field Components
 
 ### Enhanced Background Picker

@@ -54,6 +54,13 @@ class HeaderWidget extends BaseWidget
         $control = new ControlManager();
 
         $control->addGroup('general_content','General Content')
+            ->registerField('header_icon', FieldManager::ICON_INPUT()
+                ->setLabel('Header Icon')
+                ->setDefaultIcon('las la-star')
+                ->setPlaceholder('Click to select an icon')
+                ->setDescription('Select an icon to display with your header')
+                ->setAllowEmpty(true)
+            )
             ->registerField('title', FieldManager::TEXTAREA()
                 ->setLabel('Title')
                 ->setDefault('Turn Raw Data Into {c}Actionable Insights{/c} Instantly')
@@ -66,8 +73,16 @@ class HeaderWidget extends BaseWidget
                 ->setPlaceholder('Enter description text')
             )
         ->endGroup();
-        // $control->addGroup('cta_buttons','')
-
+        $control->addGroup('list_items','list items')
+            ->registerField('cta_list_items',FieldManager::REPEATER()
+                ->setLabel('LIst Items')
+                ->setFields([
+                    'list_text' => FieldManager::TEXT()->setLabel('list Text'),
+                ])
+                ->setMin(1)
+                ->setMax(10)
+            )
+            ->endGroup();
 
         $control->addGroup('cta_buttons','Call to Action Buttons')
            ->registerField('cta_buttons_repeater',FieldManager::REPEATER()
