@@ -294,7 +294,7 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
   return (
     <div className="field-wrapper">
       {/* Field Label - only show for non-checkbox/toggle fields and fields that handle their own labels */}
-      {!['checkbox', 'toggle', 'divider', 'repeater', 'image'].includes(type) && label && (
+      {!['checkbox', 'toggle', 'divider', 'repeater', 'image', 'icon_input'].includes(type) && label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {label}
         </label>
@@ -305,8 +305,8 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
         {renderField()}
       </div>
 
-      {/* Field Description */}
-      {description && (
+      {/* Field Description - only show for fields that don't handle their own descriptions */}
+      {description && !['checkbox', 'toggle', 'divider', 'repeater', 'image', 'icon_input'].includes(type) && (
         <p className="mt-1 text-xs text-gray-500">
           {description}
         </p>
