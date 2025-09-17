@@ -90,9 +90,14 @@ export const useDragAndDrop = () => {
       return overData?.type === 'canvas';
     }
 
-    // Regular widgets can be dropped in columns OR on canvas (with auto-section creation)
+    // Regular widgets can be dropped in columns OR on canvas (with auto-section creation) OR on large widget targets
     if (activeData?.type === 'widget-template') {
-      return overData?.type === 'column' || overData?.type === 'canvas';
+      return overData?.type === 'column' || overData?.type === 'canvas' || overData?.type === 'widget-target';
+    }
+
+    // Widgets can be reordered within columns, between columns, or dropped on large widget targets
+    if (activeData?.type === 'widget') {
+      return overData?.type === 'column' || overData?.type === 'widget' || overData?.type === 'widget-target';
     }
 
     // Sections can be dropped on canvas
@@ -293,6 +298,50 @@ export const useDragAndDrop = () => {
       return;
     }
 
+    // Handle widget drop from panel to large widget target (enhanced UX for large widgets)
+    if (activeData?.type === 'widget-template' && overData?.type === 'widget-target') {
+      console.log('[DragAndDrop] Widget from panel dropped on large widget target:', {
+        widget: activeData.widget.type,
+        targetWidget: overData.widget.id,
+        columnId: overData.columnId,
+        insertIndex: overData.widgetIndex
+      });
+
+      // Create widget with unique ID
+      const newWidget = {
+        ...activeData.widget,
+        id: `widget-${Date.now()}`,
+        content: activeData.widget.content || {}
+      };
+
+      // Add widget to the column at the specific position (before the target widget)
+      const { pageContent, setPageContent } = usePageBuilderStore.getState();
+      const updatedContainers = pageContent.containers.map(container => {
+        if (container.id === overData.containerId) {
+          return {
+            ...container,
+            columns: container.columns.map(column => {
+              if (column.id === overData.columnId) {
+                const newWidgets = [...column.widgets];
+                newWidgets.splice(overData.widgetIndex, 0, newWidget);
+                return { ...column, widgets: newWidgets };
+              }
+              return column;
+            })
+          };
+        }
+        return container;
+      });
+
+      setPageContent({
+        ...pageContent,
+        containers: updatedContainers
+      });
+
+      console.log('✅ Widget from panel added via large widget target');
+      return;
+    }
+
     // Handle section widget drop on canvas
     if (activeData?.type === 'widget-template' && 
         activeData?.widget?.type === 'section' && 
@@ -372,20 +421,63 @@ export const useDragAndDrop = () => {
     if (activeData?.type === 'widget' && overData?.type === 'widget') {
       const activeWidget = activeData.widget;
       const overWidget = overData.widget;
-      
+
       if (activeData.columnId === overData.columnId) {
         const { pageContent } = usePageBuilderStore.getState();
         const container = pageContent.containers.find(c => c.id === activeData.containerId);
         const column = container?.columns.find(c => c.id === activeData.columnId);
-        
+
         if (column) {
           const oldIndex = column.widgets.findIndex(w => w.id === activeWidget.id);
           const newIndex = column.widgets.findIndex(w => w.id === overWidget.id);
-          
+
           if (oldIndex !== newIndex) {
             reorderWidgets(activeData.columnId, oldIndex, newIndex);
           }
         }
+      }
+      return;
+    }
+
+    // Handle widget drop on large widget target (enhanced UX for large widgets)
+    if (activeData?.type === 'widget' && overData?.type === 'widget-target') {
+      const activeWidget = activeData.widget;
+      const targetWidget = overData.widget;
+
+      console.log('[DragAndDrop] Widget dropped on large widget target:', {
+        activeWidget: activeWidget.id,
+        targetWidget: targetWidget.id,
+        targetIndex: overData.widgetIndex,
+        columnId: overData.columnId
+      });
+
+      if (activeData.columnId === overData.columnId) {
+        // Same column - reorder widgets
+        const { pageContent } = usePageBuilderStore.getState();
+        const container = pageContent.containers.find(c => c.id === activeData.containerId);
+        const column = container?.columns.find(c => c.id === activeData.columnId);
+
+        if (column) {
+          const oldIndex = column.widgets.findIndex(w => w.id === activeWidget.id);
+          const newIndex = overData.widgetIndex;
+
+          if (oldIndex !== newIndex && oldIndex !== -1) {
+            // Insert before the target widget
+            const adjustedNewIndex = oldIndex < newIndex ? newIndex : newIndex;
+            reorderWidgets(activeData.columnId, oldIndex, adjustedNewIndex);
+            console.log('✅ Widget reordered within column via large widget target');
+          }
+        }
+      } else {
+        // Different column - move widget
+        console.log('[DragAndDrop] Moving widget to different column via large widget target');
+        moveWidgetBetweenColumns(
+          activeWidget.id,
+          activeData.columnId,
+          overData.columnId,
+          overData.widgetIndex
+        );
+        console.log('✅ Widget moved between columns via large widget target');
       }
       return;
     }

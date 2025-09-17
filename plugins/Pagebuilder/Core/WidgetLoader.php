@@ -247,7 +247,6 @@ class WidgetLoader
             \Plugins\Pagebuilder\Core\Widgets\SectionWidget::class,
             \Plugins\Pagebuilder\Core\Widgets\DividerWidget::class,
             \Plugins\Pagebuilder\Core\Widgets\SpacerWidget::class,
-            \Plugins\Pagebuilder\Core\Widgets\GridWidget::class,
         ];
 
         WidgetRegistry::registerMultiple($coreLayoutWidgets);

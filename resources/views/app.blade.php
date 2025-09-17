@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/line-awesome.min.css') }}">
 {{--        <link rel="stylesheet" href="{{ asset('css/pagebuilder-defaults.css') }}">--}}
         <link rel="stylesheet" href="{{ asset('assets/css/widgets.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/enhanced-drop-zones.css') }}">
         <!-- Scripts -->
         @routes
         @viteReactRefresh
