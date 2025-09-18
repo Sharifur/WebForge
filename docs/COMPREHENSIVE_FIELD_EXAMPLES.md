@@ -9,10 +9,11 @@ This documentation provides comprehensive examples of all available field types,
 1. [Basic Field Types](#basic-field-types)
 2. [Enhanced Field Components](#enhanced-field-components)
 3. [Visual Field Components](#visual-field-components)
-4. [Tab-Based Field Group Examples](#tab-based-field-group-examples)
-5. [Real Widget Implementation Examples](#real-widget-implementation-examples)
-6. [Field Group Organization Patterns](#field-group-organization-patterns)
-7. [Dynamic CSS Integration](#dynamic-css-integration)
+4. [Navigation & Drag-Drop Components](#navigation--drag-drop-components)
+5. [Tab-Based Field Group Examples](#tab-based-field-group-examples)
+6. [Real Widget Implementation Examples](#real-widget-implementation-examples)
+7. [Field Group Organization Patterns](#field-group-organization-patterns)
+8. [Dynamic CSS Integration](#dynamic-css-integration)
 
 ## Basic Field Types
 
@@ -781,6 +782,336 @@ Gap controls with linking support.
     ->setMax(100)
     ->setAllowLinking(true)
 )
+```
+
+## Navigation & Drag-Drop Components
+
+This section covers specialized components used in the page builder's navigation system and drag-drop interactions.
+
+### DropZoneIndicator Component
+
+Enhanced drop zone component with visual feedback for navigation tree interactions.
+
+```jsx
+<DropZoneIndicator
+  dropId="before-widget-123"
+  position="before"
+  level={2}
+  isDragOverActive={activeDropZone === 'before-widget-123'}
+/>
+```
+
+**Implementation Details:**
+```jsx
+const DropZoneIndicator = ({ dropId, position, level = 0, isDragOverActive = false }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: dropId,
+    data: { type: 'tree-drop-zone', position, level }
+  });
+
+  const isActive = isOver || isDragOverActive;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`transition-all duration-200 ${
+        isActive ? 'h-8 opacity-100' : 'h-4 opacity-30 hover:opacity-70'
+      }`}
+      style={{ marginLeft: `${level * 16}px` }}
+    >
+      <div className={`w-full transition-all duration-200 ${
+        isActive
+          ? 'h-6 bg-gradient-to-r from-blue-100 to-green-100 border-2 border-dashed border-blue-400'
+          : 'h-2 bg-transparent border border-dashed border-gray-400 hover:border-blue-400 hover:bg-blue-50'
+      }`}>
+        {/* Visual indicators */}
+      </div>
+    </div>
+  );
+};
+```
+
+**Key Features:**
+- **Enhanced Hover Detection**: Larger hit areas (`h-4` vs `h-1`) for better responsiveness
+- **Visual Feedback**: Hover states with `opacity-30 hover:opacity-70`
+- **Level-Based Indentation**: Automatic indentation based on tree depth
+- **Context-Aware Styling**: Different styling for active vs inactive states
+
+### Navigation Tree Node
+
+Sortable tree node component with section renaming and drag-drop capabilities.
+
+```jsx
+const TreeNode = React.memo(({
+  node,
+  level,
+  isNavigationDragging,
+  activeDropZone,
+  onSectionRename,
+  renamingSectionId,
+  renameValue,
+  onRenameValueChange,
+  onRenameSubmit,
+  onRenameCancel
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: node.id,
+    data: {
+      type: node.type,
+      node: node,
+      containerId: node.containerId,
+      columnId: node.columnId
+    },
+    disabled: !isDragEnabled
+  });
+
+  return (
+    <>
+      {/* Before drop zone */}
+      {shouldShowDropZone && (
+        <DropZoneIndicator
+          dropId={`before-${node.id}`}
+          position="before"
+          level={level}
+          isDragOverActive={activeDropZone === `before-${node.id}`}
+        />
+      )}
+
+      {/* Node content with drag handle and rename functionality */}
+      <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}>
+        {/* Drag handle */}
+        {isDragEnabled && (
+          <div {...attributes} {...listeners} className="drag-handle">
+            <GripVertical className="w-3 h-3 text-gray-500" />
+          </div>
+        )}
+
+        {/* Section rename input */}
+        {node.type === 'section' && renamingSectionId === node.id ? (
+          <input
+            type="text"
+            value={renameValue}
+            onChange={(e) => onRenameValueChange(e.target.value)}
+            onBlur={() => onRenameSubmit(node.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onRenameSubmit(node.id);
+              if (e.key === 'Escape') onRenameCancel();
+            }}
+            autoFocus
+            className="bg-white border border-blue-300 rounded px-1 py-0.5"
+          />
+        ) : (
+          <span
+            onClick={() => node.type === 'section' && onSectionRename(node.id, node.name)}
+            className="cursor-pointer hover:text-blue-600"
+          >
+            {node.name}
+          </span>
+        )}
+      </div>
+
+      {/* After drop zone for widgets */}
+      {shouldShowDropZone && node.type === 'widget' && (
+        <DropZoneIndicator
+          dropId={`after-${node.id}`}
+          position="after"
+          level={level}
+          isDragOverActive={activeDropZone === `after-${node.id}`}
+        />
+      )}
+    </>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison for performance optimization
+  return (
+    prevProps.node.id === nextProps.node.id &&
+    prevProps.level === nextProps.level &&
+    prevProps.isNavigationDragging === nextProps.isNavigationDragging &&
+    prevProps.activeDropZone === nextProps.activeDropZone
+  );
+});
+```
+
+**Key Features:**
+- **Section Renaming**: Click-to-rename with keyboard shortcuts (Enter/Escape)
+- **Drag Handle**: Visual grip icon with hover states
+- **Performance Optimized**: React.memo with custom comparison function
+- **Hierarchy Enforcement**: Widgets only drop in columns, not sections
+- **Visual States**: Different styling based on drag state and node type
+
+### Movable Navigation Dialog
+
+Draggable dialog component with glass morphism design.
+
+```jsx
+const MovableNavigationDialog = () => {
+  const {
+    navigationDialogVisible,
+    navigationDialogPosition,
+    toggleNavigationDialog,
+    setNavigationDialogPosition
+  } = usePageBuilderStore();
+
+  const [isDragging, setIsDragging] = useState(false);
+  const dialogRef = useRef(null);
+
+  const handleMouseDown = (e) => {
+    if (e.target.closest('.dialog-content')) return;
+    setIsDragging(true);
+    // Drag logic implementation
+  };
+
+  if (!navigationDialogVisible) return null;
+
+  return (
+    <div
+      ref={dialogRef}
+      className={`fixed bg-white rounded-xl border-2 z-50 transition-all duration-200 ${
+        isDragging ? 'shadow-2xl border-blue-400' : 'shadow-xl border-gray-300'
+      }`}
+      style={{
+        left: `${navigationDialogPosition.x}px`,
+        top: `${navigationDialogPosition.y}px`,
+        width: '320px',
+        height: '400px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(8px)'
+      }}
+    >
+      {/* Draggable header */}
+      <div
+        className="bg-gray-50 rounded-t-lg border-b px-4 py-3 cursor-grab"
+        onMouseDown={handleMouseDown}
+      >
+        <h3 className="text-sm font-semibold text-gray-900">Page Structure</h3>
+      </div>
+
+      {/* Content area */}
+      <div className="dialog-content h-full overflow-hidden">
+        <NavigationTree />
+      </div>
+    </div>
+  );
+};
+```
+
+**Key Features:**
+- **Glass Morphism**: Semi-transparent background with backdrop blur
+- **Position Persistence**: Dialog position saved in store
+- **Viewport Constraints**: Prevents dialog from moving outside viewport
+- **Click-Outside Detection**: Smart detection that ignores toolbar buttons
+- **Drag Visual Feedback**: Enhanced styling during drag operations
+
+### Canvas Drop Zone Component
+
+Professional drop zone component for canvas interactions.
+
+```jsx
+const DropZone = ({ id, position, index, containerId = null, className = '' }) => {
+  const { dragState, setActiveDropZone } = usePageBuilderStore();
+  const { activeDropZone, isDragging, draggedItem } = dragState;
+
+  const isDraggingSection = dragState.isDraggingSection;
+  const isDraggingWidgetFromPanel = isDragging && draggedItem?.type === 'widget-template';
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: id,
+    data: {
+      type: isDraggingSection ? 'section-drop-zone' : 'widget-drop-zone',
+      position: position,
+      index: index,
+      containerId: containerId
+    }
+  });
+
+  // Context-aware content
+  const getDropZoneContent = () => {
+    if (isDraggingSection) {
+      return {
+        icon: Layers,
+        iconColor: 'text-purple-500',
+        bgColor: 'from-purple-50 to-blue-50',
+        message: position === 'before' ? 'Drop section at the beginning' : 'Drop section after this section'
+      };
+    } else {
+      return {
+        icon: Component,
+        iconColor: 'text-green-500',
+        bgColor: 'from-green-50 to-blue-50',
+        message: position === 'before' ? 'Create new section at the beginning' : 'Create new section at the end'
+      };
+    }
+  };
+
+  const content = getDropZoneContent();
+  const isActive = isOver || (activeDropZone?.id === id);
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`drop-zone transition-all duration-300 ${isActive ? 'active' : ''}`}
+      style={{
+        height: isActive ? '80px' : '12px',
+        background: isActive ? `linear-gradient(135deg, ${content.bgColor})` : 'transparent',
+        border: isActive ? `2px dashed ${content.iconColor.replace('text-', '#')}` : '1px dashed rgba(59, 130, 246, 0.2)'
+      }}
+    >
+      {isActive && (
+        <div className="drop-indicator flex items-center justify-center space-x-3">
+          <div className={`p-2 rounded-full bg-white shadow-sm ${content.iconColor}`}>
+            <content.icon className="w-4 h-4" />
+          </div>
+          <div className="text-center">
+            <div className={`font-semibold text-sm ${content.iconColor}`}>
+              {content.message}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+**Key Features:**
+- **Context-Aware Icons**: Different icons for sections (Layers) vs widgets (Component)
+- **Smart Messaging**: Dynamic text based on drop context and position
+- **Performance Optimized**: Only renders during active drag operations
+- **Visual Feedback**: Smooth animations and professional styling
+
+### Usage in Navigation System
+
+**Integration Example:**
+```jsx
+// NavigationTree.jsx - Complete integration
+const NavigationTree = () => {
+  const [isNavigationDragging, setIsNavigationDragging] = useState(false);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+
+  return (
+    <div className="h-full flex flex-col">
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={handleNavigationDragStart}
+        onDragOver={handleNavigationDragOver}
+        onDragEnd={handleNavigationDragEnd}
+      >
+        <SortableContext items={draggableItems} strategy={verticalListSortingStrategy}>
+          {filteredTree.map((node, index) => (
+            <TreeNode
+              key={node.id}
+              node={node}
+              level={0}
+              isNavigationDragging={isNavigationDragging}
+              activeDropZone={activeDropZone}
+              // ... other props
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+};
 ```
 
 ## Tab-Based Field Group Examples
@@ -2314,3 +2645,11 @@ abstract class BaseWidget
 ```
 
 This comprehensive documentation provides complete examples of field usage, implementation patterns, and integration with the CSS generation system. Each section includes both React component examples and corresponding PHP field definitions, showing how the two systems work together seamlessly.
+
+## Related Documentation
+
+- **[Main Project Documentation](../CLAUDE.md)** - Complete project overview and architecture
+- **[Navigation & Drag-Drop Guide](NAVIGATION_DRAGDROP_GUIDE.md)** - Technical implementation details for navigation components
+- **[Page Builder UX Guide](PAGE_BUILDER_UX_GUIDE.md)** - User experience principles and workflows
+- **[Field Type Registration Guide](FIELD_TYPE_REGISTRATION_GUIDE.md)** - Creating custom field components
+- **[Dynamic CSS Generation Guide](DYNAMIC_CSS_GENERATION_GUIDE.md)** - CSS generation system integration

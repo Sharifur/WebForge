@@ -22,6 +22,8 @@ const usePageBuilderStore = create((set, get) => ({
   activeId: null,
   hoveredDropZone: null,
   settingsPanelVisible: false,
+  navigationDialogVisible: false, // Navigation dialog visibility
+  navigationDialogPosition: { x: 100, y: 100 }, // Dialog position
   sidebarCollapsed: false, // Left sidebar collapse state
   widgetSnapshots: {}, // Store original widget states for reverting changes
   
@@ -273,6 +275,10 @@ const usePageBuilderStore = create((set, get) => ({
   })),
   
   toggleSettingsPanel: () => set(state => ({ settingsPanelVisible: !state.settingsPanelVisible })),
+
+  // Navigation dialog methods
+  toggleNavigationDialog: () => set(state => ({ navigationDialogVisible: !state.navigationDialogVisible })),
+  setNavigationDialogPosition: (position) => set(state => ({ navigationDialogPosition: position })),
   
   // Widget snapshot methods
   createWidgetSnapshot: (widgetId, widget) => set(state => ({

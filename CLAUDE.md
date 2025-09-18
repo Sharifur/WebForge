@@ -385,10 +385,14 @@ The page builder features a comprehensive field system with modern UI components
 ✅ **NEW** Icon-based alignment field system replacing dropdown menus
 ✅ **NEW** Enhanced Link Picker with smart detection, SEO controls, and UTM tracking
 ✅ **NEW** Comprehensive Divider Field with advanced styling and text support
+✅ **LATEST** Enhanced Navigation & Drag-Drop System with transparent movable dialog
+✅ **LATEST** Movable Navigation Dialog with glass morphism and position persistence
+✅ **LATEST** Advanced Navigation Tree with section renaming and enhanced drop zone sensitivity
 ✅ **LATEST** Visual Dropable Area Indicators for professional section reordering UX
 ✅ **LATEST** Universal PHP Widget Rendering system eliminating "Unknown Widget Type" errors
 ✅ **LATEST** Enhanced Section Management with auto-creation and intelligent placement
-✅ **LATEST** Advanced Drag & Drop System with comprehensive debugging and error handling
+✅ **LATEST** Widget Hierarchy Enforcement preventing structural violations in navigation
+✅ **LATEST** Improved Drag Responsiveness with larger hit areas and visual feedback
 ✅ **NEW** Essential Default Widget Settings - Clean, organized structure for all widgets
 ✅ **COMPLETED** Comprehensive Column Settings System with Professional UI Controls
 ✅ **NEW** Visual Icon-Based Flexbox Controls for Non-Developers
@@ -406,14 +410,19 @@ The page builder features a comprehensive field system with modern UI components
 ## Recent Fixes & Improvements
 
 ### **Latest Updates (2025)**
+✅ **Enhanced Navigation & Drag-Drop System**: Complete overhaul of navigation interface with transparent dialog and advanced drag-drop
+✅ **Movable Navigation Dialog**: Glass morphism design with position persistence and click-outside-to-close functionality
+✅ **Advanced Navigation Tree**: Section renaming, enhanced drop zone sensitivity, and widget hierarchy enforcement
+✅ **Improved Drag Responsiveness**: Better visual feedback with larger hit areas (h-4 vs h-1) and hover states
+✅ **Section Renaming System**: Click-to-rename with database persistence and keyboard shortcuts (Enter/Escape)
+✅ **Widget Drop Validation**: Enforced hierarchy preventing widgets from dropping directly in sections
+✅ **Performance Optimizations**: Memoized components, drag state cleanup, and infinite re-render prevention
 ✅ **Comprehensive Column Settings System**: Complete 3-tab interface (General, Style, Advanced) with professional controls
 ✅ **Visual Icon-Based Controls**: Flexbox controls with arrows, alignment icons, and distribution visuals for non-developers
 ✅ **Enhanced Field Component System**: 17+ new field components with standardized `fieldKey`/`fieldConfig` prop structure
 ✅ **Professional Styling Controls**: EnhancedBackgroundPicker, EnhancedDimensionPicker, BorderShadowGroup integration
 ✅ **Responsive Design System**: Device-specific controls for all layout and styling properties
 ✅ **Dynamic Column ID System**: Auto-populated custom ID fields showing system-generated identifiers
-✅ **Advanced Column Settings UX**: Complete redesign of column settings for non-developers with visual icon-based controls
-✅ **Responsive Column Controls**: Device-specific settings (desktop/tablet/mobile) for all flexbox properties
 ✅ **Visual Dropable Area Indicators**: Professional drag-and-drop UX for section reordering
 ✅ **Universal PHP Widget Rendering**: Eliminated "Unknown Widget Type" errors for seamless custom widget development
 ✅ **Enhanced Section Management**: Auto-section creation and intelligent placement logic
@@ -624,33 +633,180 @@ const columnSettings = {
 - **100% Flexbox Properties**: All CSS flexbox properties now have visual controls
 - **3 Device Breakpoints**: Desktop, tablet, mobile specific settings for all properties
 
-## Advanced Drag & Drop System
+## Enhanced Navigation & Drag-Drop System
 
-### Visual Dropable Area Indicators
-The page builder now features a professional drag-and-drop system with visual feedback for section reordering:
+The page builder features a comprehensive dual drag-and-drop system with both canvas-based and navigation-based interactions for professional content management.
 
-#### **🎯 User Experience**
-- **Visual Drop Zones**: Clear indicators showing exactly where sections will be placed
-- **Smooth Animations**: Professional transitions with pulse effects and hover states
-- **Precise Positioning**: Drop zones appear before/after each section for accurate placement
-- **Silent Operation**: Clean UX without interrupting popup notifications
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+### Movable Navigation Dialog
+
+#### **🎯 Transparent Navigation Interface**
+- **No Background Blocking**: Removed black backdrop - users can interact with page builder while navigation is open
+- **Glass Morphism Design**: Professional UI with `backdrop-filter: blur(8px)` and semi-transparent background
+- **Native Drag System**: Custom implementation with position persistence and viewport constraints
+- **Smart Click Detection**: Click-outside-to-close with intelligent toolbar button detection
+- **Position Memory**: Dialog position persists across sessions via pageBuilderStore
 
 #### **🔧 Technical Implementation**
-- **State Management**: Dedicated `dragState` in pageBuilderStore for drop zone tracking
-- **DropZone Component**: React component with `@dnd-kit` integration and visual feedback
-- **Enhanced Drag Events**: Comprehensive handling in `useDragAndDrop.js` with priority logic
-- **CSS Animations**: Custom stylesheet with transitions, pulse animations, and responsive design
-- **Performance Optimized**: Drop zones only render during section drag operations
+```jsx
+// Glass morphism styling with transparent interaction
+style={{
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(8px)',
+  left: `${navigationDialogPosition.x}px`,
+  top: `${navigationDialogPosition.y}px`
+}}
 
-#### **📁 Key Files**
+// Smart click-outside detection
+const handleClickOutside = (e) => {
+  if (!e.target.closest('[data-navigation-toggle]')) {
+    toggleNavigationDialog();
+  }
+};
 ```
-resources/js/Store/pageBuilderStore.js         # Drop zone state management
+
+### Enhanced Navigation Tree Drag & Drop
+
+#### **🎯 Advanced Tree Interactions**
+- **Section Renaming**: Click-to-rename functionality with database persistence
+- **Enhanced Drop Zone Sensitivity**: Improved visual feedback with responsive hover detection
+- **Widget Hierarchy Enforcement**: Widgets only drop in columns, preventing structural violations
+- **Improved Drag Responsiveness**: Larger hit areas (`h-4` vs `h-1`) with visible hover states
+- **Visual Feedback**: Professional drag overlays with context-aware messaging
+
+#### **🔧 Drop Zone Improvements**
+```jsx
+// Enhanced DropZoneIndicator with better hover detection
+<div className={`transition-all duration-200 ${
+  isActive ? 'h-8 opacity-100' : 'h-4 opacity-30 hover:opacity-70'
+}`}>
+  <div className={`${
+    isActive
+      ? 'h-6 bg-gradient-to-r from-blue-100 to-green-100 border-2 border-dashed border-blue-400'
+      : 'h-2 bg-transparent border border-dashed border-gray-400 hover:border-blue-400 hover:bg-blue-50'
+  }`}>
+    {/* Visual indicators and messaging */}
+  </div>
+</div>
+```
+
+#### **✨ Section Renaming System**
+- **Click-to-Rename**: Inline editing with auto-focus and keyboard shortcuts
+- **Database Persistence**: Real-time updates via `updateContainer` store action
+- **Validation**: Enter to save, Escape to cancel, blur to submit
+- **Navigation-Only**: Renaming restricted to navigation tree for better UX
+
+```jsx
+// Section rename implementation
+{renamingSectionId === node.id ? (
+  <input
+    value={renameValue}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter') onRenameSubmit(node.id);
+      if (e.key === 'Escape') onRenameCancel();
+    }}
+    className="bg-white border border-blue-300 rounded px-1 py-0.5"
+  />
+) : (
+  <span onClick={() => onSectionRename(node.id, node.name)}>
+    {node.name}
+  </span>
+)}
+```
+
+### Canvas Drop Zone System
+
+#### **🎯 Professional Visual Indicators**
+- **Context-Aware Icons**: Different icons for sections (Layers) vs widgets (Component)
+- **Smart Messaging**: Dynamic text based on drop context and position
+- **Smooth Animations**: Professional transitions with pulse effects and hover states
+- **Precise Positioning**: Drop zones appear before/after each section for accurate placement
+- **Performance Optimized**: Drop zones only render during active drag operations
+
+#### **🔧 Advanced Drop Zone Logic**
+```jsx
+// Context-aware drop zone content
+const getDropZoneContent = () => {
+  if (isDraggingSection) {
+    return {
+      icon: Layers,
+      iconColor: 'text-purple-500',
+      bgColor: 'from-purple-50 to-blue-50',
+      message: position === 'before' ? 'Drop section at the beginning' : 'Drop section after this section'
+    };
+  } else {
+    return {
+      icon: Component,
+      iconColor: 'text-green-500',
+      bgColor: 'from-green-50 to-blue-50',
+      message: position === 'before' ? 'Create new section at the beginning' : 'Create new section at the end'
+    };
+  }
+};
+```
+
+### State Management Architecture
+
+#### **🔧 Enhanced pageBuilderStore**
+```javascript
+// Navigation dialog state
+navigationDialogVisible: false,
+navigationDialogPosition: { x: 100, y: 100 },
+
+// Enhanced global drag state
+dragState: {
+  isDraggingSection: false,
+  draggedSectionId: null,
+  isDragging: false,
+  draggedItem: null,
+  activeDropZone: null,
+  showAllDropZones: false
+},
+
+// Navigation methods
+toggleNavigationDialog: () => set(state => ({
+  navigationDialogVisible: !state.navigationDialogVisible
+})),
+setNavigationDialogPosition: (position) => set({ navigationDialogPosition: position })
+```
+
+#### **🚀 Performance Optimizations**
+- **Memoized Components**: React.memo with custom comparison functions
+- **State Management**: Removed unstable functions from useCallback dependencies
+- **Drag State Cleanup**: Delayed cleanup to prevent visual glitches
+- **Infinite Re-render Prevention**: Comprehensive safeguards and monitoring
+
+### Key Files & Architecture
+
+#### **📁 Navigation System Files**
+```
+resources/js/Components/PageBuilder/Navigation/
+├── MovableNavigationDialog.jsx    # Main navigation dialog with glass morphism
+├── NavigationTree.jsx             # Tree component with enhanced drag-drop
+└── [supporting components...]
+
+resources/js/Store/pageBuilderStore.js  # State management for navigation and drag
+resources/js/Hooks/useDragAndDrop.js    # Enhanced drag event handling
+```
+
+#### **📁 Canvas Drop Zone Files**
+```
 resources/js/Components/PageBuilder/Canvas/
-├── DropZone.jsx                               # Visual drop zone component
-└── Canvas.jsx                                 # Integration with section rendering
-resources/js/Hooks/useDragAndDrop.js           # Enhanced drag event handling
-public/css/drop-zones.css                      # Custom animations and styling
+├── DropZone.jsx                   # Professional visual drop indicators
+├── Canvas.jsx                     # Integration with section rendering
+└── CanvasToolbar.jsx             # Navigation toggle with data attributes
+
+public/css/drop-zones.css         # Custom animations and styling
+```
+
+### 📚 Related Documentation
+
+For comprehensive information about the navigation and drag-drop systems:
+
+- **[Navigation & Drag-Drop Guide](docs/NAVIGATION_DRAGDROP_GUIDE.md)** - Technical implementation details, customization options, and troubleshooting
+- **[Page Builder UX Guide](docs/PAGE_BUILDER_UX_GUIDE.md)** - User experience principles, workflows, and best practices
+- **[Comprehensive Field Examples](docs/COMPREHENSIVE_FIELD_EXAMPLES.md)** - Navigation components and field usage patterns
+- **[Field Type Registration Guide](docs/FIELD_TYPE_REGISTRATION_GUIDE.md)** - Creating custom field components
+- **[Dynamic CSS Generation Guide](docs/DYNAMIC_CSS_GENERATION_GUIDE.md)** - CSS generation system integration
 
 #### **📁 Column Settings Files**
 ```

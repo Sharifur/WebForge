@@ -7,7 +7,7 @@ import WidgetPanel from '@/Components/PageBuilder/Panels/WidgetPanel';
 import Canvas from '@/Components/PageBuilder/Canvas/Canvas';
 import SettingsPanel from '@/Components/PageBuilder/Panels/SettingsPanel';
 import CanvasToolbar from '@/Components/PageBuilder/Canvas/CanvasToolbar';
-import PageBuilderNavigation from '@/Components/PageBuilder/Navigation/PageBuilderNavigation';
+import MovableNavigationDialog from '@/Components/PageBuilder/Navigation/MovableNavigationDialog';
 import DragOverlayContent from '@/Components/PageBuilder/DragDrop/DragOverlayContent';
 
 const PageBuilder = ({ page, widgets, sections, templates }) => {
@@ -131,11 +131,8 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
             {/* Canvas Toolbar */}
             <CanvasToolbar page={page} />
 
-            {/* Page Builder Navigation */}
-            <PageBuilderNavigation />
-
             {/* Canvas */}
-            <Canvas 
+            <Canvas
               content={pageContent}
               onUpdate={setPageContent}
               onSelectWidget={setSelectedWidget}
@@ -157,13 +154,16 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
           {/* Drag Overlay */}
           <DragOverlay>
             {activeId ? (
-              <DragOverlayContent 
-                activeId={activeId} 
+              <DragOverlayContent
+                activeId={activeId}
                 widgets={widgets}
                 sections={sections}
               />
             ) : null}
           </DragOverlay>
+
+          {/* Movable Navigation Dialog */}
+          <MovableNavigationDialog />
         </DndContext>
       </div>
     </>

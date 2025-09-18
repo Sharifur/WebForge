@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
-import { Monitor, Tablet, Smartphone, Settings } from 'lucide-react';
+import { Monitor, Tablet, Smartphone, Settings, List } from 'lucide-react';
 
 const CanvasToolbar = ({ page }) => {
   const [previewMode, setPreviewMode] = useState('desktop');
   const [isSaving, setIsSaving] = useState(false);
   
-  const { pageContent, isDirty, settingsPanelVisible, selectedWidget, savePage, resetChanges, toggleSettingsPanel, publishPage } = usePageBuilderStore();
+  const { pageContent, isDirty, settingsPanelVisible, selectedWidget, savePage, resetChanges, toggleSettingsPanel, publishPage, navigationDialogVisible, toggleNavigationDialog } = usePageBuilderStore();
 
   const devices = [
     { id: 'desktop', label: 'Desktop', icon: Monitor, width: '100%' },
@@ -187,6 +187,20 @@ const CanvasToolbar = ({ page }) => {
 
         {/* Right Section - Secondary Actions */}
         <div className="flex items-center space-x-3">
+          {/* Navigation Toggle Button */}
+          <button
+            onClick={toggleNavigationDialog}
+            data-navigation-toggle
+            className={`p-2 rounded transition-colors ${
+              navigationDialogVisible
+                ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+            title={navigationDialogVisible ? 'Hide Page Structure' : 'Show Page Structure'}
+          >
+            <List className="w-4 h-4" />
+          </button>
+
           {/* Settings Toggle Button */}
           <button
             onClick={toggleSettingsPanel}
@@ -196,10 +210,10 @@ const CanvasToolbar = ({ page }) => {
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
             }`}
             title={
-              settingsPanelVisible 
-                ? 'Hide Settings Panel' 
-                : selectedWidget 
-                  ? 'Show Settings Panel' 
+              settingsPanelVisible
+                ? 'Hide Settings Panel'
+                : selectedWidget
+                  ? 'Show Settings Panel'
                   : 'Show Settings Panel (Select a widget to edit its properties)'
             }
           >
