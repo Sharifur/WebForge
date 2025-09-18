@@ -91,11 +91,7 @@ const WidgetDropZone = ({
               d="M12 4v16m8-8H4" 
             />
           </svg>
-          <span>
-            {position === 'before' && 'Insert before'}
-            {position === 'after' && 'Insert after'}
-            {position === 'between' && 'Insert here'}
-          </span>
+          <span>Drop here</span>
           <svg 
             className="w-4 h-4" 
             fill="none" 

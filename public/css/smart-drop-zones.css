@@ -1,0 +1,290 @@
+/* Smart Drop Zones - Compact 60px height, full width */
+
+.smart-drop-zones {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  pointer-events: none;
+}
+
+/* Individual Drop Zones - Fixed 60px height */
+.smart-drop-zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px !important; /* Force 60px height */
+  opacity: 0.4;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+/* Compact subtle hints - thinner line */
+.smart-drop-zone::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.15), transparent);
+  transform: translateY(-50%);
+  border-radius: 0.5px;
+}
+
+/* Before zone positioning - top 10px of 60px zone */
+.smart-drop-zone-before::before {
+  top: 10px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+}
+
+/* After zone positioning - bottom 10px of 60px zone */
+.smart-drop-zone-after::before {
+  bottom: 10px;
+  top: auto;
+  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.2), transparent);
+}
+
+/* Active state - more prominent but still compact */
+.smart-drop-zone.active {
+  opacity: 1;
+  /* Remove vertical scaling to maintain 60px height */
+}
+
+.smart-drop-zone.active::before {
+  height: 2px; /* Slightly thicker when active */
+  animation: dropZonePulse 1.5s ease-in-out infinite;
+}
+
+.smart-drop-zone-before.active::before {
+  background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+}
+
+.smart-drop-zone-after.active::before {
+  background: linear-gradient(90deg, transparent, #10b981, transparent);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+}
+
+/* Cross-container styling */
+.smart-drop-zone.cross-container.active::before {
+  background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  animation: crossContainerPulse 1s ease-in-out infinite;
+}
+
+/* Drop Zone Indicators */
+.drop-zone-indicator {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 16px;
+}
+
+.drop-zone-line {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+/* Drop Zone Labels */
+.drop-zone-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  animation: labelSlideIn 0.2s ease-out;
+}
+
+.drop-icon {
+  font-size: 12px;
+  color: inherit;
+}
+
+.drop-text {
+  color: #374151;
+}
+
+.cross-container-badge {
+  background: #8b5cf6;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Magnetic Zones - Compact 70px invisible target areas */
+.magnetic-zone {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  height: 70px !important; /* 10px larger than visible zone for easier targeting */
+  pointer-events: auto;
+  cursor: copy;
+  z-index: 30;
+}
+
+.magnetic-zone-before {
+  top: -5px; /* Slightly extended upward */
+}
+
+.magnetic-zone-after {
+  bottom: -5px; /* Slightly extended downward */
+}
+
+.magnetic-zone:hover + .smart-drop-zone {
+  opacity: 0.8;
+  /* Remove scale transform to maintain 60px height */
+}
+
+/* Widget Drop Highlight */
+.widget-drop-highlight {
+  position: absolute;
+  inset: -2px;
+  z-index: 20;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.highlight-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.08);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 6px;
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+.widget-drop-highlight.cross-container .highlight-overlay {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+/* Cross-container indicator */
+.cross-container-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: rgba(139, 92, 246, 0.9);
+  color: white;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.cross-container-icon {
+  font-size: 12px;
+}
+
+/* Animations */
+@keyframes dropZonePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleX(1.02);
+  }
+}
+
+@keyframes crossContainerPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+  }
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes labelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .smart-drop-zone::before {
+    left: 8px;
+    right: 8px;
+    height: 3px;
+  }
+
+  .drop-zone-label {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .magnetic-zone {
+    left: -15px;
+    right: -15px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .smart-drop-zone::before {
+    height: 3px;
+  }
+
+  .smart-drop-zone-before.active::before {
+    background: #2563eb;
+  }
+
+  .smart-drop-zone-after.active::before {
+    background: #059669;
+  }
+
+  .highlight-overlay {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .smart-drop-zone,
+  .drop-zone-label,
+  .highlight-overlay {
+    animation: none;
+    transition: none;
+  }
+
+  .smart-drop-zone.active {
+    transform: none;
+  }
+}

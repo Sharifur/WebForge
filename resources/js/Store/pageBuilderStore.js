@@ -25,12 +25,34 @@ const usePageBuilderStore = create((set, get) => ({
   sidebarCollapsed: false, // Left sidebar collapse state
   widgetSnapshots: {}, // Store original widget states for reverting changes
   
-  // Section drag state
+  // Enhanced global drag state for cross-container always-visible drop zones
   dragState: {
+    // Section dragging
     isDraggingSection: false,
     draggedSectionId: null,
     availableDropZones: [], // [{ id, position, index, type }]
-    activeDropZone: null    // Currently highlighted drop zone
+    activeDropZone: null,   // Currently highlighted drop zone
+
+    // Global widget dragging (supports cross-container operations)
+    isDragging: false,      // Global drag state for all widgets
+    draggedItem: null,      // Currently dragged item (widget, template, or section)
+    draggedItemType: null,  // 'widget', 'widget-template', 'section'
+    dragStartContainer: null, // Container where drag started
+    dragStartColumn: null,  // Column where drag started
+
+    // Drop positioning and targeting
+    dropPosition: null,     // Current drop position ('before' or 'after')
+    activeDropTarget: null, // Currently active drop target info
+    crossContainerMode: false, // Whether dragging across containers
+
+    // Visual feedback state
+    showAllDropZones: false, // Show drop zones in all containers
+    dropZoneVisibility: {},  // Per-container drop zone visibility
+
+    // Performance optimization
+    dragStartTime: null,    // When drag started (for velocity calculations)
+    lastMousePosition: null, // Last recorded mouse position
+    dragVelocity: { x: 0, y: 0 } // Mouse movement velocity
   },
   
   // Actions
@@ -72,11 +94,105 @@ const usePageBuilderStore = create((set, get) => ({
   
   setActivePanel: (panel) => set({ activePanel: panel }),
   
-  setIsDragging: (isDragging) => set({ isDragging }),
+  setIsDragging: (isDragging, draggedItem = null) => set(state => ({
+    isDragging,
+    dragState: {
+      ...state.dragState,
+      isDragging,
+      draggedItem: isDragging ? draggedItem : null,
+      draggedItemType: isDragging && draggedItem ? (draggedItem.type || 'widget') : null,
+      showAllDropZones: isDragging, // Always show drop zones when dragging
+      dragStartTime: isDragging ? Date.now() : null,
+      // Reset positioning when drag ends
+      dropPosition: isDragging ? state.dragState.dropPosition : null,
+      activeDropTarget: isDragging ? state.dragState.activeDropTarget : null,
+      crossContainerMode: isDragging ? state.dragState.crossContainerMode : false
+    }
+  })),
   
   setActiveId: (activeId) => set({ activeId }),
   
   setHoveredDropZone: (zone) => set({ hoveredDropZone: zone }),
+
+  setDropPosition: (position) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      dropPosition: position
+    }
+  })),
+
+  // Enhanced drag state management actions
+  setGlobalDragState: (isDragging, draggedItem = null, options = {}) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      isDragging,
+      draggedItem: isDragging ? draggedItem : null,
+      draggedItemType: isDragging && draggedItem ? (draggedItem.type || options.itemType || 'widget') : null,
+      dragStartContainer: isDragging ? options.containerId : null,
+      dragStartColumn: isDragging ? options.columnId : null,
+      showAllDropZones: isDragging,
+      dragStartTime: isDragging ? Date.now() : null,
+      lastMousePosition: isDragging ? options.mousePosition : null,
+      // Reset when drag ends
+      dropPosition: isDragging ? state.dragState.dropPosition : null,
+      activeDropTarget: isDragging ? state.dragState.activeDropTarget : null,
+      crossContainerMode: isDragging ? state.dragState.crossContainerMode : false,
+      dropZoneVisibility: isDragging ? state.dragState.dropZoneVisibility : {}
+    }
+  })),
+
+  setActiveDropTarget: (target) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      activeDropTarget: target,
+      crossContainerMode: target && target.containerId !== state.dragState.dragStartContainer
+    }
+  })),
+
+  updateMousePosition: (position) => set(state => {
+    const lastPos = state.dragState.lastMousePosition;
+    const velocity = lastPos ? {
+      x: position.x - lastPos.x,
+      y: position.y - lastPos.y
+    } : { x: 0, y: 0 };
+
+    return {
+      dragState: {
+        ...state.dragState,
+        lastMousePosition: position,
+        dragVelocity: velocity
+      }
+    };
+  }),
+
+  setDropZoneVisibility: (containerId, visible) => set(state => ({
+    dragState: {
+      ...state.dragState,
+      dropZoneVisibility: {
+        ...state.dragState.dropZoneVisibility,
+        [containerId]: visible
+      }
+    }
+  })),
+
+  resetGlobalDragState: () => set(state => ({
+    dragState: {
+      ...state.dragState,
+      isDragging: false,
+      draggedItem: null,
+      draggedItemType: null,
+      dragStartContainer: null,
+      dragStartColumn: null,
+      dropPosition: null,
+      activeDropTarget: null,
+      crossContainerMode: false,
+      showAllDropZones: false,
+      dropZoneVisibility: {},
+      dragStartTime: null,
+      lastMousePosition: null,
+      dragVelocity: { x: 0, y: 0 }
+    }
+  })),
   
   setSettingsPanelVisible: (visible) => set({ settingsPanelVisible: visible }),
   
@@ -238,7 +354,38 @@ const usePageBuilderStore = create((set, get) => ({
     },
     isDirty: true
   })),
-  
+
+  insertSectionAt: (position, section) => set(state => {
+    const newContainers = [...state.pageContent.containers];
+    newContainers.splice(position, 0, {
+      id: section.id || `container-${Date.now()}`,
+      type: 'section',
+      columns: section.columns || [
+        {
+          id: `column-${Date.now()}`,
+          width: '100%',
+          widgets: [],
+          settings: {}
+        }
+      ],
+      settings: {
+        padding: '20px',
+        margin: '0px',
+        backgroundColor: '#ffffff',
+        ...section.settings
+      },
+      ...section
+    });
+
+    return {
+      pageContent: {
+        ...state.pageContent,
+        containers: newContainers
+      },
+      isDirty: true
+    };
+  }),
+
   // Widget Actions
   addWidgetToColumn: (widgetTemplate, columnId, containerId) => set(state => {
     try {
@@ -327,25 +474,47 @@ const usePageBuilderStore = create((set, get) => ({
     isDirty: true
   })),
   
-  reorderWidgets: (columnId, oldIndex, newIndex) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: state.pageContent.containers.map(container => ({
-        ...container,
-        columns: container.columns.map(column => {
-          if (column.id === columnId) {
-            const newWidgets = [...column.widgets];
-            const [removed] = newWidgets.splice(oldIndex, 1);
-            newWidgets.splice(newIndex, 0, removed);
-            return { ...column, widgets: newWidgets };
-          }
-          return column;
-        })
-      }))
-    },
-    isDirty: true
-  })),
-  
+  reorderWidgets: (columnId, oldIndex, newIndex) => set(state => {
+    console.log('[Store] 🔄 REORDER WIDGETS START:', {
+      columnId,
+      oldIndex,
+      newIndex,
+      timestamp: new Date().toISOString()
+    });
+
+    return {
+      pageContent: {
+        ...state.pageContent,
+        containers: state.pageContent.containers.map(container => ({
+          ...container,
+          columns: container.columns.map(column => {
+            if (column.id === columnId) {
+              const beforeWidgets = column.widgets.map(w => ({ id: w.id, type: w.type }));
+              const newWidgets = [...column.widgets];
+              const [removed] = newWidgets.splice(oldIndex, 1);
+              newWidgets.splice(newIndex, 0, removed);
+
+              const afterWidgets = newWidgets.map(w => ({ id: w.id, type: w.type }));
+
+              console.log('[Store] ✅ REORDER WIDGETS SUCCESS:', {
+                columnId,
+                oldIndex,
+                newIndex,
+                movedWidget: removed.id,
+                beforeOrder: beforeWidgets,
+                afterOrder: afterWidgets
+              });
+
+              return { ...column, widgets: newWidgets };
+            }
+            return column;
+          })
+        }))
+      },
+      isDirty: true
+    };
+  }),
+
   moveWidgetBetweenColumns: (widgetId, fromColumnId, toColumnId, toContainerId) => set(state => {
     console.log('[Store] moveWidgetBetweenColumns called:', {
       widgetId,

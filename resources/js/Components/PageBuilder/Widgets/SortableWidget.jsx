@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import WidgetRenderer from './WidgetRenderer';
@@ -17,7 +16,10 @@ const SortableWidget = ({
   const [isHovered, setIsHovered] = useState(false);
   const [contentHeight, setContentHeight] = useState(0);
   const widgetRef = useRef(null);
-  const { removeWidget, updateWidget, dragState } = usePageBuilderStore();
+  const {
+    removeWidget,
+    updateWidget
+  } = usePageBuilderStore();
   
   // Track content height for better drop positioning
   useEffect(() => {
@@ -41,8 +43,8 @@ const SortableWidget = ({
     };
   }, [widget]);
 
-  // Determine if this is a large content widget (over 200px) - must be defined before useDroppable
-  const isLargeContent = contentHeight > 200;
+  // Content height tracking for adaptive drop zones (no size restrictions)
+  // All widgets now support drop zones regardless of size
 
   const {
     attributes,
@@ -62,21 +64,16 @@ const SortableWidget = ({
     }
   });
 
-  // Add droppable zones for large widgets
-  const {
-    setNodeRef: setDroppableRef,
-    isOver: isDroppableOver
-  } = useDroppable({
-    id: `${widget.id}-drop-target`,
-    data: {
-      type: 'widget-target',
-      widget,
-      widgetIndex,
-      columnId,
-      containerId,
-      isLargeContent
-    }
-  });
+  // Removed dual droppable system - using only standard @dnd-kit sortable
+
+  // Simplified state - removed complex drop position tracking
+
+  // Simplified - no complex drop zone calculations needed
+
+  // Simplified drag state detection
+  const isDraggingThisWidget = isDragging; // Current widget being dragged
+
+  // Simplified - no complex mouse tracking needed for basic sortable
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -122,28 +119,19 @@ const SortableWidget = ({
     onSelect(widget);
   };
 
-  // Check if we're currently dragging another widget
-  const { isDragging: isGlobalDragging, draggedItem } = dragState;
-  const isDraggingOtherWidget = isGlobalDragging && draggedItem?.type === 'widget' && draggedItem?.widget?.id !== widget.id;
-
   return (
     <div
       ref={(node) => {
-        setNodeRef(node);
-        setDroppableRef(node);
+        setNodeRef(node);           // Standard sortable ref
         widgetRef.current = node;
       }}
       style={style}
-      className={`relative group mb-4 ${isDragging ? 'z-50' : ''} ${
-        isLargeContent ? 'widget-large-content' : ''
-      } ${
-        isDroppableOver && isLargeContent ? 'widget-drop-over' : ''
-      }`}
+      className={`relative group mb-4 ${isDragging ? 'z-50' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleSelectWidget}
       data-widget-height={contentHeight}
-      data-widget-large={isLargeContent}
+      data-widget-id={widget.id}
     >
       {/* Widget Controls - Fixed position at top-right */}
       {(isHovered || isSelected) && !isDragging && (
@@ -199,62 +187,7 @@ const SortableWidget = ({
       </div>
       )}
 
-      {/* Large Widget Drop Zone Overlays - Only show when dragging another widget over large content */}
-      {isLargeContent && isDraggingOtherWidget && (
-        <>
-          {/* Drop Before Overlay */}
-          <div
-            className={`absolute top-0 left-0 right-0 z-30 transition-all duration-200 ${
-              isDroppableOver ? 'h-20 bg-blue-100 border-2 border-dashed border-blue-400' : 'h-8 bg-blue-50 border border-dashed border-blue-300'
-            }`}
-            style={{
-              background: isDroppableOver ? 'linear-gradient(180deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1))' : 'rgba(59, 130, 246, 0.05)',
-              borderRadius: '4px 4px 0 0'
-            }}
-          >
-            {isDroppableOver && (
-              <div className="flex items-center justify-center h-full text-blue-600 font-medium text-sm">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Drop widget before
-              </div>
-            )}
-          </div>
-
-          {/* Drop After Overlay */}
-          <div
-            className={`absolute bottom-0 left-0 right-0 z-30 transition-all duration-200 ${
-              isDroppableOver ? 'h-20 bg-green-100 border-2 border-dashed border-green-400' : 'h-8 bg-green-50 border border-dashed border-green-300'
-            }`}
-            style={{
-              background: isDroppableOver ? 'linear-gradient(0deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1))' : 'rgba(16, 185, 129, 0.05)',
-              borderRadius: '0 0 4px 4px'
-            }}
-          >
-            {isDroppableOver && (
-              <div className="flex items-center justify-center h-full text-green-600 font-medium text-sm">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Drop widget after
-              </div>
-            )}
-          </div>
-
-          {/* Center Content Overlay - for indicating replacement */}
-          {isDroppableOver && (
-            <div className="absolute inset-0 z-25 bg-yellow-100 bg-opacity-20 border-2 border-dashed border-yellow-400 rounded flex items-center justify-center">
-              <div className="bg-white bg-opacity-90 px-4 py-2 rounded-md shadow-lg text-yellow-700 font-medium text-sm">
-                <svg className="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-                Widget drop area
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      {/* Simplified drag feedback - using @dnd-kit's built-in visual feedback */}
 
       {/* Widget Content */}
       <div 

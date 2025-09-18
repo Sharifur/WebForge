@@ -51,6 +51,7 @@ const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, se
       style={finalStyles}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      data-column-id={column.id}
     >
       {/* Column Controls - Fixed position at top-left */}
       {isHovered && (

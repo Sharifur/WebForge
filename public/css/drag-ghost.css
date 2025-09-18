@@ -1,0 +1,204 @@
+/* Enhanced Drag Ghost Styles for Professional UX */
+
+.drag-ghost {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-width: 280px;
+  min-width: 200px;
+  transform: rotate(-2deg);
+  transition: transform 0.1s ease-out;
+}
+
+/* Valid drop state */
+.drag-ghost-valid {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.05);
+  transform: rotate(0deg) scale(1.05);
+}
+
+/* Cross-container drop state */
+.drag-ghost-cross-container {
+  border-color: rgba(147, 51, 234, 0.4);
+  background: rgba(147, 51, 234, 0.05);
+  box-shadow:
+    0 12px 30px rgba(147, 51, 234, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Neutral state */
+.drag-ghost-neutral {
+  border-color: rgba(156, 163, 175, 0.4);
+  background: rgba(243, 244, 246, 0.9);
+}
+
+/* Ghost Widget Preview Styles */
+.ghost-widget-preview {
+  padding: 12px;
+}
+
+.ghost-widget-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ghost-widget-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.ghost-widget-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ghost-widget-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 4px;
+  color: #3b82f6;
+  font-size: 14px;
+}
+
+.ghost-widget-description {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+/* Mini Widget Ghost */
+.ghost-widget-mini {
+  padding: 8px;
+  transform: scale(0.7);
+  transform-origin: top left;
+  max-height: 100px;
+  overflow: hidden;
+  opacity: 0.8;
+}
+
+/* Default Ghost */
+.ghost-default {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Drop Indicator */
+.ghost-drop-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.drop-arrow {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.drop-arrow.before {
+  color: #3b82f6;
+}
+
+.drop-arrow.after {
+  color: #10b981;
+}
+
+.drop-text {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.cross-container-label {
+  color: #8b5cf6;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .drag-ghost {
+    max-width: 240px;
+    min-width: 180px;
+  }
+
+  .ghost-widget-preview {
+    padding: 10px;
+  }
+
+  .ghost-widget-title {
+    font-size: 11px;
+  }
+
+  .ghost-widget-description {
+    font-size: 10px;
+  }
+}
+
+/* Animation for smooth appearance */
+@keyframes ghostAppear {
+  from {
+    opacity: 0;
+    transform: rotate(-5deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-2deg) scale(1);
+  }
+}
+
+.drag-ghost {
+  animation: ghostAppear 0.15s ease-out;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .drag-ghost {
+    border-width: 2px;
+    background: white;
+  }
+
+  .drag-ghost-valid {
+    border-color: #059669;
+  }
+
+  .drag-ghost-cross-container {
+    border-color: #7c3aed;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .drag-ghost {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+
+  .drag-ghost-valid {
+    transform: scale(1.02);
+  }
+}

@@ -1,73 +1,101 @@
-/* Enhanced Drop Zone Styles for Large Widgets */
+/* Enhanced Always-Visible Cross-Container Drop Zone Styles */
 
-.widget-large-content {
-  position: relative;
+/* Universal drop active state - subtle feedback only when actually dropping */
+.widget-drop-active {
+  background: rgba(59, 130, 246, 0.05);
+  transition: background-color 0.2s ease;
 }
 
-.widget-drop-over {
-  position: relative;
-  z-index: 10;
+/* Cross-container mode styling for enhanced visual hierarchy */
+.cross-container-active {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px dashed rgba(147, 51, 234, 0.3);
+  border-radius: 6px;
 }
 
-/* Large Widget Drop Zone Animations */
-.widget-large-content .absolute {
-  transition: all 0.2s ease-in-out;
+/* Always-visible drop zones with different opacity levels */
+.drop-indicator-before,
+.drop-indicator-after {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
 }
 
-/* Drop zone hover effects */
-.widget-large-content:hover .absolute {
-  opacity: 1;
+/* Hover state enhancements for better UX */
+.drop-indicator-before:hover,
+.drop-indicator-after:hover {
+  transform: scaleY(1.2);
+  filter: brightness(1.1);
 }
 
-/* Enhanced visual feedback for drop zones */
-@keyframes pulse-glow {
+/* Cross-container visual hierarchy */
+.cross-container-target {
+  background: linear-gradient(45deg, rgba(147, 51, 234, 0.1), rgba(167, 85, 221, 0.15));
+  border: 2px dashed rgba(147, 51, 234, 0.4);
+  animation: cross-container-pulse 2s infinite;
+}
+
+@keyframes cross-container-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    border-color: rgba(147, 51, 234, 0.4);
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.3);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    border-color: rgba(147, 51, 234, 0.6);
+    box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1);
   }
 }
 
-.widget-drop-over .absolute {
-  animation: pulse-glow 2s infinite;
+/* Clean drop indicator animations - only when active */
+.drop-indicator-before {
+  animation: slide-in-top 0.2s ease-out;
 }
 
-/* Smooth transitions for all drop zone elements */
-.widget-drop-zone,
-.drop-indicator,
-.insertion-hint {
+.drop-indicator-after {
+  animation: slide-in-bottom 0.2s ease-out;
+}
+
+@keyframes slide-in-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Subtle hover feedback - no annoying animations */
+.widget-drop-zone {
   transition: all 0.2s ease-in-out;
 }
 
-/* Better visibility for drop indicators */
-.drop-indicator svg {
-  animation: bounce 1s infinite;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-5px);
-  }
-  60% {
-    transform: translateY(-3px);
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .widget-drop-active {
+    background: rgba(59, 130, 246, 0.08);
   }
 }
 
-/* Large widget specific styles */
-.widget-large-content[data-widget-large="true"] {
-  min-height: 200px;
+/* Enhanced focus states for accessibility */
+.widget-drop-zone:focus-within {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
 }
 
-/* Improved contrast for drop overlays */
-.widget-large-content .absolute.z-30 {
-  backdrop-filter: blur(1px);
-}
-
-/* Better visual hierarchy for overlays */
-.widget-large-content .absolute.z-25 {
-  backdrop-filter: blur(2px);
+/* Performance optimizations - only animate what's necessary */
+.drop-indicator-before,
+.drop-indicator-after {
+  will-change: transform, opacity;
 }

@@ -56,15 +56,16 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
     const phpWidget = Array.isArray(phpWidgets) ? phpWidgets.find(w => w.type === widgetType) : null;
     if (phpWidget) {
       return (
-        <div className={`bg-white border-2 border-blue-400 rounded-lg p-3 shadow-lg max-w-xs ${
+        <div className={`bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px] ${
           phpWidget.is_pro ? 'border-amber-300 bg-gradient-to-br from-amber-50 to-white' : ''
         }`}>
           <div className="flex items-center space-x-3">
-            <UniversalIcon icon={phpWidget.icon} type={phpWidget.type} className="w-5 h-5 text-gray-600" />
-            <div>
-              <span className="text-sm font-medium text-gray-700">{phpWidget.name}</span>
+            <UniversalIcon icon={phpWidget.icon} type={phpWidget.type} className="w-6 h-6 text-gray-600" />
+            <div className="flex-1">
+              <div className="text-base font-medium text-gray-800">{phpWidget.name}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Widget from panel</div>
               {phpWidget.is_pro && (
-                <span className="ml-2 text-xs bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="inline-block mt-1 text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">
                   PRO
                 </span>
               )}
@@ -79,10 +80,13 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
     if (widget) {
       const IconComponent = iconMap[widget.icon] || Puzzle;
       return (
-        <div className="bg-white border-2 border-blue-400 rounded-lg p-3 shadow-lg max-w-xs">
+        <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px]">
           <div className="flex items-center space-x-3">
-            <IconComponent className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">{widget.label}</span>
+            <IconComponent className="w-6 h-6 text-gray-600" />
+            <div className="flex-1">
+              <div className="text-base font-medium text-gray-800">{widget.label}</div>
+              <div className="text-xs text-gray-500 mt-0.5">Widget from panel</div>
+            </div>
           </div>
         </div>
       );
@@ -104,13 +108,13 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
       const IconComponent = iconMap[section.icon] || Layout;
       
       return (
-        <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg max-w-sm">
+        <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px]">
           <div className="flex items-center space-x-3">
-            <IconComponent className="w-5 h-5 text-gray-600" />
-            <div>
-              <div className="text-sm font-medium text-gray-900">{section.label}</div>
-              <div className="text-xs text-gray-500">
-                {section.columns?.length || 1} column{(section.columns?.length || 1) !== 1 ? 's' : ''}
+            <IconComponent className="w-6 h-6 text-gray-600" />
+            <div className="flex-1">
+              <div className="text-base font-medium text-gray-900">{section.label}</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                {section.columns?.length || 1} column{(section.columns?.length || 1) !== 1 ? 's' : ''} • Section template
               </div>
             </div>
           </div>
@@ -122,12 +126,12 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
   // Handle container dragging
   if (activeId.startsWith('container-')) {
     return (
-      <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg max-w-sm">
+      <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px]">
         <div className="flex items-center space-x-3">
-          <Layout className="w-5 h-5 text-gray-600" />
-          <div>
-            <div className="text-sm font-medium text-gray-900">Section</div>
-            <div className="text-xs text-gray-500">Dragging section</div>
+          <Layout className="w-6 h-6 text-gray-600" />
+          <div className="flex-1">
+            <div className="text-base font-medium text-gray-900">Section</div>
+            <div className="text-xs text-gray-500 mt-0.5">Moving section</div>
           </div>
         </div>
       </div>
@@ -137,10 +141,13 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
   // Handle widget instance dragging
   if (activeId.includes('widget-')) {
     return (
-      <div className="bg-white border-2 border-blue-400 rounded-lg p-3 shadow-lg max-w-xs">
+      <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px]">
         <div className="flex items-center space-x-3">
-          <Puzzle className="w-5 h-5 text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">Widget</span>
+          <Puzzle className="w-6 h-6 text-gray-600" />
+          <div className="flex-1">
+            <div className="text-base font-medium text-gray-800">Widget</div>
+            <div className="text-xs text-gray-500 mt-0.5">Moving widget</div>
+          </div>
         </div>
       </div>
     );
@@ -148,10 +155,13 @@ const DragOverlayContent = ({ activeId, widgets, sections }) => {
 
   // Default fallback
   return (
-    <div className="bg-white border-2 border-blue-400 rounded-lg p-3 shadow-lg max-w-xs">
+    <div className="bg-white border-2 border-blue-400 rounded-lg p-4 shadow-lg w-full max-w-md min-w-[240px]">
       <div className="flex items-center space-x-3">
-        <div className="w-4 h-4 bg-blue-500 rounded"></div>
-        <span className="text-sm font-medium text-gray-700">Dragging...</span>
+        <div className="w-5 h-5 bg-blue-500 rounded"></div>
+        <div className="flex-1">
+          <div className="text-base font-medium text-gray-800">Dragging...</div>
+          <div className="text-xs text-gray-500 mt-0.5">Moving element</div>
+        </div>
       </div>
     </div>
   );

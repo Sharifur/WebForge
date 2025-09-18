@@ -4,6 +4,10 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import SortableContainer from './SortableContainer';
 import EmptyCanvasState from './EmptyCanvasState';
 import DropZone from './DropZone';
+import DragGhost from '../DragPreview/DragGhost';
+import RealTimePreview from '../DragPreview/RealTimePreview';
+import CanvasPlusButton from './CanvasPlusButton';
+import SectionQuickAdd from './SectionQuickAdd';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
@@ -37,6 +41,12 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
               items={containerIds}
               strategy={verticalListSortingStrategy}
             >
+              {/* Section Quick Add - Before first section */}
+              <SectionQuickAdd
+                position={0}
+                key="quick-add-before-0"
+              />
+
               {/* Drop zone before first section */}
               {isDraggingSection && (
                 <DropZone
@@ -45,7 +55,7 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
                   index={0}
                 />
               )}
-              
+
               {content.containers.map((container, index) => (
                 <Fragment key={container.id}>
                   <SortableContainer
@@ -56,7 +66,14 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
                     selectedWidget={selectedWidget}
                     hoveredDropZone={hoveredDropZone}
                   />
-                  
+
+                  {/* Section Quick Add - After each section */}
+                  <SectionQuickAdd
+                    position={index + 1}
+                    containerId={container.id}
+                    key={`quick-add-after-${index}`}
+                  />
+
                   {/* Drop zone after each section */}
                   {isDraggingSection && (
                     <DropZone
@@ -74,6 +91,12 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
           )}
         </div>
       </div>
+
+      {/* Global Drag Ghost - Temporarily disabled to fix drop zone conflicts */}
+      {false && <DragGhost />}
+
+      {/* Canvas Plus Button - Always available for adding sections */}
+      <CanvasPlusButton />
     </div>
   );
 };

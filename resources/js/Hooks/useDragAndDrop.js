@@ -2,9 +2,9 @@ import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import Swal from 'sweetalert2';
 
 export const useDragAndDrop = () => {
-  const { 
-    setIsDragging, 
-    setActiveId, 
+  const {
+    setIsDragging,
+    setActiveId,
     setHoveredDropZone,
     addWidgetToColumn,
     addContainer,
@@ -12,6 +12,11 @@ export const useDragAndDrop = () => {
     reorderContainers,
     updateWidget,
     moveWidgetBetweenColumns,
+    // Enhanced global drag state actions
+    setGlobalDragState,
+    setActiveDropTarget,
+    resetGlobalDragState,
+    updateMousePosition,
     // Section drag state actions
     setIsDraggingSection,
     setDraggedSectionId,
@@ -23,15 +28,27 @@ export const useDragAndDrop = () => {
   const handleDragStart = (event) => {
     const { active } = event;
     const activeData = active.data.current;
-    
-    console.log('[DragAndDrop] Drag started:', {
+
+    console.log('[DragAndDrop] Enhanced drag started:', {
       activeId: active.id,
-      activeData: activeData
+      activeData: activeData,
+      containerId: activeData?.containerId,
+      columnId: activeData?.columnId
     });
-    
+
     setActiveId(active.id);
-    setIsDragging(true);
-    
+
+    // Enhanced global drag state with cross-container awareness
+    setGlobalDragState(true, activeData, {
+      containerId: activeData?.containerId,
+      columnId: activeData?.columnId,
+      itemType: activeData?.type,
+      mousePosition: null // Will be updated by mouse move events
+    });
+
+    // Backward compatibility with old setIsDragging
+    setIsDragging(true, activeData);
+
     // Check if we're dragging a section/container
     if (activeData?.type === 'container') {
       console.log('[DragAndDrop] Section drag detected, setting up drop zones');
@@ -90,14 +107,14 @@ export const useDragAndDrop = () => {
       return overData?.type === 'canvas';
     }
 
-    // Regular widgets can be dropped in columns OR on canvas (with auto-section creation) OR on large widget targets
+    // Regular widgets can be dropped in columns OR on canvas (with auto-section creation)
     if (activeData?.type === 'widget-template') {
-      return overData?.type === 'column' || overData?.type === 'canvas' || overData?.type === 'widget-target';
+      return overData?.type === 'column' || overData?.type === 'canvas' || overData?.type === 'widget';
     }
 
-    // Widgets can be reordered within columns, between columns, or dropped on large widget targets
+    // Widgets can be reordered within columns or between columns
     if (activeData?.type === 'widget') {
-      return overData?.type === 'column' || overData?.type === 'widget' || overData?.type === 'widget-target';
+      return overData?.type === 'column' || overData?.type === 'widget';
     }
 
     // Sections can be dropped on canvas
@@ -110,18 +127,21 @@ export const useDragAndDrop = () => {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    
-    console.log('[DragAndDrop] Drag ended:', {
+
+    console.log('[DragAndDrop] Enhanced drag ended:', {
       activeId: active.id,
       overId: over?.id,
       activeData: active.data.current,
       overData: over?.data.current
     });
-    
+
     setActiveId(null);
-    setIsDragging(false);
+    setIsDragging(false, null);
     setHoveredDropZone(null);
-    
+
+    // Reset enhanced global drag state
+    resetGlobalDragState();
+
     // Clean up section drag state
     const activeData = active.data.current;
     if (activeData?.type === 'container') {
@@ -298,13 +318,14 @@ export const useDragAndDrop = () => {
       return;
     }
 
-    // Handle widget drop from panel to large widget target (enhanced UX for large widgets)
-    if (activeData?.type === 'widget-template' && overData?.type === 'widget-target') {
-      console.log('[DragAndDrop] Widget from panel dropped on large widget target:', {
+    // [NEW] Handle widget drop from panel to widget drop zone (precise insertion)
+    if (activeData?.type === 'widget-template' && overData?.type === 'widget-drop-zone') {
+      console.log('[DragAndDrop] 🎯 Widget from panel dropped on drop zone:', {
         widget: activeData.widget.type,
-        targetWidget: overData.widget.id,
+        position: overData.position,
+        insertIndex: overData.insertIndex,
         columnId: overData.columnId,
-        insertIndex: overData.widgetIndex
+        containerId: overData.containerId
       });
 
       // Create widget with unique ID
@@ -314,7 +335,7 @@ export const useDragAndDrop = () => {
         content: activeData.widget.content || {}
       };
 
-      // Add widget to the column at the specific position (before the target widget)
+      // Add widget to the column at the precise drop zone index
       const { pageContent, setPageContent } = usePageBuilderStore.getState();
       const updatedContainers = pageContent.containers.map(container => {
         if (container.id === overData.containerId) {
@@ -323,7 +344,8 @@ export const useDragAndDrop = () => {
             columns: container.columns.map(column => {
               if (column.id === overData.columnId) {
                 const newWidgets = [...column.widgets];
-                newWidgets.splice(overData.widgetIndex, 0, newWidget);
+                newWidgets.splice(overData.insertIndex, 0, newWidget);
+                console.log('[DragAndDrop] ✅ Widget added at index:', overData.insertIndex);
                 return { ...column, widgets: newWidgets };
               }
               return column;
@@ -338,7 +360,108 @@ export const useDragAndDrop = () => {
         containers: updatedContainers
       });
 
-      console.log('✅ Widget from panel added via large widget target');
+      console.log(`✅ Widget from panel inserted at position ${overData.insertIndex}`);
+      return;
+    }
+
+    // [NEW] Handle existing widget drop to widget drop zone (reordering/moving)
+    if (activeData?.type === 'widget' && overData?.type === 'widget-drop-zone') {
+      console.log('[DragAndDrop] 🎯 Widget dropped on drop zone:', {
+        widgetId: activeData.widget.id,
+        position: overData.position,
+        insertIndex: overData.insertIndex,
+        sourceColumn: activeData.columnId,
+        targetColumn: overData.columnId,
+        sameColumn: activeData.columnId === overData.columnId
+      });
+
+      if (activeData.columnId === overData.columnId) {
+        // Same column - reorder using drop zone index
+        const { pageContent } = usePageBuilderStore.getState();
+        const container = pageContent.containers.find(c => c.id === activeData.containerId);
+        const column = container?.columns.find(c => c.id === activeData.columnId);
+
+        if (column) {
+          const oldIndex = column.widgets.findIndex(w => w.id === activeData.widget.id);
+          let newIndex = overData.insertIndex;
+
+          // Adjust index if moving within same column
+          if (oldIndex < newIndex) {
+            newIndex = newIndex - 1; // Account for removed item
+          }
+
+          if (oldIndex !== newIndex && oldIndex !== -1) {
+            console.log('[DragAndDrop] 🔄 Reordering via drop zone:', { oldIndex, newIndex });
+            reorderWidgets(activeData.columnId, oldIndex, newIndex);
+          }
+        }
+      } else {
+        // Cross-column movement via drop zone
+        console.log('[DragAndDrop] 🔄 Cross-column movement via drop zone');
+        moveWidgetBetweenColumns(
+          activeData.widget.id,
+          activeData.columnId,
+          overData.columnId,
+          overData.insertIndex
+        );
+      }
+
+      console.log(`✅ Widget moved via drop zone`);
+      return;
+    }
+
+    // Handle widget drop from panel to existing widget (enhanced positioning)
+    if (activeData?.type === 'widget-template' && overData?.type === 'widget') {
+      const { dragState } = usePageBuilderStore.getState();
+      const dropPosition = dragState.dropPosition;
+
+      console.log('[DragAndDrop] Widget from panel dropped on widget:', {
+        widget: activeData.widget.type,
+        targetWidget: overData.widget.id,
+        position: dropPosition,
+        columnId: overData.columnId,
+        targetIndex: overData.widgetIndex
+      });
+
+      // If no drop position is specified, add to end of column
+      const insertIndex = dropPosition === 'before' ?
+        overData.widgetIndex :
+        dropPosition === 'after' ?
+          overData.widgetIndex + 1 :
+          overData.widgetIndex + 1; // Default to after
+
+      // Create widget with unique ID
+      const newWidget = {
+        ...activeData.widget,
+        id: `widget-${Date.now()}`,
+        content: activeData.widget.content || {}
+      };
+
+      // Add widget to the column at the precise position
+      const { pageContent, setPageContent } = usePageBuilderStore.getState();
+      const updatedContainers = pageContent.containers.map(container => {
+        if (container.id === overData.containerId) {
+          return {
+            ...container,
+            columns: container.columns.map(column => {
+              if (column.id === overData.columnId) {
+                const newWidgets = [...column.widgets];
+                newWidgets.splice(insertIndex, 0, newWidget);
+                return { ...column, widgets: newWidgets };
+              }
+              return column;
+            })
+          };
+        }
+        return container;
+      });
+
+      setPageContent({
+        ...pageContent,
+        containers: updatedContainers
+      });
+
+      console.log(`✅ Widget from panel added at position ${insertIndex}`);
       return;
     }
 
@@ -417,67 +540,43 @@ export const useDragAndDrop = () => {
       return;
     }
 
-    // Handle widget reordering within the same column
+
+    // Simplified widget-to-widget reordering (Basic @dnd-kit sortable)
     if (activeData?.type === 'widget' && overData?.type === 'widget') {
-      const activeWidget = activeData.widget;
-      const overWidget = overData.widget;
-
-      if (activeData.columnId === overData.columnId) {
-        const { pageContent } = usePageBuilderStore.getState();
-        const container = pageContent.containers.find(c => c.id === activeData.containerId);
-        const column = container?.columns.find(c => c.id === activeData.columnId);
-
-        if (column) {
-          const oldIndex = column.widgets.findIndex(w => w.id === activeWidget.id);
-          const newIndex = column.widgets.findIndex(w => w.id === overWidget.id);
-
-          if (oldIndex !== newIndex) {
-            reorderWidgets(activeData.columnId, oldIndex, newIndex);
-          }
-        }
-      }
-      return;
-    }
-
-    // Handle widget drop on large widget target (enhanced UX for large widgets)
-    if (activeData?.type === 'widget' && overData?.type === 'widget-target') {
-      const activeWidget = activeData.widget;
-      const targetWidget = overData.widget;
-
-      console.log('[DragAndDrop] Widget dropped on large widget target:', {
-        activeWidget: activeWidget.id,
-        targetWidget: targetWidget.id,
-        targetIndex: overData.widgetIndex,
-        columnId: overData.columnId
+      console.log('[DragAndDrop] 🎯 BASIC WIDGET SORTING - Widget dropped on widget:', {
+        activeWidget: activeData.widget.id,
+        targetWidget: overData.widget.id,
+        sameColumn: activeData.columnId === overData.columnId,
+        activeColumnId: activeData.columnId,
+        overColumnId: overData.columnId,
+        activeIndex: activeData.widgetIndex,
+        overIndex: overData.widgetIndex
       });
 
       if (activeData.columnId === overData.columnId) {
-        // Same column - reorder widgets
-        const { pageContent } = usePageBuilderStore.getState();
-        const container = pageContent.containers.find(c => c.id === activeData.containerId);
-        const column = container?.columns.find(c => c.id === activeData.columnId);
+        // Same column - simple reordering using @dnd-kit indices
+        const oldIndex = activeData.widgetIndex;
+        const newIndex = overData.widgetIndex;
 
-        if (column) {
-          const oldIndex = column.widgets.findIndex(w => w.id === activeWidget.id);
-          const newIndex = overData.widgetIndex;
+        console.log('[DragAndDrop] 🔄 BASIC WIDGET SORTING - Same column reorder:', {
+          columnId: activeData.columnId,
+          oldIndex,
+          newIndex
+        });
 
-          if (oldIndex !== newIndex && oldIndex !== -1) {
-            // Insert before the target widget
-            const adjustedNewIndex = oldIndex < newIndex ? newIndex : newIndex;
-            reorderWidgets(activeData.columnId, oldIndex, adjustedNewIndex);
-            console.log('✅ Widget reordered within column via large widget target');
-          }
+        if (oldIndex !== newIndex && oldIndex >= 0 && newIndex >= 0) {
+          reorderWidgets(activeData.columnId, oldIndex, newIndex);
+          console.log('✅ Basic widget reordered successfully');
         }
       } else {
-        // Different column - move widget
-        console.log('[DragAndDrop] Moving widget to different column via large widget target');
+        // Different columns - handle cross-column movement
+        console.log('[DragAndDrop] 🔄 Cross-column widget movement');
         moveWidgetBetweenColumns(
-          activeWidget.id,
+          activeData.widget.id,
           activeData.columnId,
           overData.columnId,
           overData.widgetIndex
         );
-        console.log('✅ Widget moved between columns via large widget target');
       }
       return;
     }

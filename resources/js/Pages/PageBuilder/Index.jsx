@@ -7,6 +7,7 @@ import WidgetPanel from '@/Components/PageBuilder/Panels/WidgetPanel';
 import Canvas from '@/Components/PageBuilder/Canvas/Canvas';
 import SettingsPanel from '@/Components/PageBuilder/Panels/SettingsPanel';
 import CanvasToolbar from '@/Components/PageBuilder/Canvas/CanvasToolbar';
+import PageBuilderNavigation from '@/Components/PageBuilder/Navigation/PageBuilderNavigation';
 import DragOverlayContent from '@/Components/PageBuilder/DragDrop/DragOverlayContent';
 
 const PageBuilder = ({ page, widgets, sections, templates }) => {
@@ -129,7 +130,10 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
           <div className="flex-1 flex flex-col min-w-0">
             {/* Canvas Toolbar */}
             <CanvasToolbar page={page} />
-            
+
+            {/* Page Builder Navigation */}
+            <PageBuilderNavigation />
+
             {/* Canvas */}
             <Canvas 
               content={pageContent}

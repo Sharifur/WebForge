@@ -86,6 +86,7 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
       className={`relative group ${isDragging ? 'z-50' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      data-container-id={container.id}
     >
       {/* Container Controls - Fixed position at top-left */}
       {(isHovered || selectedWidget?.id === container.id) && !isDragging && (
