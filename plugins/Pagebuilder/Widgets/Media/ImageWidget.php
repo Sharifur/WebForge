@@ -304,6 +304,7 @@ class ImageWidget extends BaseWidget
                 ->setMin(0)
                 ->setMax(100)
                 ->setLinked(true)
+                ->setResponsive(true)
                 ->setSelectors([
                     '{{WRAPPER}} .image-element' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])
@@ -434,6 +435,7 @@ class ImageWidget extends BaseWidget
                 ->setUnits(['px', 'em'])
                 ->setMin(0)
                 ->setMax(50)
+                ->setResponsive(true)
                 ->setCondition(['show_caption' => true])
                 ->setSelectors([
                     '{{WRAPPER}} .image-caption' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'

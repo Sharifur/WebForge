@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
+import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
+import sectionSettingsMapper from '@/Services/sectionSettingsMapper';
 import Column from './Column';
 
 const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { removeContainer, updateContainer } = usePageBuilderStore();
+  const containerRef = useRef(null);
 
   const {
     attributes,
@@ -41,7 +44,64 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
   const setNodeRef = (node) => {
     setSortableNodeRef(node);
     setDroppableNodeRef(node);
+    containerRef.current = node;
   };
+
+  // Apply CSS wrapper classes and generate styles with enhanced transformation
+  useEffect(() => {
+    if (containerRef.current) {
+      // Transform section settings using the mapper
+      const transformedSettings = sectionSettingsMapper.transformToCSS(container.settings || {});
+      const responsiveSettings = sectionSettingsMapper.transformResponsive(
+        container.settings || {},
+        container.responsiveSettings || {}
+      );
+
+      // Apply wrapper classes and generate CSS
+      const classInfo = pageBuilderCSSService.applySettings(
+        containerRef.current,
+        'section',
+        container.id,
+        transformedSettings,
+        responsiveSettings
+      );
+
+      // Apply layout wrapper class for section content width
+      if (transformedSettings.contentWidth) {
+        const layoutClass = `section-layout-${transformedSettings.contentWidth}`;
+        if (!containerRef.current.classList.contains(layoutClass)) {
+          // Remove existing layout classes
+          const existingLayoutClasses = Array.from(containerRef.current.classList).filter(
+            cls => cls.startsWith('section-layout-')
+          );
+          existingLayoutClasses.forEach(cls => containerRef.current.classList.remove(cls));
+
+          // Add new layout class
+          containerRef.current.classList.add(layoutClass);
+        }
+      }
+
+      // Handle custom CSS injection
+      if (container.settings?.customCSS) {
+        pageBuilderCSSService.injectCSS(`section-${container.id}-custom`, container.settings.customCSS);
+      }
+
+      // Add section ID attribute for CSS targeting
+      if (container.settings?.htmlId) {
+        containerRef.current.id = container.settings.htmlId;
+      }
+
+      // Add custom CSS classes
+      if (container.settings?.cssClass) {
+        const customClasses = container.settings.cssClass.split(' ').filter(cls => cls.trim());
+        customClasses.forEach(cls => {
+          if (cls && !containerRef.current.classList.contains(cls)) {
+            containerRef.current.classList.add(cls);
+          }
+        });
+      }
+    }
+  }, [container.id, container.settings, container.responsiveSettings]);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -133,47 +193,39 @@ const SortableContainer = ({ container, index, onUpdate, onSelectWidget, selecte
       )}
 
       {/* Container Content */}
-      <div 
+      <div
         className={`min-h-20 transition-all duration-200 ${
           isHovered ? 'ring-1 ring-blue-300' : ''
         } ${selectedWidget?.id === container.id ? 'ring-2 ring-blue-500' : ''} ${
           isOver ? 'ring-2 ring-green-400 bg-green-50' : ''
         }`}
-        style={{
-          padding: container.settings?.padding || '20px',
-          margin: container.settings?.margin || '0',
-          backgroundColor: container.settings?.backgroundColor || '#ffffff',
-          // Only spread CSS-related properties, filter out internal settings
-          ...Object.fromEntries(
-            Object.entries(container.settings || {}).filter(([key]) => 
-              !['columnCount', 'gridTemplate', 'gap'].includes(key)
-            )
-          )
-        }}
       >
-        <div 
-          className={container.settings?.gridTemplate ? "grid h-full" : "flex h-full"}
-          style={container.settings?.gridTemplate ? {
-            gridTemplateColumns: container.settings.gridTemplate,
-            gap: container.settings?.gap || '20px'
-          } : { 
-            gap: container.settings?.gap || '20px',
-            flexWrap: 'nowrap',
-            width: '100%'
-          }}
-        >
-          {container.columns.map((column, columnIndex) => (
-            <Column
-              key={column.id}
-              column={column}
-              columnIndex={columnIndex}
-              containerId={container.id}
-              onUpdate={onUpdate}
-              onSelectWidget={onSelectWidget}
-              selectedWidget={selectedWidget}
-              hoveredDropZone={hoveredDropZone}
-            />
-          ))}
+        {/* Section Inner Container for Layout Modes */}
+        <div className="section-inner">
+          <div
+            className={container.settings?.gridTemplate ? "grid h-full" : "flex h-full"}
+            style={container.settings?.gridTemplate ? {
+              gridTemplateColumns: container.settings.gridTemplate,
+              gap: container.settings?.gap || '20px'
+            } : {
+              gap: container.settings?.gap || '20px',
+              flexWrap: 'nowrap',
+              width: '100%'
+            }}
+          >
+            {container.columns.map((column, columnIndex) => (
+              <Column
+                key={column.id}
+                column={column}
+                columnIndex={columnIndex}
+                containerId={container.id}
+                onUpdate={onUpdate}
+                onSelectWidget={onSelectWidget}
+                selectedWidget={selectedWidget}
+                hoveredDropZone={hoveredDropZone}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

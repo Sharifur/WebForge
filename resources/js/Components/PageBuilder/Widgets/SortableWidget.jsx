@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
+import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
 import WidgetRenderer from './WidgetRenderer';
 
 const SortableWidget = ({ 
@@ -21,6 +22,26 @@ const SortableWidget = ({
     updateWidget
   } = usePageBuilderStore();
   
+  // Apply CSS wrapper classes and generate styles for widget
+  useEffect(() => {
+    if (widgetRef.current) {
+      // Get widget settings with defaults
+      const widgetSettings = {
+        ...pageBuilderCSSService.getDefaultSettings('widget'),
+        ...widget.settings
+      };
+
+      // Apply wrapper classes and generate CSS
+      pageBuilderCSSService.applySettings(
+        widgetRef.current,
+        'widget',
+        widget.id,
+        widgetSettings,
+        widget.responsiveSettings || {}
+      );
+    }
+  }, [widget.id, widget.settings, widget.responsiveSettings]);
+
   // Track content height for better drop positioning
   useEffect(() => {
     const updateContentHeight = () => {
@@ -29,15 +50,15 @@ const SortableWidget = ({
         setContentHeight(height);
       }
     };
-    
+
     updateContentHeight();
-    
+
     // Update height when content changes
     const resizeObserver = new ResizeObserver(updateContentHeight);
     if (widgetRef.current) {
       resizeObserver.observe(widgetRef.current);
     }
-    
+
     return () => {
       resizeObserver.disconnect();
     };

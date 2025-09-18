@@ -582,4 +582,395 @@ class PageBuilderController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generate CSS for page components
+     */
+    public function generateCSS(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'type' => 'required|string|in:section,column,widget',
+            'id' => 'required|string',
+            'settings' => 'required|array',
+            'responsiveSettings' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $type = $request->input('type');
+            $id = $request->input('id');
+            $settings = $request->input('settings', []);
+            $responsiveSettings = $request->input('responsiveSettings', []);
+
+            // Generate CSS using the service logic
+            $css = $this->generateComponentCSS($type, $id, $settings, $responsiveSettings);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'css' => $css,
+                    'selector' => ".pb-{$type}-{$id}",
+                    'type' => $type,
+                    'id' => $id
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate CSS',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate CSS for multiple components at once
+     */
+    public function generateBulkCSS(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'components' => 'required|array',
+            'components.*.type' => 'required|string|in:section,column,widget',
+            'components.*.id' => 'required|string',
+            'components.*.settings' => 'required|array',
+            'components.*.responsiveSettings' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $components = $request->input('components', []);
+            $results = [];
+            $combinedCSS = [];
+
+            foreach ($components as $component) {
+                $type = $component['type'];
+                $id = $component['id'];
+                $settings = $component['settings'];
+                $responsiveSettings = $component['responsiveSettings'] ?? [];
+
+                $css = $this->generateComponentCSS($type, $id, $settings, $responsiveSettings);
+
+                $results[] = [
+                    'type' => $type,
+                    'id' => $id,
+                    'selector' => ".pb-{$type}-{$id}",
+                    'css' => $css
+                ];
+
+                if ($css) {
+                    $combinedCSS[] = $css;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'components' => $results,
+                    'combinedCSS' => implode("\n\n", $combinedCSS)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate bulk CSS',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get default settings for a component type
+     */
+    public function getDefaultSettings(string $type): JsonResponse
+    {
+        try {
+            $defaults = $this->getComponentDefaults($type);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'type' => $type,
+                    'defaults' => $defaults
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get default settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate CSS for component (server-side implementation)
+     */
+    private function generateComponentCSS(string $type, string $id, array $settings, array $responsiveSettings = []): string
+    {
+        $baseSelector = ".pb-{$type}-{$id}";
+        $css = [];
+
+        // Merge with defaults
+        $defaults = $this->getComponentDefaults($type);
+        $mergedSettings = array_merge($defaults, $settings);
+
+        // Generate base styles
+        $baseStyles = $this->generateBaseStyles($baseSelector, $mergedSettings);
+        if ($baseStyles) $css[] = $baseStyles;
+
+        // Generate layout-specific styles for sections
+        if ($type === 'section' && isset($mergedSettings['contentWidth'])) {
+            $layoutStyles = $this->generateSectionLayoutCSS($mergedSettings['contentWidth'], $mergedSettings['maxWidth'] ?? 1200);
+            if ($layoutStyles) $css[] = $layoutStyles;
+        }
+
+        // Generate responsive styles
+        if (!empty($responsiveSettings)) {
+            $responsiveStyles = $this->generateResponsiveStyles($baseSelector, $responsiveSettings);
+            if ($responsiveStyles) $css[] = $responsiveStyles;
+        }
+
+        return implode("\n", $css);
+    }
+
+    /**
+     * Get component default settings
+     */
+    private function getComponentDefaults(string $type): array
+    {
+        $baseDefaults = [
+            'background' => ['type' => 'none', 'color' => '#ffffff'],
+            'padding' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0, 'unit' => 'px'],
+            'margin' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0, 'unit' => 'px'],
+            'border' => [
+                'width' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
+                'style' => 'solid',
+                'color' => '#e2e8f0',
+                'radius' => ['topLeft' => 0, 'topRight' => 0, 'bottomLeft' => 0, 'bottomRight' => 0, 'unit' => 'px']
+            ],
+            'visibility' => ['hideOnDesktop' => false, 'hideOnTablet' => false, 'hideOnMobile' => false]
+        ];
+
+        switch ($type) {
+            case 'section':
+                return array_merge($baseDefaults, [
+                    'contentWidth' => 'boxed',
+                    'maxWidth' => 1200,
+                    'padding' => ['top' => 40, 'right' => 20, 'bottom' => 40, 'left' => 20, 'unit' => 'px']
+                ]);
+
+            case 'column':
+                return array_merge($baseDefaults, [
+                    'display' => 'flex',
+                    'flexDirection' => 'column',
+                    'padding' => ['top' => 15, 'right' => 15, 'bottom' => 15, 'left' => 15, 'unit' => 'px']
+                ]);
+
+            case 'widget':
+                return array_merge($baseDefaults, [
+                    'typography' => ['fontSize' => '16px', 'fontWeight' => '400', 'lineHeight' => '1.6'],
+                    'padding' => ['top' => 10, 'right' => 10, 'bottom' => 10, 'left' => 10, 'unit' => 'px']
+                ]);
+
+            default:
+                return $baseDefaults;
+        }
+    }
+
+    /**
+     * Generate base component styles (server-side implementation)
+     */
+    private function generateBaseStyles(string $selector, array $settings): string
+    {
+        $styles = [];
+
+        // Background styles
+        if (isset($settings['background']) && $settings['background']['type'] !== 'none') {
+            $bgCSS = $this->generateBackgroundCSS($settings['background']);
+            if ($bgCSS) $styles[] = $bgCSS;
+        }
+
+        // Spacing styles
+        if (isset($settings['padding'])) {
+            $paddingCSS = $this->normalizeSpacing($settings['padding']);
+            if ($paddingCSS !== '0') $styles[] = "padding: {$paddingCSS};";
+        }
+
+        if (isset($settings['margin'])) {
+            $marginCSS = $this->normalizeSpacing($settings['margin']);
+            if ($marginCSS !== '0') $styles[] = "margin: {$marginCSS};";
+        }
+
+        // Border styles
+        if (isset($settings['border'])) {
+            $borderCSS = $this->generateBorderCSS($settings['border']);
+            if ($borderCSS) $styles[] = $borderCSS;
+        }
+
+        if (empty($styles)) return '';
+
+        return "{$selector} {\n  " . implode("\n  ", $styles) . "\n}";
+    }
+
+    /**
+     * Generate section layout CSS (server-side implementation)
+     */
+    private function generateSectionLayoutCSS(string $layoutMode, int $maxWidth = 1200): string
+    {
+        switch ($layoutMode) {
+            case 'boxed':
+                return "
+.section-layout-boxed {
+  max-width: {$maxWidth}px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}";
+
+            case 'full_width_contained':
+                return "
+.section-layout-full_width_contained {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.section-layout-full_width_contained .section-inner {
+  max-width: {$maxWidth}px;
+  margin: 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}";
+
+            case 'full_width':
+                return "
+.section-layout-full_width {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.section-layout-full_width .section-inner {
+  width: 100%;
+  max-width: none;
+  padding-left: 15px;
+  padding-right: 15px;
+}";
+
+            default:
+                return '';
+        }
+    }
+
+    /**
+     * Generate responsive styles (server-side implementation)
+     */
+    private function generateResponsiveStyles(string $selector, array $responsiveSettings): string
+    {
+        $css = [];
+
+        // Tablet styles
+        if (isset($responsiveSettings['tablet']) && !empty($responsiveSettings['tablet'])) {
+            $tabletStyles = $this->generateBaseStyles($selector, $responsiveSettings['tablet']);
+            if ($tabletStyles) {
+                $css[] = "@media (max-width: 1024px) {\n{$tabletStyles}\n}";
+            }
+        }
+
+        // Mobile styles
+        if (isset($responsiveSettings['mobile']) && !empty($responsiveSettings['mobile'])) {
+            $mobileStyles = $this->generateBaseStyles($selector, $responsiveSettings['mobile']);
+            if ($mobileStyles) {
+                $css[] = "@media (max-width: 768px) {\n{$mobileStyles}\n}";
+            }
+        }
+
+        return implode("\n", $css);
+    }
+
+    /**
+     * Helper methods for CSS generation
+     */
+    private function generateBackgroundCSS(array $background): string
+    {
+        switch ($background['type']) {
+            case 'color':
+                return isset($background['color']) ? "background-color: {$background['color']};" : '';
+
+            case 'gradient':
+                if (isset($background['gradient'])) {
+                    $gradient = $background['gradient'];
+                    $stops = collect($gradient['colorStops'] ?? [])->map(function ($stop) {
+                        return "{$stop['color']} {$stop['position']}%";
+                    })->implode(', ');
+
+                    if ($gradient['type'] === 'linear') {
+                        return "background: linear-gradient({$gradient['angle']}deg, {$stops});";
+                    } elseif ($gradient['type'] === 'radial') {
+                        return "background: radial-gradient(circle, {$stops});";
+                    }
+                }
+                return '';
+
+            default:
+                return '';
+        }
+    }
+
+    private function generateBorderCSS(array $border): string
+    {
+        $styles = [];
+
+        if (isset($border['width'])) {
+            $width = $border['width'];
+            if ($width['top'] || $width['right'] || $width['bottom'] || $width['left']) {
+                $styles[] = "border-width: {$width['top']}px {$width['right']}px {$width['bottom']}px {$width['left']}px;";
+                $styles[] = "border-style: " . ($border['style'] ?? 'solid') . ";";
+                $styles[] = "border-color: " . ($border['color'] ?? '#e2e8f0') . ";";
+            }
+        }
+
+        if (isset($border['radius'])) {
+            $radius = $border['radius'];
+            $unit = $radius['unit'] ?? 'px';
+            if ($radius['topLeft'] || $radius['topRight'] || $radius['bottomLeft'] || $radius['bottomRight']) {
+                $styles[] = "border-radius: {$radius['topLeft']}{$unit} {$radius['topRight']}{$unit} {$radius['bottomRight']}{$unit} {$radius['bottomLeft']}{$unit};";
+            }
+        }
+
+        return implode(' ', $styles);
+    }
+
+    private function normalizeSpacing(array $spacing): string
+    {
+        if (isset($spacing['top'])) {
+            $unit = $spacing['unit'] ?? 'px';
+            return "{$spacing['top']}{$unit} {$spacing['right']}{$unit} {$spacing['bottom']}{$unit} {$spacing['left']}{$unit}";
+        }
+
+        return '0';
+    }
 }

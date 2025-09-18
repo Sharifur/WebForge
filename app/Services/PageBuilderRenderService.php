@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Plugins\Pagebuilder\Core\CSSManager;
+use Plugins\Pagebuilder\Core\SectionLayoutCSSGenerator;
 
 /**
  * PageBuilderRenderService
@@ -49,39 +50,98 @@ class PageBuilderRenderService
      */
     private function renderContainer(array $container): string
     {
-        $html = '<div class="xgp_container">';
-        
+        $containerId = $container['id'] ?? 'container-' . uniqid();
+        $settings = $container['settings'] ?? [];
+        $responsiveSettings = $container['responsiveSettings'] ?? [];
+
+        // Generate and collect section CSS
+        CSSManager::addSectionCSS($containerId, $settings, $responsiveSettings);
+
+        // Build CSS classes for section
+        $classes = ['pb-section', "pb-section-{$containerId}"];
+
+        // Add layout class if contentWidth is set
+        if (isset($settings['contentWidth'])) {
+            $classes[] = "section-layout-{$settings['contentWidth']}";
+        }
+
+        // Add custom CSS classes
+        if (isset($settings['cssClass'])) {
+            $customClasses = explode(' ', trim($settings['cssClass']));
+            $classes = array_merge($classes, array_filter($customClasses));
+        }
+
+        $classString = implode(' ', $classes);
+
+        // Build section attributes
+        $attributes = ['class' => $classString];
+        if (isset($settings['htmlId'])) {
+            $attributes['id'] = $settings['htmlId'];
+        }
+
+        $attributeString = $this->buildAttributeString($attributes);
+
+        $html = "<section {$attributeString}>";
+        $html .= '<div class="section-inner">';
+
         if (isset($container['columns'])) {
             $html .= '<div class="xgp_row">';
-            
+
             foreach ($container['columns'] as $column) {
-                $html .= $this->renderColumn($column);
+                $html .= $this->renderColumn($column, $containerId);
             }
-            
+
             $html .= '</div>';
         }
-        
+
         $html .= '</div>';
-        
+        $html .= '</section>';
+
         return $html;
     }
     
     /**
      * Render a column with its widgets
      */
-    private function renderColumn(array $column): string
+    private function renderColumn(array $column, string $containerId = ''): string
     {
+        $columnId = $column['id'] ?? 'column-' . uniqid();
+        $settings = $column['settings'] ?? [];
+        $responsiveSettings = $column['responsiveSettings'] ?? [];
         $colSize = $column['size'] ?? 12;
-        $html = "<div class=\"xgp_column xgp_col_{$colSize}\">";
-        
+
+        // Generate and collect column CSS
+        CSSManager::addColumnCSS($columnId, $settings, $responsiveSettings);
+
+        // Build CSS classes for column
+        $classes = ['pb-column', "pb-column-{$columnId}", 'xgp_column', "xgp_col_{$colSize}"];
+
+        // Add custom CSS classes
+        if (isset($settings['customClasses'])) {
+            $customClasses = explode(' ', trim($settings['customClasses']));
+            $classes = array_merge($classes, array_filter($customClasses));
+        }
+
+        $classString = implode(' ', $classes);
+
+        // Build column attributes
+        $attributes = ['class' => $classString];
+        if (isset($settings['customId'])) {
+            $attributes['id'] = $settings['customId'];
+        }
+
+        $attributeString = $this->buildAttributeString($attributes);
+
+        $html = "<div {$attributeString}>";
+
         if (isset($column['widgets'])) {
             foreach ($column['widgets'] as $widget) {
                 $html .= $this->renderWidget($widget);
             }
         }
-        
+
         $html .= '</div>';
-        
+
         return $html;
     }
     
@@ -163,5 +223,24 @@ class PageBuilderRenderService
     public static function getCSSStats(): array
     {
         return CSSManager::getStats();
+    }
+
+    /**
+     * Build HTML attribute string from array
+     *
+     * @param array $attributes Attributes array
+     * @return string HTML attributes string
+     */
+    private function buildAttributeString(array $attributes): string
+    {
+        $parts = [];
+        foreach ($attributes as $key => $value) {
+            if ($value === true || $value === '') {
+                $parts[] = $key;
+            } else {
+                $parts[] = $key . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
+            }
+        }
+        return implode(' ', $parts);
     }
 }

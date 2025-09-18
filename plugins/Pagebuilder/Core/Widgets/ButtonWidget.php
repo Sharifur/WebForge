@@ -10,7 +10,7 @@ use App\Utils\URLHandler;
 
 /**
  * Simple Button Widget
- * 
+ *
  * A straightforward button widget with essential styling options
  * - Basic button types (Primary, Secondary, Success, Danger)
  * - Simple text and link configuration
@@ -64,7 +64,7 @@ class ButtonWidget extends BaseWidget
     public function getGeneralFields(): array
     {
         $control = new ControlManager();
-        
+
         // Content Group
         $control->addGroup('content', 'Content')
             ->registerField('text', FieldManager::TEXT()
@@ -72,21 +72,13 @@ class ButtonWidget extends BaseWidget
                 ->setDefault('Click me')
                 ->setRequired(true)
             )
-            ->registerField('url', FieldManager::TEXT()
+            ->registerField('url', FieldManager::ENHANCED_URL()
                 ->setLabel('Button Link')
                 ->setPlaceholder('https://example.com')
                 ->setDefault('#')
             )
-            ->registerField('target', FieldManager::SELECT()
-                ->setLabel('Open Link In')
-                ->setOptions([
-                    '_self' => 'Same Window',
-                    '_blank' => 'New Window'
-                ])
-                ->setDefault('_self')
-            )
             ->endGroup();
-            
+
         // Button Type Group
         $control->addGroup('type', 'Button Type')
             ->registerField('button_type', FieldManager::SELECT()
@@ -104,7 +96,7 @@ class ButtonWidget extends BaseWidget
                 ->setDefault('normal')
             )
             ->endGroup();
-            
+
         // Layout Group
         $control->addGroup('layout', 'Layout')
             ->registerField('alignment', FieldManager::ALIGNMENT()
@@ -124,7 +116,7 @@ class ButtonWidget extends BaseWidget
                 ->setDefault('auto')
             )
             ->endGroup();
-            
+
         return $control->getFields();
     }
 
@@ -139,6 +131,14 @@ class ButtonWidget extends BaseWidget
                 ->setDefault('#FFFFFF')
                 ->setSelectors([
                     '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
+                ])
+            )
+            ->registerField('btn_padding', FieldManager::DIMENSION()
+                ->setLabel('padding')
+                ->setUnits(['px', 'em', '%'])
+                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'margin: {{VALUE}};'
                 ])
             )
             ->registerField('button_background', FieldManager::BACKGROUND_GROUP()
@@ -162,23 +162,33 @@ class ButtonWidget extends BaseWidget
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
-        
+
         // Content settings
         $content = $general['content'] ?? [];
         $text = $this->sanitizeText($content['text'] ?? 'Click me');
-        $url = $this->sanitizeURL($content['url'] ?? '#');
-        $target = $content['target'] ?? '_self';
-        
+
+        // Handle both simple URL strings and enhanced URL objects
+        $urlData = $content['url'] ?? '#';
+        if (is_array($urlData)) {
+            // Enhanced URL field returns an object/array
+            $url = $this->sanitizeURL($urlData['url'] ?? '#');
+            $target = $urlData['target'] ?? '_self';
+        } else {
+            // Simple URL field returns a string
+            $url = $this->sanitizeURL($urlData);
+            $target = $content['target'] ?? '_self';
+        }
+
         // Button type and size settings
         $type = $general['type'] ?? [];
         $buttonType = $type['button_type'] ?? 'primary';
         $size = $type['size'] ?? 'normal';
-        
+
         // Layout settings
         $layout = $general['layout'] ?? [];
         $alignment = $layout['alignment'] ?? 'left';
         $width = $layout['width'] ?? 'auto';
-        
+
         // Build base button classes with Tailwind styling
         $classes = [
             // Base button styles
@@ -197,7 +207,7 @@ class ButtonWidget extends BaseWidget
             'cursor-pointer',
             'select-none'
         ];
-        
+
         // Add button type styles
         switch ($buttonType) {
             case 'primary':
@@ -242,7 +252,7 @@ class ButtonWidget extends BaseWidget
                 ]);
                 break;
         }
-        
+
         // Add size styles
         switch ($size) {
             case 'small':
@@ -266,12 +276,12 @@ class ButtonWidget extends BaseWidget
                     'text-base'
                 ]);
         }
-        
+
         // Add width class
         if ($width === 'full') {
             $classes[] = 'w-full';
         }
-        
+
         // Add alignment classes for wrapper div
         $wrapperClasses = ['simple-button'];
         switch ($alignment) {
@@ -284,20 +294,20 @@ class ButtonWidget extends BaseWidget
             default:
                 $wrapperClasses[] = 'text-left';
         }
-        
+
         $classString = implode(' ', $classes);
         $wrapperClassString = implode(' ', $wrapperClasses);
-        
+
         // Build attributes
         $attributes = [
             'class' => $classString,
             'href' => $url,
             'target' => $target
         ];
-        
+
         // Build the button HTML
         $attributesString = $this->buildAttributes($attributes);
-        
+
         return "<div class=\"{$wrapperClassString}\"><a {$attributesString}>{$text}</a></div>";
     }
 

@@ -4,18 +4,20 @@ namespace Plugins\Pagebuilder\Core;
 
 /**
  * CSSManager - Centralized CSS collection and output system
- * 
- * Collects CSS from all widgets during page generation and outputs
- * a single consolidated CSS block in the page header, eliminating
+ *
+ * Collects CSS from all widgets, sections, and columns during page generation
+ * and outputs a single consolidated CSS block in the page header, eliminating
  * redundant style tags and improving performance.
- * 
+ *
  * Features:
- * - CSS collection from multiple widgets
+ * - CSS collection from widgets, sections, and columns
+ * - Section layout CSS generation (boxed, full-width, etc.)
+ * - Column layout CSS generation (flexbox, grid, etc.)
  * - Deduplication of identical rules
  * - Minification and optimization
  * - Single output in page header
  * - Memory efficient collection
- * 
+ *
  * @package Plugins\Pagebuilder\Core
  */
 class CSSManager
@@ -24,17 +26,27 @@ class CSSManager
      * @var array Collected CSS rules indexed by widget ID
      */
     private static array $collectedCSS = [];
-    
+
+    /**
+     * @var array Section-specific CSS rules indexed by section ID
+     */
+    private static array $sectionCSS = [];
+
+    /**
+     * @var array Column-specific CSS rules indexed by column ID
+     */
+    private static array $columnCSS = [];
+
     /**
      * @var array Widget-specific inline styles
      */
     private static array $inlineStyles = [];
-    
+
     /**
      * @var bool Whether CSS has been output to prevent duplicate output
      */
     private static bool $cssOutput = false;
-    
+
     /**
      * @var array CSS rules by selector to enable deduplication
      */
@@ -66,7 +78,7 @@ class CSSManager
     
     /**
      * Add inline styles for a specific widget
-     * 
+     *
      * @param string $widgetId Unique widget identifier
      * @param array $styles Array of CSS property-value pairs
      */
@@ -75,10 +87,198 @@ class CSSManager
         if (empty($styles)) {
             return;
         }
-        
+
         self::$inlineStyles[$widgetId] = $styles;
     }
-    
+
+    /**
+     * Add CSS rules for a specific section
+     *
+     * @param string $sectionId Unique section identifier
+     * @param array $settings Section settings
+     * @param array $responsiveSettings Section responsive settings
+     */
+    public static function addSectionCSS(string $sectionId, array $settings, array $responsiveSettings = []): void
+    {
+        if (empty($settings)) {
+            return;
+        }
+
+        // Generate section CSS using SectionLayoutCSSGenerator
+        $css = SectionLayoutCSSGenerator::generateSectionCSS($sectionId, $settings, $responsiveSettings);
+
+        if (!empty($css)) {
+            self::$sectionCSS[$sectionId] = [
+                'css' => $css,
+                'settings' => $settings,
+                'responsiveSettings' => $responsiveSettings,
+                'timestamp' => microtime(true)
+            ];
+
+            // Parse and store by selector for deduplication
+            self::parseCSSIntoSelectors($css, $sectionId);
+        }
+    }
+
+    /**
+     * Add CSS rules for a specific column
+     *
+     * @param string $columnId Unique column identifier
+     * @param array $settings Column settings
+     * @param array $responsiveSettings Column responsive settings
+     */
+    public static function addColumnCSS(string $columnId, array $settings, array $responsiveSettings = []): void
+    {
+        if (empty($settings)) {
+            return;
+        }
+
+        // Generate column CSS
+        $css = self::generateColumnCSS($columnId, $settings, $responsiveSettings);
+
+        if (!empty($css)) {
+            self::$columnCSS[$columnId] = [
+                'css' => $css,
+                'settings' => $settings,
+                'responsiveSettings' => $responsiveSettings,
+                'timestamp' => microtime(true)
+            ];
+
+            // Parse and store by selector for deduplication
+            self::parseCSSIntoSelectors($css, $columnId);
+        }
+    }
+
+    /**
+     * Generate CSS for a column
+     *
+     * @param string $columnId Column identifier
+     * @param array $settings Column settings
+     * @param array $responsiveSettings Column responsive settings
+     * @return string Generated CSS
+     */
+    private static function generateColumnCSS(string $columnId, array $settings, array $responsiveSettings = []): string
+    {
+        $css = [];
+        $selector = ".pb-column-{$columnId}";
+
+        // Base column styles
+        $baseStyles = self::generateBaseColumnStyles($settings);
+        if ($baseStyles) {
+            $css[] = "{$selector} {\n  {$baseStyles}\n}";
+        }
+
+        // Responsive styles
+        if (!empty($responsiveSettings)) {
+            // Tablet styles
+            if (isset($responsiveSettings['tablet']) && !empty($responsiveSettings['tablet'])) {
+                $tabletStyles = self::generateBaseColumnStyles($responsiveSettings['tablet']);
+                if ($tabletStyles) {
+                    $css[] = "@media (max-width: 1024px) {\n{$selector} {\n  {$tabletStyles}\n}\n}";
+                }
+            }
+
+            // Mobile styles
+            if (isset($responsiveSettings['mobile']) && !empty($responsiveSettings['mobile'])) {
+                $mobileStyles = self::generateBaseColumnStyles($responsiveSettings['mobile']);
+                if ($mobileStyles) {
+                    $css[] = "@media (max-width: 768px) {\n{$selector} {\n  {$mobileStyles}\n}\n}";
+                }
+            }
+
+            // Device-specific visibility
+            $visibility = $responsiveSettings['visibility'] ?? [];
+
+            if ($visibility['hideOnDesktop'] ?? false) {
+                $css[] = "@media (min-width: 1025px) {\n{$selector} { display: none !important; }\n}";
+            }
+
+            if ($visibility['hideOnTablet'] ?? false) {
+                $css[] = "@media (min-width: 769px) and (max-width: 1024px) {\n{$selector} { display: none !important; }\n}";
+            }
+
+            if ($visibility['hideOnMobile'] ?? false) {
+                $css[] = "@media (max-width: 768px) {\n{$selector} { display: none !important; }\n}";
+            }
+        }
+
+        return implode("\n", $css);
+    }
+
+    /**
+     * Generate base column styles from settings
+     *
+     * @param array $settings Column settings
+     * @return string CSS properties
+     */
+    private static function generateBaseColumnStyles(array $settings): string
+    {
+        $styles = [];
+
+        // Display and flexbox styles
+        if (isset($settings['display'])) {
+            $styles[] = "display: {$settings['display']}";
+
+            if ($settings['display'] === 'flex') {
+                if (isset($settings['flexDirection'])) {
+                    $styles[] = "flex-direction: {$settings['flexDirection']}";
+                }
+                if (isset($settings['justifyContent'])) {
+                    $styles[] = "justify-content: {$settings['justifyContent']}";
+                }
+                if (isset($settings['alignItems'])) {
+                    $styles[] = "align-items: {$settings['alignItems']}";
+                }
+                if (isset($settings['flexWrap'])) {
+                    $styles[] = "flex-wrap: {$settings['flexWrap']}";
+                }
+                if (isset($settings['gap'])) {
+                    $styles[] = "gap: {$settings['gap']}";
+                }
+            }
+        }
+
+        // Background styles
+        if (isset($settings['columnBackground'])) {
+            $bgCSS = SectionLayoutCSSGenerator::generateBackgroundCSS($settings['columnBackground']);
+            if ($bgCSS) $styles[] = $bgCSS;
+        } elseif (isset($settings['background'])) {
+            $bgCSS = SectionLayoutCSSGenerator::generateBackgroundCSS($settings['background']);
+            if ($bgCSS) $styles[] = $bgCSS;
+        }
+
+        // Spacing styles
+        if (isset($settings['padding'])) {
+            $paddingCSS = SectionLayoutCSSGenerator::normalizeSpacing($settings['padding']);
+            if ($paddingCSS) $styles[] = "padding: {$paddingCSS}";
+        }
+
+        if (isset($settings['margin'])) {
+            $marginCSS = SectionLayoutCSSGenerator::normalizeSpacing($settings['margin']);
+            if ($marginCSS) $styles[] = "margin: {$marginCSS}";
+        }
+
+        // Border styles
+        if (isset($settings['borderShadow']['border'])) {
+            $borderCSS = SectionLayoutCSSGenerator::generateBorderCSS($settings['borderShadow']['border']);
+            if ($borderCSS) $styles[] = $borderCSS;
+        } elseif (isset($settings['border'])) {
+            $borderCSS = SectionLayoutCSSGenerator::generateBorderCSS($settings['border']);
+            if ($borderCSS) $styles[] = $borderCSS;
+        }
+
+        // Shadow styles
+        if (isset($settings['borderShadow']['shadow'])) {
+            $shadowCSS = SectionLayoutCSSGenerator::generateShadowCSS($settings['borderShadow']['shadow']);
+            if ($shadowCSS) $styles[] = $shadowCSS;
+        } elseif (isset($settings['shadow']) && $settings['shadow']['enabled']) {
+            $shadowCSS = SectionLayoutCSSGenerator::generateShadowCSS($settings['shadow']);
+            if ($shadowCSS) $styles[] = $shadowCSS;
+        }
+
+        return implode(";\n  ", array_filter($styles));
+    }
+
     /**
      * Parse CSS rules and organize by selector
      */
@@ -292,6 +492,8 @@ class CSSManager
     public static function clearCSS(): void
     {
         self::$collectedCSS = [];
+        self::$sectionCSS = [];
+        self::$columnCSS = [];
         self::$inlineStyles = [];
         self::$cssBySelector = [];
         self::$cssOutput = false;
@@ -304,6 +506,8 @@ class CSSManager
     {
         return [
             'total_widgets' => count(self::$collectedCSS),
+            'total_sections' => count(self::$sectionCSS),
+            'total_columns' => count(self::$columnCSS),
             'total_selectors' => count(self::$cssBySelector),
             'total_inline_styles' => count(self::$inlineStyles),
             'css_output' => self::$cssOutput,

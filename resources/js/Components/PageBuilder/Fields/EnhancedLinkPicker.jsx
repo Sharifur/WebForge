@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Link, ExternalLink, Mail, Phone, FileText, Hash, 
-  Monitor, Smartphone, ChevronDown, ChevronRight, 
+import {
+  Link, ExternalLink, Mail, Phone, FileText, Hash,
+  Monitor, Smartphone, ChevronDown, ChevronRight,
   Plus, Trash2, TestTube, AlertCircle, CheckCircle,
   Target, Shield, Tag, Settings, Eye
 } from 'lucide-react';
 
 /**
  * EnhancedLinkPicker - Comprehensive link management component
- * 
+ *
  * Features:
  * - Smart link type detection with visual indicators
  * - Advanced target and behavior options
@@ -21,7 +21,7 @@ import {
 const EnhancedLinkPicker = ({
   value = {},
   onChange,
-  enabledLinkTypes = ['internal', 'external', 'email', 'phone', 'file'],
+  enabledLinkTypes = [ 'external', 'email', 'phone', 'file'],
   enableAdvancedOptions = true,
   enableSEOControls = true,
   enableUTMTracking = false,
@@ -56,13 +56,13 @@ const EnhancedLinkPicker = ({
     ...value
   });
 
-  const [activeAdvancedTab, setActiveAdvancedTab] = useState(null);
+  const [activeAdvancedTab, setActiveAdvancedTab] = useState('advanced');
   const [linkValidation, setLinkValidation] = useState({ isValid: true, message: '' });
   const [isTestingLink, setIsTestingLink] = useState(false);
 
   // Update parent when linkData changes - Use ref to avoid infinite loops
   const onChangeRef = useRef(onChange);
-  
+
   // Update ref when onChange prop changes
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -76,7 +76,7 @@ const EnhancedLinkPicker = ({
   // Auto-detect link type based on URL
   useEffect(() => {
     if (!linkData.url) return;
-    
+
     const url = linkData.url.toLowerCase();
     let detectedType = 'external';
 
@@ -97,7 +97,6 @@ const EnhancedLinkPicker = ({
 
   // Link type configurations
   const linkTypeConfig = {
-    internal: { icon: Link, label: 'Internal Page', color: 'text-blue-600', placeholder: '/page-slug or #section' },
     external: { icon: ExternalLink, label: 'External URL', color: 'text-green-600', placeholder: 'https://example.com' },
     email: { icon: Mail, label: 'Email Address', color: 'text-purple-600', placeholder: 'user@example.com' },
     phone: { icon: Phone, label: 'Phone Number', color: 'text-orange-600', placeholder: '+1 (555) 123-4567' },
@@ -135,7 +134,7 @@ const EnhancedLinkPicker = ({
           isValid: emailRegex.test(cleanEmail),
           message: emailRegex.test(cleanEmail) ? 'Valid email address' : 'Invalid email format'
         };
-      
+
       case 'phone':
         const phoneRegex = /^(\+?\d[\d\s\-\(\)]*\d|\d)$/;
         const cleanPhone = url.replace('tel:', '').replace(/[\s\-\(\)]/g, '');
@@ -143,14 +142,7 @@ const EnhancedLinkPicker = ({
           isValid: phoneRegex.test(cleanPhone),
           message: phoneRegex.test(cleanPhone) ? 'Valid phone number' : 'Invalid phone format'
         };
-      
-      case 'internal':
-        const isValidInternal = url.startsWith('/') || url.startsWith('#');
-        return {
-          isValid: isValidInternal,
-          message: isValidInternal ? 'Valid internal link' : 'Internal links should start with / or #'
-        };
-      
+
       default:
         try {
           new URL(url);
@@ -180,7 +172,7 @@ const EnhancedLinkPicker = ({
   };
 
   const updateCustomAttribute = (index, field, value) => {
-    const updatedAttributes = linkData.custom_attributes.map((attr, i) => 
+    const updatedAttributes = linkData.custom_attributes.map((attr, i) =>
       i === index ? { ...attr, [field]: value } : attr
     );
     updateLinkData('custom_attributes', updatedAttributes);
@@ -210,12 +202,6 @@ const EnhancedLinkPicker = ({
           <IconComponent className="w-4 h-4" />
           <span className="text-sm font-medium">{currentTypeConfig.label}</span>
         </div>
-        {linkValidation.message && (
-          <div className={`flex items-center gap-1 text-xs ${linkValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-            {linkValidation.isValid ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-            {linkValidation.message}
-          </div>
-        )}
       </div>
 
       {/* URL Input with Type Detection */}
@@ -223,7 +209,7 @@ const EnhancedLinkPicker = ({
         <label className="block text-sm font-medium text-gray-700">
           URL / Link Destination
         </label>
-        <div className="flex gap-2">
+        <div className="block">
           <input
             type="text"
             value={linkData.url}
@@ -236,20 +222,12 @@ const EnhancedLinkPicker = ({
               linkValidation.isValid ? 'border-gray-300' : 'border-red-300'
             }`}
           />
-          {enableLinkTesting && linkData.url && (
-            <button
-              type="button"
-              onClick={testLink}
-              disabled={isTestingLink}
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md text-sm text-gray-700 disabled:opacity-50"
-            >
-              {isTestingLink ? (
-                <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
-              ) : (
-                <TestTube className="w-4 h-4" />
-              )}
-            </button>
-          )}
+            {linkValidation.message && (
+                <div className={`flex gap-2 mt-2 text-xs ${linkValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                    {linkValidation.isValid ? <CheckCircle className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                    {linkValidation.message}
+                </div>
+            )}
         </div>
       </div>
 
@@ -318,7 +296,7 @@ const EnhancedLinkPicker = ({
                 <Settings className="w-4 h-4" />
               </button>
             )}
-            
+
             {enableSEOControls && (
               <button
                 type="button"
@@ -333,7 +311,7 @@ const EnhancedLinkPicker = ({
                 <Shield className="w-4 h-4" />
               </button>
             )}
-            
+
             {enableUTMTracking && (
               <button
                 type="button"
@@ -348,7 +326,7 @@ const EnhancedLinkPicker = ({
                 <Target className="w-4 h-4" />
               </button>
             )}
-            
+
             {enableCustomAttributes && (
               <button
                 type="button"
@@ -364,7 +342,7 @@ const EnhancedLinkPicker = ({
               </button>
             )}
           </div>
-          
+
           {/* Tab Content */}
           {activeAdvancedTab === 'advanced' && (
             <div className="space-y-4">
@@ -381,7 +359,7 @@ const EnhancedLinkPicker = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               {/* CSS Classes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -397,7 +375,7 @@ const EnhancedLinkPicker = ({
               </div>
             </div>
           )}
-          
+
           {activeAdvancedTab === 'seo' && (
             <div className="space-y-4">
               {/* Title Attribute */}
@@ -413,7 +391,7 @@ const EnhancedLinkPicker = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               {/* Rel Attributes */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -435,7 +413,7 @@ const EnhancedLinkPicker = ({
               </div>
             </div>
           )}
-          
+
           {activeAdvancedTab === 'utm' && (
             <div className="space-y-3">
               {Object.entries(linkData.utm_parameters).map(([key, value]) => (
@@ -454,7 +432,7 @@ const EnhancedLinkPicker = ({
               ))}
             </div>
           )}
-          
+
           {activeAdvancedTab === 'attributes' && (
             <div className="space-y-4">
               {linkData.custom_attributes.map((attr, index) => (
@@ -469,7 +447,7 @@ const EnhancedLinkPicker = ({
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Attribute Name
@@ -482,7 +460,7 @@ const EnhancedLinkPicker = ({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Attribute Value
@@ -497,7 +475,7 @@ const EnhancedLinkPicker = ({
                   </div>
                 </div>
               ))}
-              
+
               <button
                 type="button"
                 onClick={addCustomAttribute}
@@ -518,7 +496,7 @@ const EnhancedLinkPicker = ({
             <Monitor className="w-4 h-4" />
             Responsive Behavior
           </div>
-          
+
           <div className="grid grid-cols-2 gap-3 pl-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -535,7 +513,7 @@ const EnhancedLinkPicker = ({
                 ))}
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <Smartphone className="w-4 h-4 inline mr-1" />

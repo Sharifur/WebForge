@@ -124,6 +124,7 @@ class CodeWidget extends BaseWidget
                 ->setLabel('Padding')
                 ->setDefault(['top' => 20, 'right' => 20, 'bottom' => 20, 'left' => 20])
                 ->setUnits(['px', 'em'])
+                ->setResponsive(true)
                 ->setMin(0)
                 ->setMax(50)
                 ->setSelectors([

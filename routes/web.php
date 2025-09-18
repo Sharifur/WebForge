@@ -86,6 +86,17 @@ Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
     // Column CSS Generation Routes
     Route::post('/columns/css/generate', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateCSS'])
         ->name('api.page-builder.column-css.generate');
+
+    // Universal CSS Generation Routes
+    Route::post('/css/generate', [App\Http\Controllers\Api\PageBuilderController::class, 'generateCSS'])
+        ->name('api.page-builder.css.generate');
+
+    Route::post('/css/generate-bulk', [App\Http\Controllers\Api\PageBuilderController::class, 'generateBulkCSS'])
+        ->name('api.page-builder.css.generate-bulk');
+
+    Route::get('/defaults/{type}', [App\Http\Controllers\Api\PageBuilderController::class, 'getDefaultSettings'])
+        ->name('api.page-builder.defaults')
+        ->where('type', 'section|column|widget');
 });
 
 // Media Upload API Routes

@@ -373,18 +373,24 @@ class DividerWidget extends BaseWidget
     {
         $general = $settings['general'] ?? [];
         $style = $settings['style'] ?? [];
-        
-        $dividerType = $general['divider_type'] ?? 'simple';
-        $lineStyle = $general['line_style'] ?? 'solid';
-        $dividerWidth = $general['divider_width'] ?? 100;
-        $dividerAlignment = $general['divider_alignment'] ?? 'center';
-        $thickness = $general['thickness'] ?? 1;
-        
-        $dividerText = htmlspecialchars($general['divider_text'] ?? 'OR', ENT_QUOTES, 'UTF-8');
-        $textPosition = $general['text_position'] ?? 'center';
-        
-        $dividerIcon = $general['divider_icon'] ?? 'star';
-        $iconPosition = $general['icon_position'] ?? 'center';
+
+        // Extract from correct groups based on field definitions
+        $styleType = $general['style_type'] ?? [];
+        $dividerType = $styleType['divider_type'] ?? 'simple';
+        $lineStyle = $styleType['line_style'] ?? 'solid';
+
+        $lineAppearance = $general['line_appearance'] ?? [];
+        $dividerWidth = $lineAppearance['divider_width'] ?? 100;
+        $dividerAlignment = $lineAppearance['divider_alignment'] ?? 'center';
+        $thickness = $lineAppearance['thickness'] ?? 1;
+
+        $textContent = $general['text_content'] ?? [];
+        $dividerText = htmlspecialchars($textContent['divider_text'] ?? 'OR', ENT_QUOTES, 'UTF-8');
+        $textPosition = $textContent['text_position'] ?? 'center';
+
+        $iconContent = $general['icon_content'] ?? [];
+        $dividerIcon = $iconContent['divider_icon'] ?? 'star';
+        $iconPosition = $iconContent['icon_position'] ?? 'center';
         
         // Build container classes
         $containerClasses = ['divider-container', 'divider-' . $dividerType];
@@ -401,8 +407,8 @@ class DividerWidget extends BaseWidget
         
         // Build inline styles
         $containerStyle = '';
-        $lineStyle = '';
-        
+        $lineStyleCss = '';
+
         // Container alignment
         if ($dividerAlignment === 'center') {
             $containerStyle .= 'text-align: center;';
@@ -411,37 +417,37 @@ class DividerWidget extends BaseWidget
         } else {
             $containerStyle .= 'text-align: left;';
         }
-        
+
         // Line styles
-        $lineStyle .= 'width: ' . $dividerWidth . '%; ';
-        $lineStyle .= 'border-top-width: ' . $thickness . 'px; ';
-        $lineStyle .= 'border-top-style: ' . $general['line_style'] . '; ';
-        
+        $lineStyleCss .= 'width: ' . $dividerWidth . '%; ';
+        $lineStyleCss .= 'border-top-width: ' . $thickness . 'px; ';
+        $lineStyleCss .= 'border-top-style: ' . $lineStyle . '; ';
+
         if ($dividerType === 'gradient') {
             $gradientStart = $style['gradient_start'] ?? '#3B82F6';
             $gradientEnd = $style['gradient_end'] ?? '#EF4444';
             $gradientDirection = $style['gradient_direction'] ?? 'to right';
-            
-            $lineStyle .= 'background: linear-gradient(' . $gradientDirection . ', ' . $gradientStart . ', ' . $gradientEnd . '); ';
-            $lineStyle .= 'border: none; ';
-            $lineStyle .= 'height: ' . $thickness . 'px; ';
+
+            $lineStyleCss .= 'background: linear-gradient(' . $gradientDirection . ', ' . $gradientStart . ', ' . $gradientEnd . '); ';
+            $lineStyleCss .= 'border: none; ';
+            $lineStyleCss .= 'height: ' . $thickness . 'px; ';
         } else {
             $lineColor = $style['line_color'] ?? '#CCCCCC';
-            $lineStyle .= 'border-color: ' . $lineColor . '; ';
+            $lineStyleCss .= 'border-color: ' . $lineColor . '; ';
         }
         
         // Generate HTML based on divider type
         switch ($dividerType) {
             case 'text':
-                return $this->renderTextDivider($containerClass, $containerStyle, $lineClass, $lineStyle, $dividerText, $textPosition);
-                
+                return $this->renderTextDivider($containerClass, $containerStyle, $lineClass, $lineStyleCss, $dividerText, $textPosition);
+
             case 'icon':
-                return $this->renderIconDivider($containerClass, $containerStyle, $lineClass, $lineStyle, $dividerIcon, $iconPosition);
-                
+                return $this->renderIconDivider($containerClass, $containerStyle, $lineClass, $lineStyleCss, $dividerIcon, $iconPosition);
+
             case 'gradient':
             case 'simple':
             default:
-                return $this->renderSimpleDivider($containerClass, $containerStyle, $lineClass, $lineStyle);
+                return $this->renderSimpleDivider($containerClass, $containerStyle, $lineClass, $lineStyleCss);
         }
     }
 

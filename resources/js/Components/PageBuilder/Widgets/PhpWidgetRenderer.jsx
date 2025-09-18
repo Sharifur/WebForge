@@ -13,6 +13,7 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
   const [renderedCSS, setRenderedCSS] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [useApiRendering, setUseApiRendering] = useState(true);
 
   useEffect(() => {
     if (!widget || !widget.type) {
@@ -21,8 +22,12 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
       return;
     }
 
-    renderWidget();
-  }, [widget]);
+    if (useApiRendering) {
+      renderWidget();
+    } else {
+      renderFallback();
+    }
+  }, [widget, useApiRendering]);
 
   const renderWidget = async () => {
     try {
@@ -60,24 +65,102 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
         }
       };
 
-      // Debug logging
-      console.log(`Rendering ${widget.type} with settings:`, settings);
-      
+      // Enhanced debug logging for all widgets
+      console.log(`[DEBUG] Rendering ${widget.type} widget with:`, {
+        widget: widget,
+        settings: settings,
+        defaults: safeDefaults
+      });
+
       // Call the PHP API to render the widget
       const renderResult = await widgetService.renderWidget(widget.type, settings);
+
+      // Enhanced debug logging for all widgets
+      console.log(`[DEBUG] ${widget.type} widget render result:`, renderResult);
       
       if (renderResult) {
         setRenderedContent(renderResult.html || '');
         setRenderedCSS(renderResult.css || '');
       } else {
+        // API rendering failed, automatically switch to fallback rendering
+        if (useApiRendering) {
+          console.log(`[DEBUG] API rendering failed for ${widget.type} widget, switching to fallback`);
+          setUseApiRendering(false);
+          return; // This will trigger useEffect to re-render with fallback
+        }
+
+        // If we're already in fallback mode and still failing, show error
         setError('Failed to render widget');
       }
     } catch (err) {
       console.error('Error rendering PHP widget:', err);
+
+      // If API rendering fails, automatically switch to fallback rendering
+      if (useApiRendering) {
+        console.log(`[DEBUG] Switching to fallback rendering for ${widget.type} widget due to API error`);
+        setUseApiRendering(false);
+        return; // Don't set error, let fallback render instead
+      }
+
       setError('Error rendering widget: ' + err.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderFallback = () => {
+    setIsLoading(true);
+    console.log(`[DEBUG] Using fallback rendering for ${widget.type} widget`);
+
+    // Create a basic fallback based on widget type
+    let fallbackContent = '';
+    switch (widget.type) {
+      case 'divider':
+        fallbackContent = `
+          <div class="divider-container divider-simple" style="text-align: center; margin: 20px 0;">
+            <div class="divider-line style-solid" style="width: 100%; border-top-width: 1px; border-top-style: solid; border-color: #CCCCCC; height: 1px;"></div>
+          </div>
+        `;
+        break;
+      case 'button':
+        const buttonText = widget.content?.text || widget.general?.content?.text || 'Click me';
+        const buttonUrl = widget.content?.url || widget.general?.content?.url || '#';
+        fallbackContent = `
+          <a href="${buttonUrl}" class="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 text-decoration-none">
+            ${buttonText}
+          </a>
+        `;
+        break;
+      case 'heading':
+        const headingText = widget.content?.text || widget.general?.text_content?.heading_text || 'Heading';
+        const headingTag = widget.content?.tag || widget.general?.text_content?.heading_tag || 'h2';
+        fallbackContent = `
+          <${headingTag} class="font-bold text-gray-900 mb-4">
+            ${headingText}
+          </${headingTag}>
+        `;
+        break;
+      case 'paragraph':
+        const paragraphText = widget.content?.text || widget.general?.content?.paragraph_text || 'Your paragraph text goes here.';
+        fallbackContent = `
+          <p class="text-gray-700 leading-relaxed mb-4">
+            ${paragraphText}
+          </p>
+        `;
+        break;
+      default:
+        fallbackContent = `
+          <div class="p-4 border border-gray-200 rounded-md bg-gray-50">
+            <h3 class="text-sm font-medium text-gray-700 mb-2">${widget.type} Widget</h3>
+            <p class="text-xs text-gray-500">Displaying fallback content. Widget functionality will be restored automatically when API connection is available.</p>
+          </div>
+        `;
+    }
+
+    setRenderedContent(fallbackContent);
+    setRenderedCSS('');
+    setError(null);
+    setIsLoading(false);
   };
 
   // Show loading state
@@ -100,12 +183,26 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
           <p className="font-medium">Widget Render Error</p>
           <p className="text-sm mt-1">{error}</p>
           <p className="text-xs mt-1 opacity-75">Type: {widget.type}</p>
-          <button 
-            onClick={renderWidget}
-            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-xs rounded transition-colors"
-          >
-            Retry
-          </button>
+          <div className="mt-2 space-x-2">
+            <button
+              onClick={() => {
+                setUseApiRendering(true);
+                setError(null);
+              }}
+              className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-xs rounded transition-colors"
+            >
+              Retry API
+            </button>
+            <button
+              onClick={() => {
+                setUseApiRendering(false);
+                setError(null);
+              }}
+              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded transition-colors"
+            >
+              Use Fallback
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -125,15 +222,34 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
 
   return (
     <div className={`php-widget-container ${className}`} style={style}>
+      {/* Show fallback indicator */}
+      {!useApiRendering && (
+        <div className="fallback-indicator bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-2">
+          <p className="text-xs text-yellow-800 flex items-center">
+            <span className="mr-2">⚡</span>
+            Fallback rendering active
+            <button
+              onClick={() => {
+                setUseApiRendering(true);
+                setError(null);
+              }}
+              className="ml-2 text-yellow-600 hover:text-yellow-800 text-xs underline"
+            >
+              Retry API
+            </button>
+          </p>
+        </div>
+      )}
+
       {/* Inject widget-specific CSS */}
       {renderedCSS && (
         <style>
           {renderedCSS}
         </style>
       )}
-      
+
       {/* Render the PHP-generated HTML */}
-      <div 
+      <div
         className="php-widget-content"
         dangerouslySetInnerHTML={{ __html: renderedContent }}
       />

@@ -119,6 +119,7 @@ class IconWidget extends BaseWidget
                 ->setUnits(['px', 'em'])
                 ->setMin(0)
                 ->setMax(100)
+                ->setResponsive(true)
                 ->setSelectors([
                     '{{WRAPPER}} .icon-element' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])

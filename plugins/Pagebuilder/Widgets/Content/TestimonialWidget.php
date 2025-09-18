@@ -119,6 +119,7 @@ class TestimonialWidget extends BaseWidget
                 ->setLabel('Padding')
                 ->setDefault(['top' => 30, 'right' => 30, 'bottom' => 30, 'left' => 30])
                 ->setUnits(['px', 'em'])
+                ->setResponsive(true)
                 ->setMin(0)
                 ->setMax(100)
                 ->setSelectors([

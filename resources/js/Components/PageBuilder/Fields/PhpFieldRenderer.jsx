@@ -82,6 +82,16 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
           />
         );
 
+      case 'multiselect':
+        return (
+          <SelectFieldComponent
+            fieldKey={fieldKey}
+            fieldConfig={fieldConfig}
+            value={value}
+            onChange={onChange}
+          />
+        );
+
       case 'checkbox':
         return (
           <CheckboxFieldComponent
@@ -114,12 +124,26 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
 
       case 'url':
         return (
-          <UrlFieldComponent
-            fieldKey={fieldKey}
-            fieldConfig={fieldConfig}
-            value={value}
-            onChange={onChange}
-          />
+          <Suspense fallback={<div className="animate-pulse h-8 bg-gray-200 rounded"></div>}>
+            <EnhancedLinkPicker
+              fieldKey={fieldKey}
+              fieldConfig={fieldConfig}
+              value={value}
+              onChange={onChange}
+            />
+          </Suspense>
+        );
+
+      case 'enhanced_url':
+        return (
+          <Suspense fallback={<div className="animate-pulse h-8 bg-gray-200 rounded"></div>}>
+            <EnhancedLinkPicker
+              fieldKey={fieldKey}
+              fieldConfig={fieldConfig}
+              value={value}
+              onChange={onChange}
+            />
+          </Suspense>
         );
 
       case 'color':
@@ -191,7 +215,15 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
               value={value}
               onChange={onChange}
               label={label}
-              fieldConfig={fieldConfig}
+              responsive={fieldConfig.responsive || false}
+              sides={fieldConfig.sides || ['top', 'right', 'bottom', 'left']}
+              units={fieldConfig.units || ['px', 'em', 'rem', '%']}
+              allowNegative={fieldConfig.allowNegative || false}
+              min={fieldConfig.min || 0}
+              max={fieldConfig.max || 200}
+              step={fieldConfig.step || 1}
+              linked={fieldConfig.linked || false}
+              showLabels={fieldConfig.showLabels !== false}
             />
           </Suspense>
         );
@@ -263,6 +295,16 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
         );
 
       case 'icon_input':
+        return (
+          <IconInputField
+            fieldKey={fieldKey}
+            fieldConfig={fieldConfig}
+            value={value}
+            onChange={onChange}
+          />
+        );
+
+      case 'icon':
         return (
           <IconInputField
             fieldKey={fieldKey}

@@ -15,30 +15,38 @@ class DimensionField extends BaseField
 {
     /** @var string */
     protected string $type = 'dimension';
-    
+
     /** @var array<string> */
     protected array $sides = ['top', 'right', 'bottom', 'left'];
-    
+
     /** @var array<string> */
     protected array $units = ['px', 'em', 'rem', '%', 'vw', 'vh'];
-    
+
     /** @var bool */
     protected bool $linked = false;
-    
+
     /** @var bool */
     protected bool $allowNegative = false;
-    
+
     /** @var float|null */
     protected ?float $min = null;
-    
+
     /** @var float|null */
     protected ?float $max = null;
-    
+
     /** @var float */
     protected float $step = 1;
-    
+
     /** @var bool */
     protected bool $showLabels = true;
+
+    /**
+     * Constructor - Set responsive as default for dimension fields
+     */
+    public function __construct()
+    {
+        $this->responsive = true;
+    }
 
     /**
      * Set which sides to show

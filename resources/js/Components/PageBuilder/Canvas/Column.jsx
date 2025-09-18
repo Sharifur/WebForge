@@ -1,21 +1,50 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import SortableWidget from '../Widgets/SortableWidget';
 import WidgetDropZone from './WidgetDropZone';
+import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
 import { generateColumnInlineStyles, generateColumnCssClasses } from '../Utils/ColumnStyleGenerator';
 
 const Column = ({ column, columnIndex, containerId, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  const { setNodeRef, isOver } = useDroppable({
+  const columnRef = useRef(null);
+
+  const { setNodeRef: setDroppableNodeRef, isOver } = useDroppable({
     id: column.id,
-    data: { 
-      type: 'column', 
-      columnId: column.id, 
+    data: {
+      type: 'column',
+      columnId: column.id,
       containerId,
       columnIndex
     }
   });
+
+  // Combine refs for droppable and CSS service
+  const setNodeRef = (node) => {
+    setDroppableNodeRef(node);
+    columnRef.current = node;
+  };
+
+  // Apply CSS wrapper classes and generate styles for column
+  useEffect(() => {
+    if (columnRef.current) {
+      // Get column settings with defaults
+      const columnSettings = {
+        ...pageBuilderCSSService.getDefaultSettings('column'),
+        ...column.settings
+      };
+
+      // Apply wrapper classes and generate CSS
+      pageBuilderCSSService.applySettings(
+        columnRef.current,
+        'column',
+        column.id,
+        columnSettings,
+        column.responsiveSettings || {}
+      );
+    }
+  }, [column.id, column.settings, column.responsiveSettings]);
 
   const widgetIds = column.widgets?.map(w => w.id) || [];
   

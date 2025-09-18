@@ -5,6 +5,8 @@ import SelectFieldComponent from '../../Fields/SelectFieldComponent';
 import ToggleFieldComponent from '../../Fields/ToggleFieldComponent';
 import NumberFieldComponent from '../../Fields/NumberFieldComponent';
 import CheckboxFieldComponent from '../../Fields/CheckboxFieldComponent';
+import sectionSettingsMapper from '@/Services/sectionSettingsMapper';
+import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
 
 const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
   // Generate consistent section ID based on container
@@ -42,27 +44,47 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
 
   const updateSetting = (path, value) => {
     const pathArray = path.split('.');
-    
-    onUpdate(prev => ({
-      ...prev,
-      containers: prev.containers.map(c =>
-        c.id === container.id
-          ? {
-              ...c,
-              settings: {
-                ...c.settings,
-                [pathArray[pathArray.length - 1]]: value
-              }
-            }
-          : c
-      )
-    }));
 
-    onWidgetUpdate({
+    const updatedContainer = {
       ...container,
       settings: {
         ...container.settings,
         [pathArray[pathArray.length - 1]]: value
+      }
+    };
+
+    // Update state
+    onUpdate(prev => ({
+      ...prev,
+      containers: prev.containers.map(c =>
+        c.id === container.id ? updatedContainer : c
+      )
+    }));
+
+    onWidgetUpdate(updatedContainer);
+
+    // Generate and apply CSS for advanced settings changes (visibility, animation, custom CSS)
+    requestAnimationFrame(() => {
+      const element = document.querySelector(`[data-container-id="${container.id}"]`);
+      if (element) {
+        const transformedSettings = sectionSettingsMapper.transformToCSS(updatedContainer.settings);
+        const responsiveSettings = sectionSettingsMapper.transformResponsive(
+          updatedContainer.settings,
+          updatedContainer.responsiveSettings || {}
+        );
+
+        pageBuilderCSSService.applySettings(
+          element,
+          'section',
+          container.id,
+          transformedSettings,
+          responsiveSettings
+        );
+
+        // Handle custom CSS injection
+        if (value && pathArray[pathArray.length - 1] === 'customCSS') {
+          pageBuilderCSSService.injectCSS(`section-${container.id}-custom`, value);
+        }
       }
     });
   };

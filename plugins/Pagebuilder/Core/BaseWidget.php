@@ -128,7 +128,7 @@ abstract class BaseWidget
                 ->setUnits(['px', 'em', 'rem', '%'])
                 ->setMin(0)
                 ->setMax(100)
-                ->setResponsive(false)
+                ->setResponsive(true)
                 ->setSelectors([
                     '{{WRAPPER}}' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])

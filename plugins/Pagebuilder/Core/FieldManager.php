@@ -118,23 +118,25 @@ class FieldManager
     }
 
     /**
-     * Create an icon picker field
+     * Create a comprehensive icon picker field with visual selector
+     * This combines icon selection with modal interface
      *
-     * @return IconField
+     * @return IconInputField
      */
-    public static function ICON(): IconField
+    public static function ICON(): IconInputField
     {
-        return new IconField();
+        return IconInputField::create();
     }
 
     /**
      * Create a visual icon input field with modal selector
+     * Alias for ICON() method for backward compatibility
      *
      * @return IconInputField
      */
     public static function ICON_INPUT(): IconInputField
     {
-        return IconInputField::create();
+        return self::ICON();
     }
 
     /**
@@ -148,27 +150,28 @@ class FieldManager
     }
 
     /**
-     * Create a URL input field
+     * Create a comprehensive URL input field with all link options
+     * This combines URL input, target, rel, accessibility, and tracking options
      *
      * @return UrlField
      */
     public static function URL(): UrlField
     {
-        return new UrlField();
+        return (new UrlField())
+            ->setShowTargetOptions(true)
+            ->setShowRelOptions(true)
+            ->setEnableAccessibility(true);
     }
 
     /**
      * Create an enhanced URL field with all link options
-     * This combines URL input, target, rel, accessibility, and tracking options
+     * Alias for URL() method for backward compatibility
      *
      * @return UrlField
      */
     public static function ENHANCED_URL(): UrlField
     {
-        return (new UrlField())
-            ->setShowTargetOptions(true)
-            ->setShowRelOptions(true)
-            ->setEnableAccessibility(true);
+        return self::URL();
     }
 
     /**

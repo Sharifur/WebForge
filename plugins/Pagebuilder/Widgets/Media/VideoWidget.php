@@ -276,6 +276,7 @@ class VideoWidget extends BaseWidget
                 ->setMin(0)
                 ->setMax(50)
                 ->setLinked(true)
+                ->setResponsive(true)
                 ->setSelectors([
                     '{{WRAPPER}} .video-wrapper' => 'border-radius: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])
