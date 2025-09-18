@@ -2,6 +2,8 @@
 
 namespace Plugins\Pagebuilder\Helpers;
 
+use Plugins\Pagebuilder\Core\SectionLayoutCSSGenerator;
+
 /**
  * FrontendRenderer - Optimized rendering for public website display
  * 
@@ -422,11 +424,196 @@ class FrontendRenderer extends BaseRenderer
 
     /**
      * Get the generated CSS for separate inclusion
-     * 
+     *
      * @return string Generated and processed CSS
      */
     public function getGeneratedCss(): string
     {
         return $this->finalCss;
+    }
+
+    /**
+     * Override renderContainer to generate section CSS for frontend
+     *
+     * This method extends the base container rendering with section-specific
+     * CSS generation using SectionLayoutCSSGenerator.
+     *
+     * @param array $container Container configuration
+     * @return array Array with 'html' and 'css' keys
+     */
+    protected function renderContainer(array $container): array
+    {
+        $containerId = $container['id'] ?? 'container-' . uniqid();
+        $containerType = $container['type'] ?? 'section';
+        $settings = $container['settings'] ?? [];
+        $responsiveSettings = $container['responsiveSettings'] ?? [];
+
+        // Generate section CSS using SectionLayoutCSSGenerator
+        $sectionCss = SectionLayoutCSSGenerator::generateSectionCSS($containerId, $settings, $responsiveSettings);
+
+        // Start building HTML with enhanced section attributes
+        $html = $this->renderEnhancedContainerOpen($containerId, $containerType, $container, $settings);
+        $css = $sectionCss;
+
+        // Render columns
+        if (isset($container['columns']) && is_array($container['columns'])) {
+            $html .= $this->renderRowOpen($container);
+
+            foreach ($container['columns'] as $column) {
+                $columnResult = $this->renderColumn($column, $containerId);
+                $html .= $columnResult['html'];
+                $css .= $columnResult['css'];
+            }
+
+            $html .= $this->renderRowClose();
+        }
+
+        $html .= $this->renderContainerClose();
+
+        return ['html' => $html, 'css' => $css];
+    }
+
+    /**
+     * Override renderColumn to generate column CSS for frontend
+     *
+     * @param array $column Column configuration
+     * @param string $containerId Parent container ID
+     * @return array Array with 'html' and 'css' keys
+     */
+    protected function renderColumn(array $column, string $containerId = ''): array
+    {
+        $columnId = $column['id'] ?? 'column-' . uniqid();
+        $columnWidth = $column['width'] ?? $column['size'] ?? 12;
+        $settings = $column['settings'] ?? [];
+        $responsiveSettings = $column['responsiveSettings'] ?? [];
+
+        // Generate column CSS
+        $columnCss = SectionLayoutCSSGenerator::generateSectionCSS($columnId, $settings, $responsiveSettings);
+
+        $html = $this->renderEnhancedColumnOpen($columnId, $columnWidth, $column, $containerId, $settings);
+        $css = $columnCss;
+
+        // Render widgets
+        if (isset($column['widgets']) && is_array($column['widgets'])) {
+            foreach ($column['widgets'] as $widget) {
+                $widgetResult = $this->renderWidget($widget, $columnId, $containerId);
+                $html .= $widgetResult['html'];
+                $css .= $widgetResult['css'];
+            }
+        } else {
+            // Empty column handling
+            $html .= $this->renderEmptyColumn();
+        }
+
+        $html .= $this->renderColumnClose();
+
+        return ['html' => $html, 'css' => $css];
+    }
+
+    /**
+     * Enhanced container opening with section CSS classes
+     *
+     * @param string $containerId Container ID
+     * @param string $containerType Container type
+     * @param array $container Full container configuration
+     * @param array $settings Container settings
+     * @return string HTML opening tag
+     */
+    private function renderEnhancedContainerOpen(string $containerId, string $containerType, array $container, array $settings): string
+    {
+        // Use semantic HTML elements when possible
+        $elementType = 'div';
+        if ($this->config['semantic_markup']) {
+            $elementType = match($containerType) {
+                'header' => 'header',
+                'footer' => 'footer',
+                'sidebar' => 'aside',
+                'main' => 'main',
+                default => 'section'
+            };
+        }
+
+        // Build CSS classes including section-specific classes
+        $classes = [
+            'pb-section',
+            "pb-section-{$containerId}",
+            'relative' // For positioning context
+        ];
+
+        // Add layout class if contentWidth is set
+        if (isset($settings['contentWidth'])) {
+            $classes[] = "section-layout-{$settings['contentWidth']}";
+        }
+
+        // Add custom CSS classes
+        if (isset($settings['cssClass'])) {
+            $customClasses = explode(' ', trim($settings['cssClass']));
+            $classes = array_merge($classes, array_filter($customClasses));
+        }
+
+        // Build attributes
+        $attributes = [
+            'class' => implode(' ', array_filter($classes))
+        ];
+
+        // Add custom HTML ID
+        if (isset($settings['htmlId'])) {
+            $attributes['id'] = $settings['htmlId'];
+        }
+
+        // Add SEO attributes if enabled
+        if ($this->config['seo_optimized']) {
+            if (isset($container['settings']['aria_label'])) {
+                $attributes['aria-label'] = htmlspecialchars($container['settings']['aria_label']);
+            }
+        }
+
+        return "<{$elementType} " . $this->buildHtmlAttributes($attributes) . ">";
+    }
+
+    /**
+     * Enhanced column opening with column CSS classes
+     *
+     * @param string $columnId Column ID
+     * @param mixed $columnWidth Column width
+     * @param array $column Column configuration
+     * @param string $containerId Parent container ID
+     * @param array $settings Column settings
+     * @return string HTML opening tag
+     */
+    private function renderEnhancedColumnOpen(string $columnId, $columnWidth, array $column, string $containerId, array $settings): string
+    {
+        $classes = [
+            'pb-column',
+            "pb-column-{$columnId}",
+            'flex',
+            'flex-col',
+            'min-h-0' // Prevent flex items from overflowing
+        ];
+
+        // Handle column width - convert to appropriate CSS classes
+        if (is_numeric($columnWidth)) {
+            $widthClass = $this->getColumnWidthClass($columnWidth);
+            if ($widthClass) {
+                $classes[] = $widthClass;
+            }
+        }
+
+        // Add custom column classes if specified
+        if (isset($settings['customClasses'])) {
+            $customClasses = explode(' ', trim($settings['customClasses']));
+            $classes = array_merge($classes, array_filter($customClasses));
+        }
+
+        $attributes = [
+            'class' => implode(' ', array_filter($classes))
+        ];
+
+        // Add custom column ID
+        if (isset($settings['customId'])) {
+            $attributes['id'] = $settings['customId'];
+        }
+
+        return '<div ' . $this->buildHtmlAttributes($attributes) . '>';
     }
 }
