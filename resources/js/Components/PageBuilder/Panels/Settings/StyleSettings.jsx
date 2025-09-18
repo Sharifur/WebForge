@@ -25,22 +25,28 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
+      console.log(`[DEBUG] StyleSettings: Fetching PHP style fields for widget type '${widget.type}'`);
+
       // Try to load PHP style fields for any widget type
       const fieldsData = await widgetService.getWidgetFields(widget.type, 'style');
-      
+
+      console.log(`[DEBUG] StyleSettings: Fields response for '${widget.type}':`, fieldsData);
+
       if (fieldsData && fieldsData.fields && Object.keys(fieldsData.fields).length > 0) {
         // Successfully loaded PHP fields - this is a PHP widget
+        console.log(`[DEBUG] StyleSettings: Found ${Object.keys(fieldsData.fields).length} field groups for '${widget.type}'`);
         setPhpFields(fieldsData);
         setIsPhpWidget(true);
       } else {
         // No PHP fields available - fallback to legacy rendering
+        console.log(`[DEBUG] StyleSettings: No PHP fields found for '${widget.type}', using legacy rendering`);
         setPhpFields(null);
         setIsPhpWidget(false);
       }
     } catch (err) {
       // Error loading PHP fields - fallback to legacy rendering
-      console.log(`No PHP style fields for widget type '${widget.type}', using legacy rendering`);
+      console.error(`[DEBUG] StyleSettings: Error loading PHP style fields for widget type '${widget.type}':`, err);
       setPhpFields(null);
       setIsPhpWidget(false);
       setError(null); // Don't show error for widgets without PHP fields

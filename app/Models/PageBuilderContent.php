@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * PageBuilderContent Model
  * 
- * Stores page builder content structure and widget data separately from pages
- * 
+ * Stores page builder layout structure (containers and columns)
+ * Widget data is now stored separately in the page_builder_widgets table
+ *
  * @property int $id
  * @property int $page_id
  * @property array|null $content
- * @property array|null $widgets_data
  * @property string $version
  * @property bool $is_published
  * @property \Carbon\Carbon|null $published_at
@@ -22,10 +23,11 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
  * @property int|null $updated_by
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * 
+ *
  * @property-read \App\Models\Page $page
  * @property-read \App\Models\Admin $creator
  * @property-read \App\Models\Admin|null $updater
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PageBuilderWidget[] $widgets
  */
 class PageBuilderContent extends Model
 {
@@ -34,17 +36,15 @@ class PageBuilderContent extends Model
     protected $fillable = [
         'page_id',
         'content',
-        'widgets_data',
         'version',
         'is_published',
         'published_at',
         'created_by',
         'updated_by'
     ];
-    
+
     protected $casts = [
         'content' => 'array',
-        'widgets_data' => 'array',
         'is_published' => 'boolean',
         'published_at' => 'datetime'
     ];
@@ -72,6 +72,31 @@ class PageBuilderContent extends Model
     {
         return $this->belongsTo(Admin::class, 'updated_by');
     }
+
+    /**
+     * Get all widgets for this page builder content
+     */
+    public function widgets(): HasMany
+    {
+        return $this->hasMany(PageBuilderWidget::class, 'page_id', 'page_id')
+                    ->ordered();
+    }
+
+    /**
+     * Get visible widgets only
+     */
+    public function visibleWidgets(): HasMany
+    {
+        return $this->widgets()->visible()->enabled();
+    }
+
+    /**
+     * Get widgets by type
+     */
+    public function widgetsByType(string $type): HasMany
+    {
+        return $this->widgets()->ofType($type);
+    }
     
     /**
      * Get the content with fallback to empty structure
@@ -84,16 +109,6 @@ class PageBuilderContent extends Model
         );
     }
     
-    /**
-     * Get the widgets data with fallback to empty array
-     */
-    protected function widgetsData(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value ? json_decode($value, true) : [],
-            set: fn ($value) => json_encode($value ?? [])
-        );
-    }
     
     /**
      * Scope to get published content
@@ -134,37 +149,97 @@ class PageBuilderContent extends Model
     }
     
     /**
-     * Extract individual widget data from content structure
+     * Get the total count of widgets for this page
      */
-    public function extractWidgetsData(): array
+    public function getWidgetCountAttribute(): int
     {
-        $widgets = [];
+        return $this->widgets()->count();
+    }
+
+    /**
+     * Get the count of visible widgets
+     */
+    public function getVisibleWidgetCountAttribute(): int
+    {
+        return $this->visibleWidgets()->count();
+    }
+
+    /**
+     * Get widget analytics summary
+     */
+    public function getWidgetAnalytics(): array
+    {
+        $widgets = $this->widgets;
+
+        return [
+            'total_widgets' => $widgets->count(),
+            'visible_widgets' => $widgets->where('is_visible', true)->count(),
+            'enabled_widgets' => $widgets->where('is_enabled', true)->count(),
+            'total_views' => $widgets->sum('view_count'),
+            'total_interactions' => $widgets->sum('interaction_count'),
+            'widgets_by_type' => $widgets->groupBy('widget_type')
+                                       ->map(fn($group) => $group->count())
+                                       ->toArray(),
+            'cached_widgets' => $widgets->filter(fn($w) => $w->isCacheValid())->count()
+        ];
+    }
+
+    /**
+     * Clear all widget caches for this page
+     */
+    public function clearAllWidgetCaches(): int
+    {
+        $count = 0;
+        $this->widgets->each(function($widget) use (&$count) {
+            if ($widget->isCacheValid()) {
+                $widget->clearCache();
+                $count++;
+            }
+        });
+
+        return $count;
+    }
+
+    /**
+     * Sync widgets with content structure
+     * Updates widget positions based on current content layout
+     */
+    public function syncWidgetPositions(): void
+    {
         $content = $this->content ?? ['containers' => []];
-        
-        foreach ($content['containers'] ?? [] as $container) {
-            foreach ($container['columns'] ?? [] as $column) {
-                foreach ($column['widgets'] ?? [] as $widget) {
-                    $widgets[$widget['id']] = [
-                        'type' => $widget['type'],
-                        'content' => $widget['content'] ?? [],
-                        'style' => $widget['style'] ?? [],
-                        'advanced' => $widget['advanced'] ?? [],
-                        'container_id' => $container['id'] ?? null,
-                        'column_id' => $column['id'] ?? null
-                    ];
+        $positionMap = [];
+
+        // Build position map from content structure
+        foreach ($content['containers'] ?? [] as $containerIndex => $container) {
+            $containerId = $container['id'] ?? "container_{$containerIndex}";
+
+            foreach ($container['columns'] ?? [] as $columnIndex => $column) {
+                $columnId = $column['id'] ?? "column_{$columnIndex}";
+
+                foreach ($column['widgets'] ?? [] as $widgetIndex => $widget) {
+                    $widgetId = $widget['id'] ?? null;
+
+                    if ($widgetId) {
+                        $positionMap[$widgetId] = [
+                            'container_id' => $containerId,
+                            'column_id' => $columnId,
+                            'sort_order' => $widgetIndex
+                        ];
+                    }
                 }
             }
         }
-        
-        return $widgets;
-    }
-    
-    /**
-     * Update widgets data when content changes
-     */
-    public function updateWidgetsData()
-    {
-        $this->widgets_data = $this->extractWidgetsData();
-        $this->save();
+
+        // Update widget positions
+        foreach ($this->widgets as $widget) {
+            if (isset($positionMap[$widget->widget_id])) {
+                $position = $positionMap[$widget->widget_id];
+                $widget->moveTo(
+                    $position['container_id'],
+                    $position['column_id'],
+                    $position['sort_order']
+                );
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\PageBuilderContent;
+use App\Models\PageBuilderWidget;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,7 @@ class PageBuilderController extends Controller
             'page_id' => 'required|integer|exists:pages,id',
             'content' => 'required|array',
             'content.containers' => 'sometimes|array',
+            'widgets' => 'sometimes|array',
             'is_published' => 'sometimes|boolean',
             'version' => 'sometimes|string'
         ]);
@@ -42,10 +44,11 @@ class PageBuilderController extends Controller
             $page = Page::findOrFail($pageId);
 
             $content = $request->input('content', ['containers' => []]);
+            $widgets = $request->input('widgets', []);
             $isPublished = $request->input('is_published', false);
             $version = $request->input('version', '1.0');
 
-            // Create or update page builder content
+            // Create or update page builder content (layout only)
             $pageBuilderContent = PageBuilderContent::updateOrCreate(
                 ['page_id' => $page->id],
                 [
@@ -58,8 +61,11 @@ class PageBuilderController extends Controller
                 ]
             );
 
-            // Update individual widgets data
-            $pageBuilderContent->updateWidgetsData();
+            // Handle widgets separately
+            $widgetStats = $this->syncPageWidgets($page->id, $widgets);
+
+            // Sync widget positions with content structure
+            $pageBuilderContent->syncWidgetPositions();
 
             // If page uses page builder, ensure it's marked as such
             if (!$page->use_page_builder) {
@@ -78,7 +84,8 @@ class PageBuilderController extends Controller
                     'is_published' => $pageBuilderContent->is_published,
                     'published_at' => $pageBuilderContent->published_at,
                     'updated_at' => $pageBuilderContent->updated_at,
-                    'widgets_count' => count($pageBuilderContent->widgets_data ?? [])
+                    'widgets_count' => $widgetStats['total'],
+                    'widgets_stats' => $widgetStats
                 ]
             ]);
 
@@ -107,7 +114,7 @@ class PageBuilderController extends Controller
                     'success' => true,
                     'data' => [
                         'content' => ['containers' => []],
-                        'widgets_data' => [],
+                        'widgets' => [],
                         'version' => '1.0',
                         'is_published' => false,
                         'published_at' => null
@@ -115,17 +122,39 @@ class PageBuilderController extends Controller
                 ]);
             }
 
+            // Get widgets separately
+            $widgets = $page->widgets()->with(['creator', 'updater'])->get();
+            $widgetsArray = [];
+
+            foreach ($widgets as $widget) {
+                $widgetsArray[$widget->widget_id] = [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'container_id' => $widget->container_id,
+                    'column_id' => $widget->column_id,
+                    'sort_order' => $widget->sort_order,
+                    'settings' => $widget->all_settings,
+                    'is_visible' => $widget->is_visible,
+                    'is_enabled' => $widget->is_enabled,
+                    'version' => $widget->version,
+                    'analytics' => $widget->getAnalytics(),
+                    'created_at' => $widget->created_at,
+                    'updated_at' => $widget->updated_at
+                ];
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'id' => $pageBuilderContent->id,
                     'content' => $pageBuilderContent->content,
-                    'widgets_data' => $pageBuilderContent->widgets_data,
+                    'widgets' => $widgetsArray,
                     'version' => $pageBuilderContent->version,
                     'is_published' => $pageBuilderContent->is_published,
                     'published_at' => $pageBuilderContent->published_at,
                     'created_at' => $pageBuilderContent->created_at,
-                    'updated_at' => $pageBuilderContent->updated_at
+                    'updated_at' => $pageBuilderContent->updated_at,
+                    'widget_analytics' => $pageBuilderContent->getWidgetAnalytics()
                 ]
             ]);
 
@@ -277,9 +306,11 @@ class PageBuilderController extends Controller
                 ], 404);
             }
 
-            $widgetsData = $pageBuilderContent->widgets_data ?? [];
-            
-            if (!isset($widgetsData[$widgetId])) {
+            $widget = PageBuilderWidget::where('page_id', $page->id)
+                                         ->where('widget_id', $widgetId)
+                                         ->first();
+
+            if (!$widget) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Widget not found'
@@ -288,13 +319,265 @@ class PageBuilderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $widgetsData[$widgetId]
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'settings' => $widget->all_settings,
+                    'is_visible' => $widget->is_visible,
+                    'is_enabled' => $widget->is_enabled,
+                    'analytics' => $widget->getAnalytics(),
+                    'cache_status' => $widget->isCacheValid() ? 'valid' : 'expired',
+                    'created_at' => $widget->created_at,
+                    'updated_at' => $widget->updated_at
+                ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to get widget data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync page widgets with provided widget data
+     * Creates, updates, or removes widgets as needed
+     */
+    private function syncPageWidgets(int $pageId, array $widgets): array
+    {
+        $stats = [
+            'created' => 0,
+            'updated' => 0,
+            'deleted' => 0,
+            'total' => 0
+        ];
+
+        $adminId = Auth::guard('admin')->id();
+        $providedWidgetIds = array_keys($widgets);
+
+        // Get existing widgets for this page
+        $existingWidgets = PageBuilderWidget::where('page_id', $pageId)
+                                            ->get()
+                                            ->keyBy('widget_id');
+
+        // Process provided widgets
+        foreach ($widgets as $widgetId => $widgetData) {
+            if (!isset($widgetData['type'])) {
+                continue; // Skip invalid widget data
+            }
+
+            $widgetAttributes = [
+                'page_id' => $pageId,
+                'widget_id' => $widgetId,
+                'widget_type' => $widgetData['type'],
+                'container_id' => $widgetData['container_id'] ?? null,
+                'column_id' => $widgetData['column_id'] ?? null,
+                'sort_order' => $widgetData['sort_order'] ?? 0,
+                'general_settings' => $widgetData['settings']['general'] ?? [],
+                'style_settings' => $widgetData['settings']['style'] ?? [],
+                'advanced_settings' => $widgetData['settings']['advanced'] ?? [],
+                'is_visible' => $widgetData['is_visible'] ?? true,
+                'is_enabled' => $widgetData['is_enabled'] ?? true,
+                'version' => $widgetData['version'] ?? '1.0.0',
+                'updated_by' => $adminId
+            ];
+
+            if ($existingWidgets->has($widgetId)) {
+                // Update existing widget
+                $existingWidgets[$widgetId]->update($widgetAttributes);
+                $stats['updated']++;
+            } else {
+                // Create new widget
+                $widgetAttributes['created_by'] = $adminId;
+                PageBuilderWidget::create($widgetAttributes);
+                $stats['created']++;
+            }
+        }
+
+        // Remove widgets that are no longer present
+        $widgetsToDelete = $existingWidgets->whereNotIn('widget_id', $providedWidgetIds);
+        $stats['deleted'] = $widgetsToDelete->count();
+
+        foreach ($widgetsToDelete as $widget) {
+            $widget->delete();
+        }
+
+        $stats['total'] = count($widgets);
+
+        return $stats;
+    }
+
+    /**
+     * Create a new widget
+     */
+    public function createWidget(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'page_id' => 'required|integer|exists:pages,id',
+            'widget_id' => 'required|string',
+            'widget_type' => 'required|string',
+            'container_id' => 'sometimes|string',
+            'column_id' => 'sometimes|string',
+            'sort_order' => 'sometimes|integer',
+            'settings' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $widget = PageBuilderWidget::create([
+                'page_id' => $request->input('page_id'),
+                'widget_id' => $request->input('widget_id'),
+                'widget_type' => $request->input('widget_type'),
+                'container_id' => $request->input('container_id'),
+                'column_id' => $request->input('column_id'),
+                'sort_order' => $request->input('sort_order', 0),
+                'general_settings' => $request->input('settings.general', []),
+                'style_settings' => $request->input('settings.style', []),
+                'advanced_settings' => $request->input('settings.advanced', []),
+                'created_by' => Auth::guard('admin')->id(),
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget created successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'settings' => $widget->all_settings
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create widget',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update a widget
+     */
+    public function updateWidget(Request $request, int $pageId, string $widgetId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'settings' => 'sometimes|array',
+            'is_visible' => 'sometimes|boolean',
+            'is_enabled' => 'sometimes|boolean',
+            'container_id' => 'sometimes|string',
+            'column_id' => 'sometimes|string',
+            'sort_order' => 'sometimes|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $updateData = ['updated_by' => Auth::guard('admin')->id()];
+
+            if ($request->has('settings')) {
+                $settings = $request->input('settings');
+                if (isset($settings['general'])) {
+                    $updateData['general_settings'] = $settings['general'];
+                }
+                if (isset($settings['style'])) {
+                    $updateData['style_settings'] = $settings['style'];
+                }
+                if (isset($settings['advanced'])) {
+                    $updateData['advanced_settings'] = $settings['advanced'];
+                }
+            }
+
+            if ($request->has('is_visible')) {
+                $updateData['is_visible'] = $request->boolean('is_visible');
+            }
+
+            if ($request->has('is_enabled')) {
+                $updateData['is_enabled'] = $request->boolean('is_enabled');
+            }
+
+            if ($request->has('container_id')) {
+                $updateData['container_id'] = $request->input('container_id');
+            }
+
+            if ($request->has('column_id')) {
+                $updateData['column_id'] = $request->input('column_id');
+            }
+
+            if ($request->has('sort_order')) {
+                $updateData['sort_order'] = $request->input('sort_order');
+            }
+
+            $widget->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget updated successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'settings' => $widget->all_settings,
+                    'is_visible' => $widget->is_visible,
+                    'is_enabled' => $widget->is_enabled
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update widget',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a widget
+     */
+    public function deleteWidget(int $pageId, string $widgetId): JsonResponse
+    {
+        try {
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $widget->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete widget',
                 'error' => $e->getMessage()
             ], 500);
         }

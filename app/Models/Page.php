@@ -39,10 +39,50 @@ class Page extends Model
     {
         return $this->hasOne(PageBuilderContent::class);
     }
-    
+
     public function getPageBuilderContentAttribute()
     {
         return $this->pageBuilderContent()->latest()->first();
+    }
+
+    /**
+     * Get all widgets for this page
+     */
+    public function widgets()
+    {
+        return $this->hasMany(PageBuilderWidget::class)->ordered();
+    }
+
+    /**
+     * Get visible and enabled widgets only
+     */
+    public function activeWidgets()
+    {
+        return $this->widgets()->visible()->enabled();
+    }
+
+    /**
+     * Get widgets by type
+     */
+    public function widgetsByType(string $type)
+    {
+        return $this->widgets()->ofType($type);
+    }
+
+    /**
+     * Get widgets in a specific container
+     */
+    public function widgetsInContainer(string $containerId)
+    {
+        return $this->widgets()->inContainer($containerId);
+    }
+
+    /**
+     * Get widgets in a specific column
+     */
+    public function widgetsInColumn(string $columnId)
+    {
+        return $this->widgets()->inColumn($columnId);
     }
 
     public function creator()

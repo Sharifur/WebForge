@@ -113,14 +113,28 @@ class WidgetService {
    */
   async getWidgetFields(type, tab) {
     try {
-      const response = await fetch(`${this.baseUrl}/widgets/${type}/fields/${tab}`);
+      const url = `${this.baseUrl}/widgets/${type}/fields/${tab}`;
+      console.log(`[DEBUG] widgetService.getWidgetFields: Making request to ${url}`);
+
+      const response = await fetch(url);
+
+      console.log(`[DEBUG] widgetService.getWidgetFields: Response status: ${response.status}`);
+
       if (!response.ok) {
+        console.log(`[DEBUG] widgetService.getWidgetFields: HTTP error details:`, {
+          status: response.status,
+          statusText: response.statusText,
+          url: url
+        });
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
+      console.log(`[DEBUG] widgetService.getWidgetFields: Response data:`, data);
+
       return data.success ? data.data : null;
     } catch (error) {
-      console.error('Error fetching widget fields:', error);
+      console.error(`[DEBUG] widgetService.getWidgetFields: Error fetching widget fields for ${type}/${tab}:`, error);
       return null;
     }
   }
@@ -130,6 +144,14 @@ class WidgetService {
    */
   async renderWidget(type, settings) {
     try {
+      // Enhanced debugging for all widgets
+      console.log(`[DEBUG] widgetService.renderWidget called for ${type}:`, {
+        type: type,
+        settings: settings,
+        url: `${this.baseUrl}/widgets/${type}/preview`,
+        csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      });
+
       const response = await fetch(`${this.baseUrl}/widgets/${type}/preview`, {
         method: 'POST',
         headers: {
@@ -140,13 +162,28 @@ class WidgetService {
       });
 
       if (!response.ok) {
+        console.log(`[DEBUG] ${type} widget HTTP error:`, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          url: `${this.baseUrl}/widgets/${type}/preview`
+        });
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
+
+      // Enhanced debugging for all widgets
+      console.log(`[DEBUG] ${type} widget API response:`, data);
+
       return data.success ? data.data : null;
     } catch (error) {
-      console.error('Error rendering widget:', error);
+      console.error(`Error rendering ${type} widget:`, error);
+      console.log(`[DEBUG] ${type} widget error details:`, {
+        error: error,
+        type: type,
+        settings: settings
+      });
       return null;
     }
   }
