@@ -487,8 +487,8 @@ class FrontendRenderer extends BaseRenderer
         $settings = $column['settings'] ?? [];
         $responsiveSettings = $column['responsiveSettings'] ?? [];
 
-        // Generate column CSS
-        $columnCss = SectionLayoutCSSGenerator::generateSectionCSS($columnId, $settings, $responsiveSettings);
+        // Generate column CSS with correct prefix
+        $columnCss = SectionLayoutCSSGenerator::generateSectionCSS($columnId, $settings, $responsiveSettings, 'pb-column');
 
         $html = $this->renderEnhancedColumnOpen($columnId, $columnWidth, $column, $containerId, $settings);
         $css = $columnCss;

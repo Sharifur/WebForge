@@ -120,12 +120,13 @@ class SectionLayoutCSSGenerator
      * @param string $sectionId Section identifier
      * @param array $settings Section settings
      * @param array $responsiveSettings Responsive settings
+     * @param string $prefix CSS class prefix (default: 'pb-section')
      * @return string Generated CSS
      */
-    public static function generateSectionCSS(string $sectionId, array $settings, array $responsiveSettings = []): string
+    public static function generateSectionCSS(string $sectionId, array $settings, array $responsiveSettings = [], string $prefix = 'pb-section'): string
     {
         $css = [];
-        $selector = ".pb-section-{$sectionId}";
+        $selector = ".{$prefix}-{$sectionId}";
 
         // Base section styles
         $baseStyles = self::generateBaseSectionStyles($settings);
@@ -166,8 +167,8 @@ class SectionLayoutCSSGenerator
         $styles = [];
 
         // Background styles
-        if (isset($settings['sectionBackground']) || isset($settings['background'])) {
-            $background = $settings['sectionBackground'] ?? $settings['background'] ?? null;
+        if (isset($settings['sectionBackground']) || isset($settings['background']) || isset($settings['columnBackground'])) {
+            $background = $settings['sectionBackground'] ?? $settings['background'] ?? $settings['columnBackground'] ?? null;
             if ($background) {
                 $bgCSS = self::generateBackgroundCSS($background);
                 if ($bgCSS) $styles[] = $bgCSS;
