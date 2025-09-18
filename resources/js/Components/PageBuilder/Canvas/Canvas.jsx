@@ -12,7 +12,10 @@ import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
   const { dragState } = usePageBuilderStore();
-  const { isDraggingSection } = dragState;
+  const { isDraggingSection, isDragging, draggedItem } = dragState;
+
+  // Show drop zones for both section drags AND widget panel drags
+  const shouldShowDropZones = isDraggingSection || (isDragging && draggedItem?.type === 'widget-template');
   
   const { setNodeRef, isOver } = useDroppable({
     id: 'canvas',
@@ -48,7 +51,7 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
               />
 
               {/* Drop zone before first section */}
-              {isDraggingSection && (
+              {shouldShowDropZones && (
                 <DropZone
                   id="drop-zone-before-0"
                   position="before"
@@ -75,7 +78,7 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
                   />
 
                   {/* Drop zone after each section */}
-                  {isDraggingSection && (
+                  {shouldShowDropZones && (
                     <DropZone
                       id={`drop-zone-after-${index}`}
                       position="after"

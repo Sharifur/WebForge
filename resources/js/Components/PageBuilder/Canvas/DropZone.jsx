@@ -3,9 +3,9 @@ import { useDroppable } from '@dnd-kit/core';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 /**
- * DropZone - Visual indicator for section drop areas
- * 
- * Shows where sections can be dropped during drag operations
+ * DropZone - Visual indicator for section and widget drop areas
+ *
+ * Shows where sections and widgets can be dropped during drag operations
  * Provides visual feedback and handles drop events
  */
 const DropZone = ({ 
@@ -16,10 +16,11 @@ const DropZone = ({
   className = ''
 }) => {
   const { dragState, setActiveDropZone } = usePageBuilderStore();
-  const { activeDropZone } = dragState;
-  
+  const { activeDropZone, isDragging, draggedItem } = dragState;
+
   const isActive = activeDropZone?.id === id;
   const isDraggingSection = dragState.isDraggingSection;
+  const isDraggingWidgetFromPanel = isDragging && draggedItem?.type === 'widget-template';
   
   const {
     setNodeRef,
@@ -27,15 +28,15 @@ const DropZone = ({
   } = useDroppable({
     id: id,
     data: {
-      type: 'section-drop-zone',
+      type: isDraggingSection ? 'section-drop-zone' : 'widget-drop-zone',
       position: position,
       index: index,
       containerId: containerId
     }
   });
 
-  // Don't render if not dragging a section
-  if (!isDraggingSection) {
+  // Don't render if not dragging a section or widget from panel
+  if (!isDraggingSection && !isDraggingWidgetFromPanel) {
     return null;
   }
 
@@ -93,9 +94,13 @@ const DropZone = ({
               />
             </svg>
             <span>
-              {position === 'before' 
-                ? 'Drop section at the beginning' 
-                : `Drop section ${containerId ? 'after this section' : 'at the end'}`
+              {isDraggingSection
+                ? (position === 'before'
+                    ? 'Drop section at the beginning'
+                    : `Drop section ${containerId ? 'after this section' : 'at the end'}`)
+                : (position === 'before'
+                    ? 'Create new section at the beginning'
+                    : `Create new section ${containerId ? 'after this section' : 'at the end'}`)
               }
             </span>
             <svg 

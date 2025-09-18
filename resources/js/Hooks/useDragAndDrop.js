@@ -171,30 +171,79 @@ export const useDragAndDrop = () => {
         dropZone: overData,
         targetIndex: overData.index
       });
-      
+
       const { pageContent } = usePageBuilderStore.getState();
       const oldIndex = pageContent.containers.findIndex(c => c.id === active.id);
       const newIndex = overData.index;
-      
+
       console.log('[DragAndDrop] Drop zone reordering:', {
         oldIndex,
         newIndex,
         containersCount: pageContent.containers.length
       });
-      
+
       if (oldIndex !== -1 && newIndex >= 0 && oldIndex !== newIndex) {
         // Adjust newIndex if dragging to a position after the current position
         const adjustedNewIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-        
+
         console.log('[DragAndDrop] Executing drop zone reorder:', {
           oldIndex,
           adjustedNewIndex
         });
-        
+
         reorderContainers(oldIndex, adjustedNewIndex);
-        
+
         console.log('✅ Section reordered via drop zone successfully');
       }
+      return;
+    }
+
+    // Handle widget panel drop on drop zones (Create new section with widget)
+    if (activeData?.type === 'widget-template' && overData?.type === 'widget-drop-zone') {
+      console.log('[DragAndDrop] Widget from panel dropped on drop zone:', {
+        widget: activeData.widget.type,
+        dropZone: overData,
+        targetIndex: overData.index
+      });
+
+      // Create new section container with the widget inside
+      const newContainerId = `section-${Date.now()}`;
+      const newColumnId = `column-${Date.now()}`;
+
+      // Create widget with unique ID
+      const newWidget = {
+        ...activeData.widget,
+        id: `widget-${Date.now()}`,
+        content: activeData.widget.content || {}
+      };
+
+      const newSection = {
+        id: newContainerId,
+        type: 'section',
+        columns: [{
+          id: newColumnId,
+          width: '100%',
+          widgets: [newWidget],
+          settings: {}
+        }],
+        settings: {
+          padding: '40px 20px',
+          margin: '0px',
+          backgroundColor: '#ffffff'
+        }
+      };
+
+      // Insert section at the specified index
+      const { pageContent, setPageContent } = usePageBuilderStore.getState();
+      const newContainers = [...pageContent.containers];
+      newContainers.splice(overData.index, 0, newSection);
+
+      setPageContent({
+        ...pageContent,
+        containers: newContainers
+      });
+
+      console.log(`✅ Widget from panel inserted as new section at position ${overData.index}`);
       return;
     }
 

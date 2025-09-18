@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Columns2, Columns3, Grid2X2 } from 'lucide-react';
+import { Plus, Columns2, Columns3, Grid2X2, Grid3X3 } from 'lucide-react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const QUICK_TEMPLATES = {
@@ -9,23 +9,66 @@ const QUICK_TEMPLATES = {
     columns: 1,
     layout: ['100%']
   },
-  twoColumn: {
+  twoColumns: {
     name: '2 Columns',
     icon: '││',
     columns: 2,
     layout: ['50%', '50%']
   },
-  threeColumn: {
+  threeColumns: {
     name: '3 Columns',
     icon: '│││',
     columns: 3,
     layout: ['33.33%', '33.33%', '33.33%']
   },
-  twoColumnAsymmetric: {
-    name: '2/3 + 1/3',
+  fourColumns: {
+    name: '4 Columns',
+    icon: '││││',
+    columns: 4,
+    layout: ['25%', '25%', '25%', '25%']
+  },
+  fiveColumns: {
+    name: '5 Columns',
+    icon: '│││││',
+    columns: 5,
+    layout: ['20%', '20%', '20%', '20%', '20%']
+  },
+  sixColumns: {
+    name: '6 Columns',
+    icon: '││││││',
+    columns: 6,
+    layout: ['16.67%', '16.67%', '16.67%', '16.67%', '16.67%', '16.67%']
+  },
+  // Popular asymmetric layouts
+  asymmetric30_70: {
+    name: '30% - 70%',
+    icon: '┃│',
+    columns: 2,
+    layout: ['30%', '70%']
+  },
+  asymmetric70_30: {
+    name: '70% - 30%',
     icon: '│┃',
     columns: 2,
-    layout: ['66.67%', '33.33%']
+    layout: ['70%', '30%']
+  },
+  asymmetric25_50_25: {
+    name: '25% - 50% - 25%',
+    icon: '┃│┃',
+    columns: 3,
+    layout: ['25%', '50%', '25%']
+  },
+  asymmetric40_60: {
+    name: '40% - 60%',
+    icon: '│┃',
+    columns: 2,
+    layout: ['40%', '60%']
+  },
+  asymmetric60_40: {
+    name: '60% - 40%',
+    icon: '┃│',
+    columns: 2,
+    layout: ['60%', '40%']
   }
 };
 
@@ -98,21 +141,22 @@ const SectionQuickAdd = ({ position, containerId, onSectionAdded }) => {
 
       {/* Quick template picker */}
       {showPicker && (
-        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border z-20 p-3">
-          <div className="text-xs font-medium text-gray-700 mb-2 text-center">Quick Add Section</div>
+        <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-xl border z-20 p-4 w-80">
+          <div className="text-sm font-medium text-gray-900 mb-3 text-center">Quick Add Section</div>
 
-          <div className="flex space-x-2">
+          {/* Grid layout for templates */}
+          <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
             {Object.entries(QUICK_TEMPLATES).map(([key, template]) => (
               <button
                 key={key}
                 onClick={() => handleAddSection(key)}
-                className="flex flex-col items-center p-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 min-w-[60px]"
+                className="flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group"
                 title={template.name}
               >
-                <div className="text-lg font-mono text-gray-600 mb-1">
+                <div className="text-sm font-mono text-gray-600 mb-1 group-hover:text-blue-600">
                   {template.icon}
                 </div>
-                <div className="text-xs text-gray-500 text-center">
+                <div className="text-xs text-gray-500 text-center group-hover:text-blue-700">
                   {template.columns}C
                 </div>
               </button>
