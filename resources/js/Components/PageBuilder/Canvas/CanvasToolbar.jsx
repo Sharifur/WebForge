@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import { Monitor, Tablet, Smartphone, Settings, List } from 'lucide-react';
 
 const CanvasToolbar = ({ page }) => {
-  const [previewMode, setPreviewMode] = useState('desktop');
   const [isSaving, setIsSaving] = useState(false);
-  
-  const { pageContent, isDirty, settingsPanelVisible, selectedWidget, savePage, resetChanges, toggleSettingsPanel, publishPage, navigationDialogVisible, toggleNavigationDialog } = usePageBuilderStore();
+
+  const {
+    pageContent,
+    isDirty,
+    settingsPanelVisible,
+    selectedWidget,
+    currentDevice,
+    savePage,
+    resetChanges,
+    toggleSettingsPanel,
+    publishPage,
+    navigationDialogVisible,
+    toggleNavigationDialog,
+    setCurrentDevice,
+    initializeDeviceFromStorage
+  } = usePageBuilderStore();
+
+  // Initialize device from storage on mount
+  useEffect(() => {
+    initializeDeviceFromStorage();
+  }, [initializeDeviceFromStorage]);
 
   const devices = [
     { id: 'desktop', label: 'Desktop', icon: Monitor, width: '100%' },
@@ -171,9 +189,9 @@ const CanvasToolbar = ({ page }) => {
             {devices.map(device => (
               <button
                 key={device.id}
-                onClick={() => setPreviewMode(device.id)}
+                onClick={() => setCurrentDevice(device.id)}
                 className={`p-2 rounded transition-colors ${
-                  previewMode === device.id
+                  currentDevice === device.id
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}

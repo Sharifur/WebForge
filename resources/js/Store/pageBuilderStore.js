@@ -26,6 +26,19 @@ const usePageBuilderStore = create((set, get) => ({
   navigationDialogPosition: { x: 100, y: 100 }, // Dialog position
   sidebarCollapsed: false, // Left sidebar collapse state
   widgetSnapshots: {}, // Store original widget states for reverting changes
+
+  // Responsive Device State
+  currentDevice: 'desktop', // Current device mode: 'desktop', 'tablet', 'mobile'
+  canvasViewport: {
+    desktop: '100%',
+    tablet: '768px',
+    mobile: '375px'
+  },
+  deviceBreakpoints: {
+    desktop: { min: 1025, label: 'Desktop (1025px+)' },
+    tablet: { min: 769, max: 1024, label: 'Tablet (769px - 1024px)' },
+    mobile: { max: 768, label: 'Mobile (≤768px)' }
+  },
   
   // Enhanced global drag state for cross-container always-visible drop zones
   dragState: {
@@ -786,7 +799,47 @@ const usePageBuilderStore = create((set, get) => ({
   
   // Preview Actions
   setPreviewMode: (mode) => set({ previewMode: mode }),
-  
+
+  // Device Management Actions
+  setCurrentDevice: (device) => set(state => {
+    // Validate device
+    const validDevices = ['desktop', 'tablet', 'mobile'];
+    if (!validDevices.includes(device)) {
+      console.warn(`Invalid device: ${device}. Using desktop.`);
+      device = 'desktop';
+    }
+
+    // Store in session storage for persistence
+    try {
+      sessionStorage.setItem('pagebuilder_current_device', device);
+    } catch (e) {
+      console.warn('Could not save device to session storage:', e);
+    }
+
+    return { currentDevice: device };
+  }),
+
+  getCurrentViewport: () => {
+    const { currentDevice, canvasViewport } = get();
+    return canvasViewport[currentDevice];
+  },
+
+  getDeviceLabel: () => {
+    const { currentDevice, deviceBreakpoints } = get();
+    return deviceBreakpoints[currentDevice]?.label || currentDevice;
+  },
+
+  initializeDeviceFromStorage: () => {
+    try {
+      const storedDevice = sessionStorage.getItem('pagebuilder_current_device');
+      if (storedDevice && ['desktop', 'tablet', 'mobile'].includes(storedDevice)) {
+        set({ currentDevice: storedDevice });
+      }
+    } catch (e) {
+      console.warn('Could not load device from session storage:', e);
+    }
+  },
+
   // Utility Actions
   findWidget: (widgetId) => {
     const { pageContent } = get();
@@ -800,7 +853,7 @@ const usePageBuilderStore = create((set, get) => ({
     }
     return null;
   },
-  
+
   findContainer: (containerId) => {
     const { pageContent } = get();
     return pageContent.containers.find(c => c.id === containerId);

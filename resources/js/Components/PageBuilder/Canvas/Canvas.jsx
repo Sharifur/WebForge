@@ -11,7 +11,7 @@ import SectionQuickAdd from './SectionQuickAdd';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDropZone }) => {
-  const { dragState } = usePageBuilderStore();
+  const { dragState, currentDevice, getCurrentViewport, getDeviceLabel } = usePageBuilderStore();
   const { isDraggingSection, isDragging, draggedItem } = dragState;
 
   // Show drop zones for both section drags AND widget panel drags
@@ -28,17 +28,59 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
   const isCanvasHovered = hoveredDropZone?.id === 'canvas';
   const isValidDrop = hoveredDropZone?.isValid;
 
+  // Get current viewport dimensions
+  const currentViewport = getCurrentViewport();
+  const deviceLabel = getDeviceLabel();
+  const isResponsiveMode = currentDevice !== 'desktop';
+
   return (
     <div className="flex-1 overflow-auto bg-gray-100 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div
-          ref={setNodeRef}
-          className={`page-builder-content page-builder-editor min-h-screen bg-white shadow-sm rounded-lg transition-all duration-200 p-4 ${
-            isCanvasHovered && isValidDrop ? 'ring-2 ring-blue-400 bg-blue-50' : ''
-          } ${
-            isCanvasHovered && !isValidDrop ? 'ring-2 ring-red-400 bg-red-50' : ''
-          }`}
-        >
+      {/* Device indicator for non-desktop modes */}
+      {isResponsiveMode && (
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium shadow-sm">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+            {deviceLabel}
+            <span className="ml-2 text-xs text-blue-600">({currentViewport})</span>
+          </div>
+        </div>
+      )}
+
+      {/* Responsive Canvas Container */}
+      <div className="mx-auto transition-all duration-300 ease-in-out" style={{
+        maxWidth: currentDevice === 'desktop' ? '1450px' : currentViewport
+      }}>
+        {/* Device Frame for tablet/mobile */}
+        <div className={`mx-auto relative ${
+          isResponsiveMode
+            ? 'border-2 border-gray-300 rounded-xl shadow-xl bg-gray-50 p-2'
+            : ''
+        }`} style={{
+          width: currentDevice === 'desktop' ? '100%' : currentViewport
+        }}>
+          {/* Device header for visual effect */}
+          {isResponsiveMode && (
+            <div className="flex items-center justify-center mb-2 pb-2 border-b border-gray-200">
+              <div className="flex space-x-1">
+                <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              </div>
+              <div className="absolute right-3 text-xs text-gray-500 font-mono">
+                {currentViewport}
+              </div>
+            </div>
+          )}
+          <div
+            ref={setNodeRef}
+            className={`page-builder-content page-builder-editor min-h-screen bg-white transition-all duration-200 p-4 ${
+              isResponsiveMode ? 'rounded-lg' : 'shadow-sm rounded-lg'
+            } ${
+              isCanvasHovered && isValidDrop ? 'ring-2 ring-blue-400 bg-blue-50' : ''
+            } ${
+              isCanvasHovered && !isValidDrop ? 'ring-2 ring-red-400 bg-red-50' : ''
+            }`}
+          >
           {containerIds.length > 0 ? (
             <SortableContext 
               items={containerIds}
@@ -92,6 +134,7 @@ const Canvas = ({ content, onUpdate, onSelectWidget, selectedWidget, hoveredDrop
           ) : (
             <EmptyCanvasState />
           )}
+          </div>
         </div>
       </div>
 

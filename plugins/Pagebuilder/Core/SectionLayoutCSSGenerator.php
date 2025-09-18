@@ -332,7 +332,7 @@ class SectionLayoutCSSGenerator
         if (is_array($spacing)) {
             // Handle responsive spacing object
             if (isset($spacing['desktop'])) {
-                return $spacing['desktop'];
+                return self::normalizeSpacing($spacing['desktop']);
             }
 
             // Handle new spacing format with unit

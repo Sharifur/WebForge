@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link, Unlink, Monitor, Tablet, Smartphone, ChevronDown } from 'lucide-react';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 /**
  * Enhanced Dimension Picker Component
@@ -27,8 +28,11 @@ const EnhancedDimensionPicker = ({
   label = 'Dimension'
 }) => {
   const [isLinked, setIsLinked] = useState(linked);
-  const [activeBreakpoint, setActiveBreakpoint] = useState('desktop');
   const [isBreakpointDropdownOpen, setIsBreakpointDropdownOpen] = useState(false);
+
+  // Use global device state instead of local state
+  const { currentDevice, setCurrentDevice } = usePageBuilderStore();
+  const activeBreakpoint = currentDevice;
   
   // Parse value based on format (object vs CSS shorthand string)
   const parseValue = useCallback((val) => {
@@ -191,7 +195,7 @@ const EnhancedDimensionPicker = ({
                       key={breakpoint}
                       type="button"
                       onClick={() => {
-                        setActiveBreakpoint(breakpoint);
+                        setCurrentDevice(breakpoint);
                         setIsBreakpointDropdownOpen(false);
                       }}
                       className={`flex items-center justify-center w-10 h-8 hover:bg-gray-50 transition-colors first:rounded-t-md last:rounded-b-md ${

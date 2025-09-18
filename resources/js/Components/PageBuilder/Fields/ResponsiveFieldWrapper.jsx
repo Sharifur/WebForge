@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Monitor, Tablet, Smartphone } from 'lucide-react';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 /**
  * ResponsiveFieldWrapper Component
@@ -7,15 +8,18 @@ import { Monitor, Tablet, Smartphone } from 'lucide-react';
  * Wraps any field component to add responsive device controls
  * Allows different values for desktop, tablet, and mobile
  */
-const ResponsiveFieldWrapper = ({ 
-  children, 
-  value, 
-  onChange, 
+const ResponsiveFieldWrapper = ({
+  children,
+  value,
+  onChange,
   defaultValue = '',
   className = '',
   label = ''
 }) => {
-  const [activeDevice, setActiveDevice] = useState('desktop');
+  const { currentDevice, setCurrentDevice } = usePageBuilderStore();
+
+  // Use global device state instead of local state
+  const activeDevice = currentDevice;
 
   const devices = [
     {
@@ -104,11 +108,11 @@ const ResponsiveFieldWrapper = ({
               <button
                 key={device.key}
                 type="button"
-                onClick={() => setActiveDevice(device.key)}
+                onClick={() => setCurrentDevice(device.key)}
                 className={`
                   relative p-1.5 rounded transition-all duration-200
-                  ${isActive 
-                    ? 'bg-white shadow-sm text-blue-600' 
+                  ${isActive
+                    ? 'bg-white shadow-sm text-blue-600'
                     : 'text-gray-500 hover:text-gray-700'
                   }
                 `}

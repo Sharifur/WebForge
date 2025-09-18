@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import PhpFieldRenderer from './PhpFieldRenderer';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 /**
  * DynamicTabGroup - Generic tabbed interface for field groups
@@ -21,7 +22,20 @@ const DynamicTabGroup = ({
   onChange,
   className = ''
 }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  // Check if this is a responsive tab group (desktop/tablet/mobile)
+  const tabKeys = Object.keys(tabs);
+  const isResponsiveTabGroup = tabKeys.length === 3 &&
+    tabKeys.includes('desktop') &&
+    tabKeys.includes('tablet') &&
+    tabKeys.includes('mobile');
+
+  // Use global device state for responsive tabs, local state for others
+  const { currentDevice, setCurrentDevice } = usePageBuilderStore();
+  const [localActiveTab, setLocalActiveTab] = useState(defaultTab);
+
+  // Determine which state to use
+  const activeTab = isResponsiveTabGroup ? currentDevice : localActiveTab;
+  const setActiveTab = isResponsiveTabGroup ? setCurrentDevice : setLocalActiveTab;
 
 
   // Get display label for tab
@@ -90,7 +104,6 @@ const DynamicTabGroup = ({
   };
 
   const tabStyles = getTabStyleClasses();
-  const tabKeys = Object.keys(tabs);
   const currentTabData = tabs[activeTab];
 
 
