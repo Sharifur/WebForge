@@ -288,12 +288,47 @@ value={data.spacing.value}
 value={data?.spacing?.value ?? 0}
 ```
 
+## Column CSS Integration
+
+### Frontend CSS Generation Fix (Sep 2025)
+
+**Issue Resolved**: Column default settings (background colors, padding, margins) were not reflecting on frontend pages despite showing correctly in the editor.
+
+#### Root Causes Identified:
+1. **CSS Selector Mismatch**: `SectionLayoutCSSGenerator` generated `.pb-section-{id}` selectors for both sections and columns, but columns used `.pb-column-{id}` classes in HTML
+2. **Missing Background Key Support**: CSS generator only looked for `sectionBackground` and `background` keys, but columns used `columnBackground`
+
+#### Solution Implemented:
+1. **Enhanced SectionLayoutCSSGenerator**: Added optional `$prefix` parameter to `generateSectionCSS()` method
+2. **Updated FrontendRenderer**: Modified column rendering to pass `'pb-column'` prefix
+3. **Extended Background Support**: Added `columnBackground` key detection in `generateBaseSectionStyles()`
+
+#### Technical Changes:
+```php
+// SectionLayoutCSSGenerator.php
+public static function generateSectionCSS(string $sectionId, array $settings, array $responsiveSettings = [], string $prefix = 'pb-section'): string
+
+// FrontendRenderer.php
+$columnCss = SectionLayoutCSSGenerator::generateSectionCSS($columnId, $settings, $responsiveSettings, 'pb-column');
+
+// Enhanced background detection
+if (isset($settings['sectionBackground']) || isset($settings['background']) || isset($settings['columnBackground'])) {
+    $background = $settings['sectionBackground'] ?? $settings['background'] ?? $settings['columnBackground'] ?? null;
+```
+
+#### Result:
+- ✅ Column CSS selectors now match HTML classes perfectly
+- ✅ Background colors, padding, margins display correctly on frontend
+- ✅ Maintains backward compatibility for sections
+- ✅ All responsive column settings work properly
+
 ## Performance Considerations
 
 - **Session Storage**: Minimal overhead for device persistence
 - **CSS Transitions**: Hardware accelerated for smooth animations
 - **Component Re-renders**: Optimized with React.memo where appropriate
 - **State Updates**: Batched updates prevent unnecessary re-renders
+- **CSS Generation**: Optimized column CSS generation with proper selector matching
 
 ## Future Enhancements
 
