@@ -3,6 +3,7 @@ import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import widgetService from '@/Services/widgetService';
 import { Loader, ChevronDown, ChevronRight } from 'lucide-react';
 import PhpFieldRenderer from '@/Components/PageBuilder/Fields/PhpFieldRenderer';
+import DynamicTabGroup from '@/Components/PageBuilder/Fields/DynamicTabGroup';
 
 const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const { updateWidget } = usePageBuilderStore();
@@ -164,8 +165,33 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     return (
       <div className="space-y-6">
         {Object.entries(phpFields.fields).map(([groupKey, groupConfig]) => {
+          // Check if this is the _tabs structure
+          if (groupKey === '_tabs' && typeof groupConfig === 'object') {
+            return (
+              <div key={groupKey} className="tabs-container">
+                <DynamicTabGroup
+                  tabs={groupConfig}
+                  value={localWidget.style || {}}
+                  onChange={(tabValues) => {
+                    // Update the widget style with tab values
+                    const updatedWidget = {
+                      ...localWidget,
+                      style: {
+                        ...localWidget.style,
+                        ...tabValues
+                      }
+                    };
+                    setLocalWidget(updatedWidget);
+                    debouncedStoreUpdate(updatedWidget);
+                  }}
+                  defaultTab={Object.keys(groupConfig)[0] || 'normal'}
+                  tabStyle="default"
+                />
+              </div>
+            );
+          }
           // Check if this is a group field
-          if (groupConfig.type === 'group' && groupConfig.fields) {
+          else if (groupConfig.type === 'group' && groupConfig.fields) {
             const isCollapsed = collapsedGroups[groupKey];
             return (
               <div key={groupKey} className="border border-gray-200 rounded-lg">

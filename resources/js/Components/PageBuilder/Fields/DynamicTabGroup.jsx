@@ -146,6 +146,7 @@ const DynamicTabGroup = ({
 
       {/* Tab Content */}
       <div className="tab-content space-y-3">
+        {/* Render direct fields in tab */}
         {Object.entries(currentTabData.fields || {}).map(([fieldKey, fieldConfig]) => (
           <PhpFieldRenderer
             key={`${activeTab}-${fieldKey}`}
@@ -154,6 +155,31 @@ const DynamicTabGroup = ({
             value={value[activeTab]?.[fieldKey]}
             onChange={(fieldValue) => handleFieldChange(fieldKey, fieldValue)}
           />
+        ))}
+
+        {/* Render groups within tab */}
+        {Object.entries(currentTabData.groups || {}).map(([groupKey, groupConfig]) => (
+          <div key={`${activeTab}-group-${groupKey}`} className="border border-gray-200 rounded-lg p-4 space-y-3">
+            {/* Group Label */}
+            {groupConfig.label && (
+              <h4 className="text-sm font-medium text-gray-700 border-b border-gray-100 pb-2">
+                {groupConfig.label}
+              </h4>
+            )}
+
+            {/* Group Fields */}
+            <div className="space-y-3">
+              {Object.entries(groupConfig.fields || {}).map(([fieldKey, fieldConfig]) => (
+                <PhpFieldRenderer
+                  key={`${activeTab}-${groupKey}-${fieldKey}`}
+                  fieldKey={fieldKey}
+                  fieldConfig={fieldConfig}
+                  value={value[activeTab]?.[fieldKey]}
+                  onChange={(fieldValue) => handleFieldChange(fieldKey, fieldValue)}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
