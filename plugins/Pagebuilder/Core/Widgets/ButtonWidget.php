@@ -124,6 +124,58 @@ class ButtonWidget extends BaseWidget
     {
         $control = new ControlManager();
 
+        // Normal State Tab
+        $control->addTab('normal', 'Normal State')
+            ->registerField('text_color', FieldManager::COLOR()
+                ->setLabel('Text Color')
+                ->setDefault('#FFFFFF')
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element' => 'color: {{VALUE}};'
+                ])
+            )
+            ->registerField('background_color', FieldManager::COLOR()
+                ->setLabel('Background Color')
+                ->setDefault('#3B82F6')
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element' => 'background-color: {{VALUE}};'
+                ])
+            )
+            ->registerField('border_width', FieldManager::NUMBER()
+                ->setLabel('Border Width')
+                ->setUnit('px')
+                ->setDefault(0)
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element' => 'border-width: {{VALUE}}{{UNIT}};'
+                ])
+            )
+            ->endTab();
+
+        // Hover State Tab
+        $control->addTab('hover', 'Hover State')
+            ->registerField('text_color_hover', FieldManager::COLOR()
+                ->setLabel('Text Color')
+                ->setDefault('#FFFFFF')
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element:hover' => 'color: {{VALUE}};'
+                ])
+            )
+            ->registerField('background_color_hover', FieldManager::COLOR()
+                ->setLabel('Background Color')
+                ->setDefault('#2563EB')
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element:hover' => 'background-color: {{VALUE}};'
+                ])
+            )
+            ->registerField('border_width_hover', FieldManager::NUMBER()
+                ->setLabel('Border Width')
+                ->setUnit('px')
+                ->setDefault(2)
+                ->setSelectors([
+                    '{{WRAPPER}} .button-element:hover' => 'border-width: {{VALUE}}{{UNIT}};'
+                ])
+            )
+            ->endTab();
+        
 //        $control->addTab('button_widget_normal',__('Normal'))
 //            ->registerField('button_widget_normal_text_color', FieldManager::COLOR()
 //                ->setLabel('Text Color')
