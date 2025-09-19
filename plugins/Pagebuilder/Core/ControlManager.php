@@ -51,35 +51,77 @@ class ControlManager
         } else {
             throw new \InvalidArgumentException('Field must be instance of BaseField or FieldInterface');
         }
-        
+
+        // Priority: Tab > Group > Standalone
+        if ($this->currentTab) {
+            // Register field in current tab (may also be within a group)
+            $this->registerFieldInTab($id, $fieldConfig);
+        } elseif ($this->currentGroup) {
+            // Register field in current group
+            $this->registerFieldInGroup($id, $fieldConfig);
+        } else {
+            // Register as standalone field
+            $this->fields[$id] = $fieldConfig;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Register field in current tab
+     */
+    private function registerFieldInTab(string $id, array $fieldConfig): void
+    {
+        if (!isset($this->structure['tabs'])) {
+            $this->structure['tabs'] = [];
+        }
+
+        if (!isset($this->structure['tabs'][$this->currentTab])) {
+            $this->structure['tabs'][$this->currentTab] = [
+                'type' => 'tab',
+                'label' => $this->tabs[$this->currentTab]['label'] ?? '',
+                'icon' => $this->tabs[$this->currentTab]['icon'] ?? null,
+                'fields' => [],
+                'groups' => []
+            ];
+        }
+
+        // If we're also in a group within the tab
         if ($this->currentGroup) {
-            if (!isset($this->structure['groups'])) {
-                $this->structure['groups'] = [];
-            }
-            if (!isset($this->structure['groups'][$this->currentGroup])) {
-                $this->structure['groups'][$this->currentGroup] = [
+            if (!isset($this->structure['tabs'][$this->currentTab]['groups'][$this->currentGroup])) {
+                $this->structure['tabs'][$this->currentTab]['groups'][$this->currentGroup] = [
                     'type' => 'group',
                     'label' => $this->groups[$this->currentGroup]['label'] ?? '',
                     'fields' => []
                 ];
             }
-            $this->structure['groups'][$this->currentGroup]['fields'][$id] = $fieldConfig;
-        } elseif ($this->currentTab) {
-            if (!isset($this->structure['tabs'])) {
-                $this->structure['tabs'] = [];
-            }
-            if (!isset($this->structure['tabs'][$this->currentTab])) {
-                $this->structure['tabs'][$this->currentTab] = [
-                    'label' => $this->tabs[$this->currentTab]['label'] ?? '',
-                    'fields' => []
-                ];
-            }
-            $this->structure['tabs'][$this->currentTab]['fields'][$id] = $fieldConfig;
+            $this->structure['tabs'][$this->currentTab]['groups'][$this->currentGroup]['fields'][$id] = $fieldConfig;
         } else {
-            $this->fields[$id] = $fieldConfig;
+            // Direct field in tab
+            $this->structure['tabs'][$this->currentTab]['fields'][$id] = $fieldConfig;
         }
-        
-        return $this;
+    }
+
+    /**
+     * Register field in current group
+     */
+    private function registerFieldInGroup(string $id, array $fieldConfig): void
+    {
+        if (!isset($this->structure['groups'])) {
+            $this->structure['groups'] = [];
+        }
+
+        if (!isset($this->structure['groups'][$this->currentGroup])) {
+            $this->structure['groups'][$this->currentGroup] = [
+                'type' => 'group',
+                'label' => $this->groups[$this->currentGroup]['label'] ?? '',
+                'collapsible' => $this->groups[$this->currentGroup]['collapsible'] ?? false,
+                'collapsed' => $this->groups[$this->currentGroup]['collapsed'] ?? false,
+                'fields' => []
+            ];
+        }
+
+        $this->structure['groups'][$this->currentGroup]['fields'][$id] = $fieldConfig;
     }
 
     /**
@@ -178,27 +220,122 @@ class ControlManager
      * Get the final field configuration
      *
      * @return array<string, mixed>
+     * @throws \InvalidArgumentException
      */
     public function getFields(): array
     {
+        // Validate the structure before returning
+        $this->validateStructure();
+
         $result = [];
-        
+
         // Add standalone fields
         $result = array_merge($result, $this->fields);
-        
+
         // Add grouped fields
         if (!empty($this->structure['groups'])) {
             foreach ($this->structure['groups'] as $groupId => $group) {
                 $result[$groupId] = $group;
             }
         }
-        
+
         // Add tabbed fields
         if (!empty($this->structure['tabs'])) {
             $result['_tabs'] = $this->structure['tabs'];
         }
-        
+
         return $result;
+    }
+
+    /**
+     * Validate the control structure for common issues
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function validateStructure(): void
+    {
+        $hasTabs = !empty($this->structure['tabs']);
+        $hasGroups = !empty($this->structure['groups']);
+        $hasStandaloneFields = !empty($this->fields);
+
+        // Check for mixing tabs and groups at the same level improperly
+        if ($hasTabs && $hasGroups) {
+            // This is actually OK - we support both tabs and groups
+            // But let's check if tabs contain groups or vice versa improperly
+            $this->validateTabsAndGroupsStructure();
+        }
+
+        // Check for unclosed tabs or groups
+        if ($this->currentTab !== null) {
+            throw new \InvalidArgumentException(
+                "Widget field structure error: Tab '{$this->currentTab}' was opened but never closed. " .
+                "Make sure to call endTab() after adding fields to a tab. " .
+                "Example: \$control->addTab('normal', 'Normal')->registerField(...)->endTab();"
+            );
+        }
+
+        if ($this->currentGroup !== null) {
+            throw new \InvalidArgumentException(
+                "Widget field structure error: Group '{$this->currentGroup}' was opened but never closed. " .
+                "Make sure to call endGroup() after adding fields to a group. " .
+                "Example: \$control->addGroup('styling', 'Styling')->registerField(...)->endGroup();"
+            );
+        }
+
+        // Warn about potential structure issues
+        if ($hasTabs && $hasStandaloneFields) {
+            error_log(
+                "Widget structure warning: You have both tabs and standalone fields. " .
+                "Consider organizing standalone fields into groups or tabs for better UX. " .
+                "Tabs: " . implode(', ', array_keys($this->structure['tabs'])) .
+                ". Standalone fields: " . implode(', ', array_keys($this->fields))
+            );
+        }
+    }
+
+    /**
+     * Validate tabs and groups structure
+     */
+    private function validateTabsAndGroupsStructure(): void
+    {
+        // Check for empty tabs
+        foreach ($this->structure['tabs'] as $tabId => $tab) {
+            $hasFields = !empty($tab['fields']);
+            $hasGroups = !empty($tab['groups']);
+
+            if (!$hasFields && !$hasGroups) {
+                throw new \InvalidArgumentException(
+                    "Widget field structure error: Tab '{$tabId}' is empty. " .
+                    "Tabs must contain at least one field or group. " .
+                    "Add fields using \$control->addTab('{$tabId}', 'Label')->registerField(...) " .
+                    "or groups using addGroup() within the tab."
+                );
+            }
+
+            // Check groups within tabs
+            if ($hasGroups) {
+                foreach ($tab['groups'] as $groupId => $group) {
+                    if (empty($group['fields'])) {
+                        throw new \InvalidArgumentException(
+                            "Widget field structure error: Group '{$groupId}' within tab '{$tabId}' is empty. " .
+                            "Groups must contain at least one field. " .
+                            "Add fields using \$control->addTab('{$tabId}', 'Label')->addGroup('{$groupId}', 'Group Label')->registerField(...);"
+                        );
+                    }
+                }
+            }
+        }
+
+        // Check for empty standalone groups
+        foreach ($this->structure['groups'] as $groupId => $group) {
+            if (empty($group['fields'])) {
+                throw new \InvalidArgumentException(
+                    "Widget field structure error: Group '{$groupId}' is empty. " .
+                    "Groups must contain at least one field. " .
+                    "Add fields using \$control->addGroup('{$groupId}', 'Label')->registerField(...);"
+                );
+            }
+        }
     }
 
     /**

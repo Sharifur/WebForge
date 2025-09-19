@@ -124,85 +124,138 @@ class ButtonWidget extends BaseWidget
     {
         $control = new ControlManager();
 
-        // Button State Tabs - Normal and Hover
+        // Example of PROPER structure: Tabs with Groups inside
+
+        // Normal State Tab with organized groups
         $control->addTab('normal', 'Normal State')
-            ->registerField('text_color', FieldManager::COLOR()
-                ->setLabel('Text Color')
-                ->setDefault('#FFFFFF')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
-                ])
-            )
-            ->registerField('background_color', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#3B82F6')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'background-color: {{VALUE}};'
-                ])
-            )
-            ->registerField('border_width', FieldManager::NUMBER()
-                ->setLabel('Border Width')
-                ->setUnit('px')
-                ->setDefault(0)
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'border-width: {{VALUE}}{{UNIT}}; border-style: solid; border-color: currentColor;'
-                ])
-            )
-            ->registerField('border_radius', FieldManager::NUMBER()
-                ->setLabel('Border Radius')
-                ->setUnit('px')
-                ->setDefault(6)
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'border-radius: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->registerField('padding', FieldManager::DIMENSION()
-                ->setLabel('Padding')
-                ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
-                ->setUnits(['px', 'em', '%'])
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'padding: {{VALUE}};'
-                ])
-            )
+            // Text Styling Group within Normal tab
+            ->addGroup('text_styling', 'Text Styling')
+                ->registerField('text_color', FieldManager::COLOR()
+                    ->setLabel('Text Color')
+                    ->setDefault('#FFFFFF')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
+                    ])
+                )
+                ->registerField('font_weight', FieldManager::SELECT()
+                    ->setLabel('Font Weight')
+                    ->setOptions([
+                        '400' => 'Normal',
+                        '500' => 'Medium',
+                        '600' => 'Semi Bold',
+                        '700' => 'Bold'
+                    ])
+                    ->setDefault('500')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'font-weight: {{VALUE}};'
+                    ])
+                )
+                ->endGroup()
+
+            // Background Group within Normal tab
+            ->addGroup('background_styling', 'Background')
+                ->registerField('background_color', FieldManager::COLOR()
+                    ->setLabel('Background Color')
+                    ->setDefault('#3B82F6')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'background-color: {{VALUE}};'
+                    ])
+                )
+                ->endGroup()
+
+            // Border Group within Normal tab
+            ->addGroup('border_styling', 'Border & Shape')
+                ->registerField('border_width', FieldManager::NUMBER()
+                    ->setLabel('Border Width')
+                    ->setUnit('px')
+                    ->setDefault(0)
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'border-width: {{VALUE}}{{UNIT}}; border-style: solid; border-color: currentColor;'
+                    ])
+                )
+                ->registerField('border_radius', FieldManager::NUMBER()
+                    ->setLabel('Border Radius')
+                    ->setUnit('px')
+                    ->setDefault(6)
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'border-radius: {{VALUE}}{{UNIT}};'
+                    ])
+                )
+                ->endGroup()
+
+            // Spacing Group within Normal tab
+            ->addGroup('spacing', 'Spacing')
+                ->registerField('padding', FieldManager::DIMENSION()
+                    ->setLabel('Padding')
+                    ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
+                    ->setUnits(['px', 'em', '%'])
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'padding: {{VALUE}};'
+                    ])
+                )
+                ->endGroup()
             ->endTab();
 
+        // Hover State Tab with organized groups
         $control->addTab('hover', 'Hover State')
-            ->registerField('text_color_hover', FieldManager::COLOR()
-                ->setLabel('Text Color')
-                ->setDefault('#FFFFFF')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button:hover' => 'color: {{VALUE}};'
-                ])
-            )
-            ->registerField('background_color_hover', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#2563EB')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button:hover' => 'background-color: {{VALUE}};'
-                ])
-            )
-            ->registerField('border_width_hover', FieldManager::NUMBER()
-                ->setLabel('Border Width')
-                ->setUnit('px')
-                ->setDefault(2)
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button:hover' => 'border-width: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->registerField('transform_hover', FieldManager::SELECT()
-                ->setLabel('Hover Effect')
-                ->setOptions([
-                    'none' => 'None',
-                    'scale(1.05)' => 'Scale Up',
-                    'translateY(-2px)' => 'Lift Up',
-                    'scale(1.05) translateY(-2px)' => 'Scale + Lift'
-                ])
-                ->setDefault('none')
-                ->setSelectors([
-                    '{{WRAPPER}} .simple-button:hover' => 'transform: {{VALUE}};'
-                ])
-            )
+            // Hover Colors Group
+            ->addGroup('hover_colors', 'Hover Colors')
+                ->registerField('text_color_hover', FieldManager::COLOR()
+                    ->setLabel('Text Color')
+                    ->setDefault('#FFFFFF')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button:hover' => 'color: {{VALUE}};'
+                    ])
+                )
+                ->registerField('background_color_hover', FieldManager::COLOR()
+                    ->setLabel('Background Color')
+                    ->setDefault('#2563EB')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button:hover' => 'background-color: {{VALUE}};'
+                    ])
+                )
+                ->endGroup()
+
+            // Hover Effects Group
+            ->addGroup('hover_effects', 'Hover Effects')
+                ->registerField('transform_hover', FieldManager::SELECT()
+                    ->setLabel('Hover Transform')
+                    ->setOptions([
+                        'none' => 'None',
+                        'scale(1.05)' => 'Scale Up',
+                        'translateY(-2px)' => 'Lift Up',
+                        'scale(1.05) translateY(-2px)' => 'Scale + Lift'
+                    ])
+                    ->setDefault('none')
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button:hover' => 'transform: {{VALUE}};'
+                    ])
+                )
+                ->registerField('transition_duration', FieldManager::NUMBER()
+                    ->setLabel('Transition Duration')
+                    ->setUnit('ms')
+                    ->setDefault(200)
+                    ->setMin(0)
+                    ->setMax(1000)
+                    ->setSelectors([
+                        '{{WRAPPER}} .simple-button' => 'transition-duration: {{VALUE}}{{UNIT}};'
+                    ])
+                )
+                ->endGroup()
             ->endTab();
+
+        // Standalone group outside tabs (this is also supported)
+        $control->addGroup('advanced_styling', 'Advanced Styling')
+            ->registerField('box_shadow', FieldManager::TEXT()
+                ->setLabel('Box Shadow')
+                ->setDefault('0 4px 6px rgba(0, 0, 0, 0.1)')
+                ->setPlaceholder('0 4px 6px rgba(0, 0, 0, 0.1)')
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'box-shadow: {{VALUE}};'
+                ])
+                ->setDescription('Custom CSS box shadow (e.g., 0 4px 6px rgba(0, 0, 0, 0.1))')
+            )
+            ->endGroup();
 
         return $control->getFields();
     }
