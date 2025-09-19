@@ -639,11 +639,25 @@ class WidgetController extends Controller
             ], 422);
 
         } catch (\Exception $e) {
-            return response()->json([
+            $errorData = [
                 'success' => false,
                 'message' => 'Failed to render widget preview',
                 'error' => $e->getMessage()
-            ], 500);
+            ];
+
+            // Add detailed debugging information if debug mode is enabled
+            if (config('app.debug')) {
+                $errorData['debug'] = [
+                    'exception_class' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                    'widget_type' => $type ?? 'unknown',
+                    'request_settings' => $request->get('settings', [])
+                ];
+            }
+
+            return response()->json($errorData, 500);
         }
     }
 

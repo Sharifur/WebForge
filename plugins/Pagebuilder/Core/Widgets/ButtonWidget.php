@@ -124,69 +124,8 @@ class ButtonWidget extends BaseWidget
     {
         $control = new ControlManager();
 
-        // Normal State Tab
+        // Button State Tabs - Normal and Hover
         $control->addTab('normal', 'Normal State')
-            ->registerField('text_color', FieldManager::COLOR()
-                ->setLabel('Text Color')
-                ->setDefault('#FFFFFF')
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element' => 'color: {{VALUE}};'
-                ])
-            )
-            ->registerField('background_color', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#3B82F6')
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element' => 'background-color: {{VALUE}};'
-                ])
-            )
-            ->registerField('border_width', FieldManager::NUMBER()
-                ->setLabel('Border Width')
-                ->setUnit('px')
-                ->setDefault(0)
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element' => 'border-width: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->endTab();
-
-        // Hover State Tab
-        $control->addTab('hover', 'Hover State')
-            ->registerField('text_color_hover', FieldManager::COLOR()
-                ->setLabel('Text Color')
-                ->setDefault('#FFFFFF')
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element:hover' => 'color: {{VALUE}};'
-                ])
-            )
-            ->registerField('background_color_hover', FieldManager::COLOR()
-                ->setLabel('Background Color')
-                ->setDefault('#2563EB')
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element:hover' => 'background-color: {{VALUE}};'
-                ])
-            )
-            ->registerField('border_width_hover', FieldManager::NUMBER()
-                ->setLabel('Border Width')
-                ->setUnit('px')
-                ->setDefault(2)
-                ->setSelectors([
-                    '{{WRAPPER}} .button-element:hover' => 'border-width: {{VALUE}}{{UNIT}};'
-                ])
-            )
-            ->endTab();
-        
-//        $control->addTab('button_widget_normal',__('Normal'))
-//            ->registerField('button_widget_normal_text_color', FieldManager::COLOR()
-//                ->setLabel('Text Color')
-//                ->setDefault('#FFFFFF')
-//                ->setSelectors([
-//                    '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
-//                ])
-//            )
-//        ->endTab();
-        // Button-specific styling only
-        $control->addGroup('colors', 'Button Colors')
             ->registerField('text_color', FieldManager::COLOR()
                 ->setLabel('Text Color')
                 ->setDefault('#FFFFFF')
@@ -194,26 +133,76 @@ class ButtonWidget extends BaseWidget
                     '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
                 ])
             )
-            ->registerField('btn_padding', FieldManager::DIMENSION()
-                ->setLabel('padding')
+            ->registerField('background_color', FieldManager::COLOR()
+                ->setLabel('Background Color')
+                ->setDefault('#3B82F6')
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'background-color: {{VALUE}};'
+                ])
+            )
+            ->registerField('border_width', FieldManager::NUMBER()
+                ->setLabel('Border Width')
+                ->setUnit('px')
+                ->setDefault(0)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'border-width: {{VALUE}}{{UNIT}}; border-style: solid; border-color: currentColor;'
+                ])
+            )
+            ->registerField('border_radius', FieldManager::NUMBER()
+                ->setLabel('Border Radius')
+                ->setUnit('px')
+                ->setDefault(6)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button' => 'border-radius: {{VALUE}}{{UNIT}};'
+                ])
+            )
+            ->registerField('padding', FieldManager::DIMENSION()
+                ->setLabel('Padding')
+                ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
                 ->setUnits(['px', 'em', '%'])
-                ->setResponsive(true)
                 ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'margin: {{VALUE}};'
+                    '{{WRAPPER}} .simple-button' => 'padding: {{VALUE}};'
                 ])
             )
-            ->registerField('button_background', FieldManager::BACKGROUND_GROUP()
-                ->setLabel('Button Background')
-                ->setAllowedTypes(['none', 'color', 'gradient'])
-                ->setDefaultType('color')
-                ->setDefaultBackground(['color' => '#3B82F6'])
-                ->setEnableHover(true)
+            ->endTab();
+
+        $control->addTab('hover', 'Hover State')
+            ->registerField('text_color_hover', FieldManager::COLOR()
+                ->setLabel('Text Color')
+                ->setDefault('#FFFFFF')
                 ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'background: {{VALUE}};'
+                    '{{WRAPPER}} .simple-button:hover' => 'color: {{VALUE}};'
                 ])
-                ->setDescription('Configure button background with color, gradient or none')
             )
-            ->endGroup();
+            ->registerField('background_color_hover', FieldManager::COLOR()
+                ->setLabel('Background Color')
+                ->setDefault('#2563EB')
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button:hover' => 'background-color: {{VALUE}};'
+                ])
+            )
+            ->registerField('border_width_hover', FieldManager::NUMBER()
+                ->setLabel('Border Width')
+                ->setUnit('px')
+                ->setDefault(2)
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button:hover' => 'border-width: {{VALUE}}{{UNIT}};'
+                ])
+            )
+            ->registerField('transform_hover', FieldManager::SELECT()
+                ->setLabel('Hover Effect')
+                ->setOptions([
+                    'none' => 'None',
+                    'scale(1.05)' => 'Scale Up',
+                    'translateY(-2px)' => 'Lift Up',
+                    'scale(1.05) translateY(-2px)' => 'Scale + Lift'
+                ])
+                ->setDefault('none')
+                ->setSelectors([
+                    '{{WRAPPER}} .simple-button:hover' => 'transform: {{VALUE}};'
+                ])
+            )
+            ->endTab();
 
         return $control->getFields();
     }
@@ -250,101 +239,64 @@ class ButtonWidget extends BaseWidget
         $alignment = $layout['alignment'] ?? 'left';
         $width = $layout['width'] ?? 'auto';
 
-        // Build base button classes with Tailwind styling
-        $classes = [
-            // Base button styles
+        // Generate dynamic CSS from style tab settings
+        $inlineStyles = $this->generateInlineStyles(['style' => $style]);
+        $cssClasses = $this->buildCssClasses($settings);
+
+        // Base button classes (minimal, let CSS handle styling)
+        $baseClasses = [
+            'simple-button',
             'inline-flex',
             'items-center',
             'justify-center',
             'font-medium',
-            'rounded-md',
             'transition-all',
             'duration-200',
-            'focus:outline-none',
-            'focus:ring-2',
-            'focus:ring-offset-2',
-            'hover:scale-105',
-            'active:scale-95',
             'cursor-pointer',
-            'select-none'
+            'select-none',
+            'text-decoration-none'
         ];
 
-        // Add button type styles
-        switch ($buttonType) {
-            case 'primary':
-                $classes = array_merge($classes, [
-                    'bg-blue-600',
-                    'text-white',
-                    'hover:bg-blue-700',
-                    'focus:ring-blue-500',
-                    'shadow-md',
-                    'hover:shadow-lg'
-                ]);
-                break;
-            case 'secondary':
-                $classes = array_merge($classes, [
-                    'bg-gray-100',
-                    'text-gray-900',
-                    'hover:bg-gray-200',
-                    'focus:ring-gray-500',
-                    'border',
-                    'border-gray-300',
-                    'hover:border-gray-400'
-                ]);
-                break;
-            case 'success':
-                $classes = array_merge($classes, [
-                    'bg-green-600',
-                    'text-white',
-                    'hover:bg-green-700',
-                    'focus:ring-green-500',
-                    'shadow-md',
-                    'hover:shadow-lg'
-                ]);
-                break;
-            case 'danger':
-                $classes = array_merge($classes, [
-                    'bg-red-600',
-                    'text-white',
-                    'hover:bg-red-700',
-                    'focus:ring-red-500',
-                    'shadow-md',
-                    'hover:shadow-lg'
-                ]);
-                break;
-        }
+        // Add type-specific fallback classes (only if no style settings)
+        if (empty($style)) {
+            switch ($buttonType) {
+                case 'primary':
+                    $baseClasses = array_merge($baseClasses, [
+                        'bg-blue-600', 'text-white', 'px-4', 'py-2', 'rounded-md'
+                    ]);
+                    break;
+                case 'secondary':
+                    $baseClasses = array_merge($baseClasses, [
+                        'bg-gray-100', 'text-gray-900', 'px-4', 'py-2', 'rounded-md', 'border'
+                    ]);
+                    break;
+                case 'success':
+                    $baseClasses = array_merge($baseClasses, [
+                        'bg-green-600', 'text-white', 'px-4', 'py-2', 'rounded-md'
+                    ]);
+                    break;
+                case 'danger':
+                    $baseClasses = array_merge($baseClasses, [
+                        'bg-red-600', 'text-white', 'px-4', 'py-2', 'rounded-md'
+                    ]);
+                    break;
+            }
 
-        // Add size styles
-        switch ($size) {
-            case 'small':
-                $classes = array_merge($classes, [
-                    'px-3',
-                    'py-1.5',
-                    'text-sm'
-                ]);
-                break;
-            case 'large':
-                $classes = array_merge($classes, [
-                    'px-6',
-                    'py-3',
-                    'text-lg'
-                ]);
-                break;
-            default: // normal
-                $classes = array_merge($classes, [
-                    'px-4',
-                    'py-2',
-                    'text-base'
-                ]);
+            // Size adjustments for fallback
+            if ($size === 'small') {
+                $baseClasses = array_merge($baseClasses, ['px-3', 'py-1.5', 'text-sm']);
+            } elseif ($size === 'large') {
+                $baseClasses = array_merge($baseClasses, ['px-6', 'py-3', 'text-lg']);
+            }
         }
 
         // Add width class
         if ($width === 'full') {
-            $classes[] = 'w-full';
+            $baseClasses[] = 'w-full';
         }
 
-        // Add alignment classes for wrapper div
-        $wrapperClasses = ['simple-button'];
+        // Add alignment classes for wrapper
+        $wrapperClasses = [];
         switch ($alignment) {
             case 'center':
                 $wrapperClasses[] = 'text-center';
@@ -356,14 +308,16 @@ class ButtonWidget extends BaseWidget
                 $wrapperClasses[] = 'text-left';
         }
 
-        $classString = implode(' ', $classes);
+        $buttonClasses = array_merge($baseClasses, explode(' ', $cssClasses));
+        $buttonClassString = implode(' ', array_filter($buttonClasses));
         $wrapperClassString = implode(' ', $wrapperClasses);
 
         // Build attributes
         $attributes = [
-            'class' => $classString,
+            'class' => $buttonClassString,
             'href' => $url,
-            'target' => $target
+            'target' => $target,
+            'style' => $inlineStyles
         ];
 
         // Build the button HTML
