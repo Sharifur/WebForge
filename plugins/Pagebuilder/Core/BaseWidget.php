@@ -347,7 +347,7 @@ abstract class BaseWidget
     {
         return [
             'general' => $this->getGeneralFields(),
-            'style' => $this->getFieldsByTab('style'), // Use the merged fields
+            'style' => $this->getStyleFields(), // Use the direct style fields from widget
             'advanced' => $this->getAdvancedFields()
         ];
     }
@@ -725,15 +725,40 @@ abstract class BaseWidget
     private function validateFieldGroup(array $fields, array $values, string $prefix): array
     {
         $errors = [];
-        
+
         foreach ($fields as $fieldKey => $field) {
-            if ($field['type'] === 'group') {
+            // Handle special cases: tabs container
+            if ($fieldKey === '_tabs') {
+                $tabErrors = $this->validateTabsContainer($field, $values, $prefix);
+                $errors = array_merge($errors, $tabErrors);
+                continue;
+            }
+
+            // Ensure field is an array and has required structure
+            if (!is_array($field)) {
+                continue;
+            }
+
+            // Handle groups
+            if (isset($field['type']) && $field['type'] === 'group') {
                 $groupErrors = $this->validateFieldGroup(
-                    $field['fields'], 
-                    $values[$fieldKey] ?? [], 
+                    $field['fields'],
+                    $values[$fieldKey] ?? [],
                     $prefix . '.' . $fieldKey
                 );
                 $errors = array_merge($errors, $groupErrors);
+                continue;
+            }
+
+            // Handle tabs
+            if (isset($field['type']) && $field['type'] === 'tab') {
+                $tabErrors = $this->validateTabFields($field, $values[$fieldKey] ?? [], $prefix . '.' . $fieldKey);
+                $errors = array_merge($errors, $tabErrors);
+                continue;
+            }
+
+            // Skip if no type is defined (malformed field)
+            if (!isset($field['type'])) {
                 continue;
             }
             
@@ -772,11 +797,61 @@ abstract class BaseWidget
                 }
             }
         }
-        
+
         return $errors;
     }
-    
-    
+
+    /**
+     * Validate tabs container structure
+     */
+    private function validateTabsContainer(array $tabs, array $values, string $prefix): array
+    {
+        $errors = [];
+
+        foreach ($tabs as $tabKey => $tab) {
+            if (!is_array($tab)) {
+                continue;
+            }
+
+            $tabValues = $values[$tabKey] ?? [];
+            $tabErrors = $this->validateTabFields($tab, $tabValues, $prefix . '.' . $tabKey);
+            $errors = array_merge($errors, $tabErrors);
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate individual tab fields
+     */
+    private function validateTabFields(array $tab, array $values, string $prefix): array
+    {
+        $errors = [];
+
+        // Validate direct fields in tab
+        if (isset($tab['fields']) && is_array($tab['fields'])) {
+            $fieldErrors = $this->validateFieldGroup($tab['fields'], $values, $prefix);
+            $errors = array_merge($errors, $fieldErrors);
+        }
+
+        // Validate groups within tab
+        if (isset($tab['groups']) && is_array($tab['groups'])) {
+            foreach ($tab['groups'] as $groupKey => $group) {
+                if (is_array($group) && isset($group['fields'])) {
+                    $groupErrors = $this->validateFieldGroup(
+                        $group['fields'],
+                        $values[$groupKey] ?? [],
+                        $prefix . '.' . $groupKey
+                    );
+                    $errors = array_merge($errors, $groupErrors);
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+
     /**
      * Get sanitized text content
      * Escapes HTML entities to prevent XSS
