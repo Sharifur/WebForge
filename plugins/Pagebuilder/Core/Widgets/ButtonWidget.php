@@ -124,6 +124,15 @@ class ButtonWidget extends BaseWidget
     {
         $control = new ControlManager();
 
+//        $control->addTab('button_widget_normal',__('Normal'))
+//            ->registerField('button_widget_normal_text_color', FieldManager::COLOR()
+//                ->setLabel('Text Color')
+//                ->setDefault('#FFFFFF')
+//                ->setSelectors([
+//                    '{{WRAPPER}} .simple-button' => 'color: {{VALUE}};'
+//                ])
+//            )
+//        ->endTab();
         // Button-specific styling only
         $control->addGroup('colors', 'Button Colors')
             ->registerField('text_color', FieldManager::COLOR()

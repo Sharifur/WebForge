@@ -540,14 +540,14 @@ const EnhancedLinkPicker = ({
             <Eye className="w-4 h-4" />
             Link Preview
           </div>
-          <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
-            <div className="text-sm text-gray-600 mb-1">How this link will appear:</div>
+          <div class="bg-gray-50 p-3 rounded-md border border-gray-200">
+            <div class="text-sm text-gray-600 mb-1">How this link will appear:</div>
             <a
               href={linkData.url}
               target={linkData.target}
               rel={linkData.rel.join(' ')}
               title={linkData.title}
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-blue-600 hover:text-blue-800 underline break-all block w-full text-xs break-all"
               onClick={(e) => e.preventDefault()}
             >
               {linkData.text || linkData.url}

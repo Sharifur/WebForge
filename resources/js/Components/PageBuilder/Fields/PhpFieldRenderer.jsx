@@ -12,7 +12,6 @@ import CheckboxFieldComponent from './CheckboxFieldComponent';
 import ToggleFieldComponent from './ToggleFieldComponent';
 import NumberFieldComponent from './NumberFieldComponent';
 import UrlFieldComponent from './UrlFieldComponent';
-import ColorFieldComponent from './ColorFieldComponent';
 import RangeFieldComponent from './RangeFieldComponent';
 import ImageFieldComponent from './ImageFieldComponent';
 import RepeaterFieldComponent from './RepeaterFieldComponent';
@@ -148,12 +147,12 @@ const PhpFieldRenderer = ({ fieldKey, fieldConfig, value, onChange }) => {
 
       case 'color':
         return (
-          <ColorFieldComponent
-            fieldKey={fieldKey}
-            fieldConfig={fieldConfig}
-            value={value}
-            onChange={onChange}
-          />
+          <Suspense fallback={<div className="animate-pulse bg-gray-200 h-12 rounded"></div>}>
+            <EnhancedColorPicker
+              value={value || fieldConfig.default || '#000000'}
+              onChange={onChange}
+            />
+          </Suspense>
         );
 
       case 'range':

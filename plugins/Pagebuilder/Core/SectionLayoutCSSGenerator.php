@@ -57,7 +57,8 @@ class SectionLayoutCSSGenerator
         return "
 .section-layout-boxed {
   max-width: {$maxWidth}px;
-  margin: 0 auto;
+  margin-left: -15px;
+  margin-right: -15px;
   padding-left: 15px;
   padding-right: 15px;
 }";
@@ -73,17 +74,13 @@ class SectionLayoutCSSGenerator
     {
         return "
 .section-layout-full_width_contained {
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  width: 100%;
 }
 
 .section-layout-full_width_contained .section-inner {
   max-width: {$maxWidth}px;
-  margin: 0 auto;
+  margin-left: -15px;
+  margin-right: -15px;
   padding-left: 15px;
   padding-right: 15px;
 }";
@@ -98,17 +95,13 @@ class SectionLayoutCSSGenerator
     {
         return "
 .section-layout-full_width {
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
+  width: 100%;
 }
 
 .section-layout-full_width .section-inner {
   width: 100%;
-  max-width: none;
+  margin-left: -15px;
+  margin-right: -15px;
   padding-left: 15px;
   padding-right: 15px;
 }";
