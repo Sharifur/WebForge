@@ -51,6 +51,37 @@ abstract class BaseWidget
     abstract public function getStyleFields(): array;
 
     /**
+     * Whether this widget should inherit default style fields
+     * By default, widgets do NOT inherit default fields (only show their own PHP-defined fields)
+     * Override to return true for sections, columns, and special widgets that need defaults
+     */
+    protected function shouldInheritDefaultStyleFields(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Whether this widget should inherit default general fields
+     * By default, widgets do NOT inherit default fields (only show their own PHP-defined fields)
+     * Override to return true for sections, columns, and special widgets that need defaults
+     */
+    protected function shouldInheritDefaultGeneralFields(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Get essential default general fields for all widgets
+     * These are the core general controls that every widget should have
+     */
+    protected function getDefaultGeneralFields(): array
+    {
+        // Base widgets can define common general fields here
+        // For now, return empty - widgets define their own general fields
+        return [];
+    }
+
+    /**
      * Get essential default style fields for all widgets
      * These are the core styling controls that every widget should have
      */
@@ -330,12 +361,21 @@ abstract class BaseWidget
     {
         switch ($tab) {
             case 'general':
-                return $this->getGeneralFields();
+                $widgetGeneralFields = $this->getGeneralFields();
+                if ($this->shouldInheritDefaultGeneralFields()) {
+                    $defaultGeneralFields = $this->getDefaultGeneralFields();
+                    return array_merge($defaultGeneralFields, $widgetGeneralFields);
+                }
+                return $widgetGeneralFields;
             case 'style':
-                // Merge widget-specific style fields with default style fields
                 $widgetStyleFields = $this->getStyleFields();
-                $defaultStyleFields = $this->getDefaultStyleFields();
-                return array_merge($widgetStyleFields, $defaultStyleFields);
+                if ($this->shouldInheritDefaultStyleFields()) {
+                    // Merge default style fields with widget-specific style fields
+                    // Widget fields take priority over defaults
+                    $defaultStyleFields = $this->getDefaultStyleFields();
+                    return array_merge($defaultStyleFields, $widgetStyleFields);
+                }
+                return $widgetStyleFields;
             case 'advanced':
                 return $this->getAdvancedFields();
             default:
