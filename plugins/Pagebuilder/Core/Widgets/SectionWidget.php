@@ -51,6 +51,15 @@ class SectionWidget extends BaseWidget
         return WidgetCategory::CORE;
     }
 
+    /**
+     * Sections need default style fields for proper functionality
+     * Override default behavior to inherit background, spacing, border controls
+     */
+    protected function shouldInheritDefaultStyleFields(): bool
+    {
+        return true;
+    }
+
     protected function getWidgetTags(): array
     {
         return ['section', 'container', 'layout', 'wrapper', 'group'];
