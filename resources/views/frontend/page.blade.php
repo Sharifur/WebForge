@@ -2,7 +2,8 @@
 
 @section('styles')
 @if(!empty($pageBuilderCss))
-<style type="text/css">
+<style type="text/css" id="page-builder-styles">
+/* Page Builder CSS - Modern nested structure */
 {!! $pageBuilderCss !!}
 </style>
 @endif

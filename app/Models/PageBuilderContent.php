@@ -201,6 +201,52 @@ class PageBuilderContent extends Model
     }
 
     /**
+     * Get complete content structure with widget settings merged in
+     * This combines the layout structure with detailed widget settings
+     *
+     * @return array Complete page content ready for rendering
+     */
+    public function getCompleteContent(): array
+    {
+        $content = $this->content ?? ['containers' => []];
+
+        // Load all widgets for this page with their settings
+        $widgets = $this->widgets()->get()->keyBy('widget_id');
+
+        // Process each container - using explicit indexing to ensure references work
+        for ($containerIndex = 0; $containerIndex < count($content['containers']); $containerIndex++) {
+            $container = &$content['containers'][$containerIndex];
+
+            // Process each column in the container
+            for ($columnIndex = 0; $columnIndex < count($container['columns'] ?? []); $columnIndex++) {
+                $column = &$container['columns'][$columnIndex];
+
+                // Process each widget in the column
+                for ($widgetIndex = 0; $widgetIndex < count($column['widgets'] ?? []); $widgetIndex++) {
+                    $widget = &$column['widgets'][$widgetIndex];
+                    $widgetId = $widget['id'] ?? null;
+
+                    if ($widgetId && $widgets->has($widgetId)) {
+                        $widgetData = $widgets[$widgetId];
+
+                        // Merge widget settings into the content structure (frontend format)
+                        $widget = array_merge($widget, [
+                            'type' => $widgetData->widget_type,
+                            'content' => $widgetData->general_settings ?? [],  // Frontend expects 'content' not 'general'
+                            'style' => $widgetData->style_settings ?? [],
+                            'advanced' => $widgetData->advanced_settings ?? [],
+                            'is_visible' => $widgetData->is_visible ?? true,
+                            'is_enabled' => $widgetData->is_enabled ?? true,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return $content;
+    }
+
+    /**
      * Sync widgets with content structure
      * Updates widget positions based on current content layout
      */

@@ -611,7 +611,7 @@ class ListWidget extends BaseWidget
     /**
      * Generate CSS for this widget instance
      */
-    public function generateCSS(string $widgetId, array $settings): string
+    public function generateCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         $styleControl = new ControlManager();
         

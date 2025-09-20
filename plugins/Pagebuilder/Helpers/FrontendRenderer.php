@@ -88,7 +88,7 @@ class FrontendRenderer extends BaseRenderer
     {
         // Combine all CSS (accumulated + new)
         $allCss = $this->accumulatedCss . $css;
-        
+
         // Minify CSS if enabled
         if ($this->config['minify_css']) {
             $allCss = $this->minifyCss($allCss);
@@ -290,6 +290,7 @@ class FrontendRenderer extends BaseRenderer
         $classes = [
             'pb-widget',
             "pb-widget-{$widgetType}",
+            $widgetId, // Add widget ID as class for CSS targeting
             'mb-4' // Standard margin between widgets
         ];
 
@@ -330,7 +331,7 @@ class FrontendRenderer extends BaseRenderer
         \Log::warning("Widget rendering error for widget {$widgetId}: {$message}");
 
         // Return minimal error message for frontend users
-        return '<div class="pb-widget-error text-gray-400 text-sm p-4" id="' . $widgetId . '">
+        return '<div class="pb-widget-error text-gray-400 text-sm p-4 ' . $widgetId . '">
                     <p>Content temporarily unavailable.</p>
                 </div>';
     }
@@ -380,10 +381,129 @@ class FrontendRenderer extends BaseRenderer
     }
 
     /**
+     * Wrap CSS rules within .page-builder-content nested structure
+     *
+     * @param string $css Raw CSS content
+     * @return string CSS wrapped in nested .page-builder-content structure
+     */
+    private function wrapCssWithNestedSelectors(string $css): string
+    {
+        if (empty(trim($css))) {
+            return '';
+        }
+
+        // Parse CSS rules and group them
+        $rules = $this->parseCssRules($css);
+        $nestedCss = ".page-builder-content {\n";
+        $mediaQueries = [];
+
+        foreach ($rules as $rule) {
+            if (!empty($rule['selector']) && !empty($rule['properties'])) {
+                $type = $rule['type'] ?? 'rule';
+
+                if ($type === 'media') {
+                    // Handle media queries - extract them to be placed outside the main wrapper
+                    $mediaQueries[] = $rule;
+                } else {
+                    // Clean up selector - remove any existing .page-builder-content references
+                    $selector = str_replace('.page-builder-content ', '', $rule['selector']);
+                    $selector = str_replace('.page-builder-content', '', $selector);
+
+                    // Format nested rule with proper indentation
+                    $nestedCss .= "  " . trim($selector) . " {\n";
+                    $nestedCss .= "    " . trim($rule['properties']) . "\n";
+                    $nestedCss .= "  }\n\n";
+                }
+            }
+        }
+
+        $nestedCss .= "}\n\n";
+
+        // Add media queries outside the main wrapper
+        foreach ($mediaQueries as $mediaRule) {
+            $nestedCss .= $mediaRule['selector'] . " {\n";
+            $nestedCss .= "  .page-builder-content {\n";
+            $nestedCss .= "    " . trim($mediaRule['properties']) . "\n";
+            $nestedCss .= "  }\n";
+            $nestedCss .= "}\n\n";
+        }
+
+        return $nestedCss;
+    }
+
+    /**
+     * Parse CSS string into individual rules
+     *
+     * @param string $css Raw CSS content
+     * @return array Array of parsed CSS rules
+     */
+    private function parseCssRules(string $css): array
+    {
+        $rules = [];
+        $css = trim($css);
+
+        // Handle media queries and nested rules properly
+        $position = 0;
+        $length = strlen($css);
+
+        while ($position < $length) {
+            // Find the next opening brace
+            $openBrace = strpos($css, '{', $position);
+            if ($openBrace === false) break;
+
+            // Extract selector
+            $selector = trim(substr($css, $position, $openBrace - $position));
+
+            // Find matching closing brace
+            $braceCount = 1;
+            $closeBrace = $openBrace + 1;
+
+            while ($closeBrace < $length && $braceCount > 0) {
+                if ($css[$closeBrace] === '{') {
+                    $braceCount++;
+                } elseif ($css[$closeBrace] === '}') {
+                    $braceCount--;
+                }
+                $closeBrace++;
+            }
+
+            if ($braceCount === 0) {
+                // Extract properties (everything between braces)
+                $properties = trim(substr($css, $openBrace + 1, $closeBrace - $openBrace - 2));
+
+                if (!empty($selector) && !empty($properties)) {
+                    // Handle media queries differently
+                    if (strpos($selector, '@media') !== false) {
+                        // For media queries, keep the entire structure
+                        $rules[] = [
+                            'selector' => $selector,
+                            'properties' => $properties,
+                            'type' => 'media'
+                        ];
+                    } else {
+                        $rules[] = [
+                            'selector' => $selector,
+                            'properties' => $properties,
+                            'type' => 'rule'
+                        ];
+                    }
+                }
+
+                $position = $closeBrace;
+            } else {
+                // Couldn't find matching brace, skip this part
+                $position = $openBrace + 1;
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
      * Minify CSS for production performance
-     * 
+     *
      * Basic CSS minification to reduce file size for frontend delivery.
-     * 
+     *
      * @param string $css Raw CSS content
      * @return string Minified CSS
      */
@@ -537,6 +657,7 @@ class FrontendRenderer extends BaseRenderer
         $classes = [
             'pb-section',
             "pb-section-{$containerId}",
+            $containerId, // Add container ID as class for CSS targeting
             'relative' // For positioning context
         ];
 

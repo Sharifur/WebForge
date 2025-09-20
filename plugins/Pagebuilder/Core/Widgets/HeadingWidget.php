@@ -123,12 +123,6 @@ class HeadingWidget extends BaseWidget
         $control->addGroup('typography', 'Typography')
             ->registerField('heading_typography', FieldManager::TYPOGRAPHY_GROUP()
                 ->setLabel('Typography')
-                ->setDefaultTypography([
-                    'font_size' => ['value' => 32, 'unit' => 'px'],
-                    'font_weight' => '600',
-                    'line_height' => ['value' => 1.2, 'unit' => 'em'],
-                    'letter_spacing' => ['value' => 0, 'unit' => 'px']
-                ])
                 ->setEnableResponsive(true)
                 ->setDescription('Configure all typography settings for the heading')
             )
@@ -138,14 +132,12 @@ class HeadingWidget extends BaseWidget
         $control->addGroup('colors', 'Colors')
             ->registerField('text_color', FieldManager::COLOR()
                 ->setLabel('Text Color')
-                ->setDefault('#333333')
                 ->setSelectors([
                     '{{WRAPPER}} .heading-element' => 'color: {{VALUE}};'
                 ])
             )
             ->registerField('hover_color', FieldManager::COLOR()
                 ->setLabel('Hover Color')
-                ->setDefault('')
                 ->setCondition(['enable_link' => true])
                 ->setSelectors([
                     '{{WRAPPER}} .heading-element:hover' => 'color: {{VALUE}};'

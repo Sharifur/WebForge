@@ -161,7 +161,7 @@ class TestimonialWidget extends BaseWidget
         </div>";
     }
 
-    public function generateCSS(string $widgetId, array $settings): string
+    public function generateCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         $styleControl = new ControlManager();
         $this->registerStyleFields($styleControl);

@@ -605,12 +605,12 @@ abstract class BaseWidget
      * @param array $settings Widget settings
      * @return string Generated CSS
      */
-    public function generateCSS(string $widgetId, array $settings): string
+    public function generateCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         $cssParts = [];
         
         // 1. Base widget CSS (responsive, common styles)
-        $baseCss = $this->getBaseWidgetCSS($widgetId);
+        $baseCss = $this->getBaseWidgetCSS($widgetId, $sectionId);
         if (!empty($baseCss)) {
             $cssParts[] = $baseCss;
         }
@@ -622,7 +622,7 @@ abstract class BaseWidget
         }
         
         // 3. Field-generated CSS from AutoStyleGenerator
-        $fieldCss = $this->generateFieldCSS($widgetId, $settings);
+        $fieldCss = $this->generateFieldCSS($widgetId, $settings, $sectionId);
         if (!empty($fieldCss)) {
             $cssParts[] = $fieldCss;
         }
@@ -638,38 +638,41 @@ abstract class BaseWidget
 
     /**
      * Get base CSS that all widgets need (responsive utilities, etc.)
-     * 
+     *
      * @param string $widgetId Widget instance ID
+     * @param string|null $sectionId Section ID for CSS scoping
      * @return string Base CSS
      */
-    protected function getBaseWidgetCSS(string $widgetId): string
+    protected function getBaseWidgetCSS(string $widgetId, ?string $sectionId = null): string
     {
+        $prefix = $sectionId ? "#{$sectionId} " : '';
+
         return "
 /* Base Widget Styles for {$widgetId} */
-#{$widgetId}.xgp-widget {
+{$prefix}#{$widgetId}.xgp-widget {
     position: relative;
     box-sizing: border-box;
 }
 
-#{$widgetId}.xgp-widget * {
+{$prefix}#{$widgetId}.xgp-widget * {
     box-sizing: border-box;
 }
 
 /* Responsive Utilities */
 @media (max-width: 768px) {
-    #{$widgetId}.hide-mobile {
+    {$prefix}#{$widgetId}.hide-mobile {
         display: none !important;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
-    #{$widgetId}.hide-tablet {
+    {$prefix}#{$widgetId}.hide-tablet {
         display: none !important;
     }
 }
 
 @media (min-width: 1025px) {
-    #{$widgetId}.hide-desktop {
+    {$prefix}#{$widgetId}.hide-desktop {
         display: none !important;
     }
 }";
@@ -688,40 +691,253 @@ abstract class BaseWidget
 
     /**
      * Generate CSS from field configurations using ControlManager
-     * 
+     *
      * @param string $widgetId Widget instance ID
      * @param array $settings Widget settings
+     * @param string|null $sectionId Section ID for CSS scoping
      * @return string Field-generated CSS
      */
-    protected function generateFieldCSS(string $widgetId, array $settings): string
+    protected function generateFieldCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         try {
-            $styleControl = new ControlManager();
-            
-            // Skip field registration - use direct CSS generation
-            // The getStyleFields() already returns processed field data
-            // We'll use the fallback inline style generation instead
-            
-            // Get inline styles and wrap with proper selector
-            $inlineStyles = $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
-            
-            if (!empty($inlineStyles)) {
-                // Wrap inline styles with widget selector for proper CSS
-                return "#{$widgetId} .{$this->getWidgetType()}-element { {$inlineStyles} }";
-            }
-            
-            return '';
+            // Get style fields configuration with their selectors
+            $styleFields = $this->getStyleFields();
+            $styleSettings = $settings['style'] ?? [];
+
+            return $this->generateCSSFromFieldsData($styleFields, $styleSettings, $widgetId, $sectionId);
         } catch (\Exception $e) {
-            // Fallback to automatic inline style generation if ControlManager fails
+            // Fallback to automatic inline style generation if field processing fails
             $inlineStyles = $this->generateInlineStyles(['style' => $settings['style'] ?? []]);
-            
+
             if (!empty($inlineStyles)) {
                 // Wrap inline styles with widget selector for proper CSS
-                return "#{$widgetId} .{$this->getWidgetType()}-element { {$inlineStyles} }";
+                $prefix = $sectionId ? "#{$sectionId} " : '';
+                return "{$prefix}#{$widgetId} .{$this->getWidgetType()}-element { {$inlineStyles} }";
             }
-            
+
             return '';
         }
+    }
+
+    /**
+     * Generate CSS from field data structure
+     */
+    protected function generateCSSFromFieldsData(array $fields, array $values, string $widgetId, ?string $sectionId = null): string
+    {
+        $css = '';
+
+        foreach ($fields as $fieldKey => $fieldConfig) {
+            // Handle groups
+            if (isset($fieldConfig['type']) && $fieldConfig['type'] === 'group' && isset($fieldConfig['fields'])) {
+                $groupValues = $values[$fieldKey] ?? [];
+                $css .= $this->generateCSSFromFieldsData($fieldConfig['fields'], $groupValues, $widgetId, $sectionId);
+            }
+            // Handle tabs container
+            elseif ($fieldKey === '_tabs' && is_array($fieldConfig)) {
+                foreach ($fieldConfig as $tabKey => $tabConfig) {
+                    $tabValues = $values[$tabKey] ?? [];
+
+                    // Process direct fields in tab
+                    if (isset($tabConfig['fields'])) {
+                        $css .= $this->generateCSSFromFieldsData($tabConfig['fields'], $tabValues, $widgetId, $sectionId);
+                    }
+
+                    // Process groups in tab - handle both nested and flat data structures
+                    if (isset($tabConfig['groups'])) {
+                        foreach ($tabConfig['groups'] as $groupKey => $groupConfig) {
+                            if (isset($groupConfig['fields'])) {
+                                // First try nested structure: tabValues[groupKey]
+                                $groupValues = $tabValues[$groupKey] ?? [];
+
+                                // If no nested data, check if fields are stored directly in tab
+                                if (empty($groupValues)) {
+                                    $groupValues = $tabValues; // Use tab values directly for flat structure
+                                }
+
+                                $css .= $this->generateCSSFromFieldsData($groupConfig['fields'], $groupValues, $widgetId, $sectionId);
+                            }
+                        }
+                    }
+                }
+            }
+            // Handle individual fields with selectors
+            elseif (isset($fieldConfig['selectors']) && !empty($fieldConfig['selectors'])) {
+                $fieldValue = $values[$fieldKey] ?? null;
+
+                if ($fieldValue !== null) {
+                    $css .= $this->generateSingleFieldCSS($fieldConfig, $fieldValue, $widgetId, $sectionId);
+                }
+            }
+        }
+
+        return $css;
+    }
+
+    /**
+     * Generate CSS for a single field with its selectors
+     */
+    protected function generateSingleFieldCSS(array $fieldConfig, $value, string $widgetId, ?string $sectionId = null): string
+    {
+        $css = '';
+        $selectors = $fieldConfig['selectors'];
+
+        // Handle group fields (like BACKGROUND_GROUP) that should use single selector
+        if (is_string($selectors)) {
+            // Single selector for group fields - let the field type handle CSS generation
+            $prefix = $sectionId ? ".{$sectionId} " : '';
+            $processedSelector = str_replace('{{WRAPPER}}', "{$prefix}.{$widgetId}", $selectors);
+            $cssProperties = $this->generateFieldTypeCSS($fieldConfig, $value);
+
+            if (!empty($cssProperties)) {
+                $css .= "{$processedSelector} { {$cssProperties} }\n";
+            }
+        }
+        // Handle array selectors
+        elseif (is_array($selectors)) {
+            // Check if it's a simple array with just selectors (for group fields like BACKGROUND_GROUP)
+            if (array_is_list($selectors)) {
+                // Array contains just selectors, use the first one for group fields
+                $selector = $selectors[0] ?? '';
+                $prefix = $sectionId ? ".{$sectionId} " : '';
+                $processedSelector = str_replace('{{WRAPPER}}', "{$prefix}.{$widgetId}", $selector);
+                $cssProperties = $this->generateFieldTypeCSS($fieldConfig, $value);
+
+                if (!empty($cssProperties)) {
+                    $css .= "{$processedSelector} { {$cssProperties} }\n";
+                }
+            } else {
+                // Traditional array with selector => property mapping for simple fields
+                $unit = $fieldConfig['unit'] ?? '';
+
+                foreach ($selectors as $selector => $properties) {
+                    // Replace wrapper placeholder
+                    $prefix = $sectionId ? ".{$sectionId} " : '';
+                    $processedSelector = str_replace('{{WRAPPER}}', "{$prefix}.{$widgetId}", $selector);
+
+                    // Process properties based on field type
+                    $processedProperties = $this->processFieldProperties($properties, $value, $unit, $fieldConfig);
+
+                    if (!empty($processedProperties)) {
+                        $css .= "{$processedSelector} { {$processedProperties} }\n";
+                    }
+                }
+            }
+        }
+
+        return $css;
+    }
+
+    /**
+     * Generate CSS properties based on field type
+     */
+    protected function generateFieldTypeCSS(array $fieldConfig, $value): string
+    {
+        $type = $fieldConfig['type'] ?? '';
+
+        switch ($type) {
+            case 'background_group':
+                return $this->generateBackgroundCSS($value);
+
+            case 'color':
+                return "color: {$value};";
+
+            case 'dimension':
+                if (is_array($value)) {
+                    $unit = $fieldConfig['unit'] ?? 'px';
+                    $top = $value['top'] ?? 0;
+                    $right = $value['right'] ?? 0;
+                    $bottom = $value['bottom'] ?? 0;
+                    $left = $value['left'] ?? 0;
+                    return "padding: {$top}{$unit} {$right}{$unit} {$bottom}{$unit} {$left}{$unit};";
+                }
+                break;
+
+            case 'number':
+                $unit = $fieldConfig['unit'] ?? '';
+                return "value: {$value}{$unit};";
+        }
+
+        return '';
+    }
+
+    /**
+     * Generate background CSS from background group value
+     */
+    protected function generateBackgroundCSS($backgroundValue): string
+    {
+        if (!is_array($backgroundValue)) {
+            return '';
+        }
+
+        $styles = [];
+        $type = $backgroundValue['type'] ?? 'none';
+
+        switch ($type) {
+            case 'color':
+                if (!empty($backgroundValue['color'])) {
+                    $styles[] = "background-color: {$backgroundValue['color']};";
+                }
+                break;
+
+            case 'gradient':
+                if (!empty($backgroundValue['gradient'])) {
+                    $gradient = $backgroundValue['gradient'];
+                    $gradientType = $gradient['type'] ?? 'linear';
+                    $angle = $gradient['angle'] ?? 135;
+                    $colorStops = $gradient['colorStops'] ?? [];
+
+                    if (!empty($colorStops)) {
+                        $stopsCSS = array_map(function($stop) {
+                            return "{$stop['color']} {$stop['position']}%";
+                        }, $colorStops);
+
+                        if ($gradientType === 'linear') {
+                            $styles[] = "background: linear-gradient({$angle}deg, " . implode(', ', $stopsCSS) . ");";
+                        } elseif ($gradientType === 'radial') {
+                            $styles[] = "background: radial-gradient(circle, " . implode(', ', $stopsCSS) . ");";
+                        }
+                    }
+                }
+                break;
+
+            case 'image':
+                if (!empty($backgroundValue['image'])) {
+                    $image = $backgroundValue['image'];
+                    if (!empty($image['url'])) {
+                        $styles[] = "background-image: url('{$image['url']}');";
+                        $styles[] = "background-size: " . ($image['size'] ?? 'cover') . ";";
+                        $styles[] = "background-position: " . ($image['position'] ?? 'center center') . ";";
+                        $styles[] = "background-repeat: " . ($image['repeat'] ?? 'no-repeat') . ";";
+                    }
+                }
+                break;
+        }
+
+        return implode(' ', $styles);
+    }
+
+    /**
+     * Process CSS properties with placeholder replacement
+     */
+    protected function processFieldProperties(string $properties, $value, string $unit, array $fieldConfig): string
+    {
+        // Handle dimension fields (top, right, bottom, left)
+        if (($fieldConfig['type'] ?? '') === 'dimension' && is_array($value)) {
+            // For dimension fields, use the unit from the value or default to px
+            $dimensionUnit = $value['unit'] ?? $unit ?? 'px';
+
+            $properties = str_replace('{{VALUE.TOP}}', (string)($value['top'] ?? 0), $properties);
+            $properties = str_replace('{{VALUE.RIGHT}}', (string)($value['right'] ?? 0), $properties);
+            $properties = str_replace('{{VALUE.BOTTOM}}', (string)($value['bottom'] ?? 0), $properties);
+            $properties = str_replace('{{VALUE.LEFT}}', (string)($value['left'] ?? 0), $properties);
+            $properties = str_replace('{{UNIT}}', $dimensionUnit, $properties);
+        } else {
+            // Handle single value fields
+            $properties = str_replace('{{VALUE}}', (string)$value, $properties);
+            $properties = str_replace('{{UNIT}}', $unit, $properties);
+        }
+
+        return $properties;
     }
 
     /**

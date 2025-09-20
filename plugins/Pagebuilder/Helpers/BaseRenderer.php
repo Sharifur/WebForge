@@ -133,7 +133,7 @@ abstract class BaseRenderer
 
             // Render widget content
             $html = $widgetInstance->render($settings);
-            $css = $widgetInstance->generateCSS($widgetId, $settings);
+            $css = $widgetInstance->generateCSS($widgetId, $settings, $containerId);
 
             // Wrap widget with container - can be customized by child classes
             $wrappedHtml = $this->wrapWidget($html, $widgetId, $widgetType, $widget, $columnId, $containerId);

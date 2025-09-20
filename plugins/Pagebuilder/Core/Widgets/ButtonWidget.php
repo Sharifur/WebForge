@@ -132,7 +132,7 @@ class ButtonWidget extends BaseWidget
                 ->setDefault(['top' => 12, 'right' => 24, 'bottom' => 12, 'left' => 24])
                 ->setUnits(['px', 'em', '%'])
                 ->setSelectors([
-                    '{{WRAPPER}} .simple-button' => 'padding: {{VALUE}};'
+                    '{{WRAPPER}} .simple-button' => 'padding: {{VALUE.TOP}}{{UNIT}} {{VALUE.RIGHT}}{{UNIT}} {{VALUE.BOTTOM}}{{UNIT}} {{VALUE.LEFT}}{{UNIT}};'
                 ])
             )
             ->endGroup();
@@ -151,9 +151,7 @@ class ButtonWidget extends BaseWidget
                 ->registerField('background_color', FieldManager::BACKGROUND_GROUP()
                     ->setLabel('Background')
                     ->setDefault('#3B82F6')
-                    ->setSelectors([
-                        '{{WRAPPER}} .simple-button' => 'background: {{VALUE}};'
-                    ])
+                    ->setSelectors(['{{WRAPPER}} .simple-button'])
                 )
                 ->endGroup()
             ->endTab();
@@ -172,9 +170,7 @@ class ButtonWidget extends BaseWidget
                 ->registerField('hover_background_color', FieldManager::BACKGROUND_GROUP()
                     ->setLabel('Background')
                     ->setDefault('#3B82F6')
-                    ->setSelectors([
-                        '{{WRAPPER}} .simple-button:hover' => 'background: {{VALUE}};'
-                    ])
+                    ->setSelectors(['{{WRAPPER}} .simple-button:hover'])
                 )
                 ->endGroup()
             ->endTab();

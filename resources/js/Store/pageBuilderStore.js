@@ -638,11 +638,56 @@ const usePageBuilderStore = create((set, get) => ({
     isDirty: true
   })),
   
+  // Data Transformer: Extract widgets from pageContent for proper database storage
+  extractWidgetsFromPageContent: (pageContent) => {
+    const widgets = {};
+    const cleanContent = {
+      containers: pageContent.containers.map(container => ({
+        ...container,
+        columns: container.columns.map(column => ({
+          ...column,
+          widgets: column.widgets.map(widget => {
+            // Extract widget settings for separate storage
+            if (widget.id && widget.type) {
+              widgets[widget.id] = {
+                type: widget.type,
+                container_id: container.id,
+                column_id: column.id,
+                sort_order: column.widgets.indexOf(widget),
+                settings: {
+                  general: widget.content || {},
+                  style: widget.style || {},
+                  advanced: widget.advanced || {}
+                },
+                is_visible: widget.is_visible !== false,
+                is_enabled: widget.is_enabled !== false,
+                version: widget.version || '1.0.0'
+              };
+            }
+
+            // Return clean widget reference for layout structure
+            return {
+              id: widget.id,
+              type: widget.type
+            };
+          })
+        }))
+      }))
+    };
+
+    return { content: cleanContent, widgets };
+  },
+
   // Save Actions
   savePage: async (pageId) => {
-    const { pageContent } = get();
+    const { pageContent, extractWidgetsFromPageContent } = get();
     try {
-      // Use the new page builder API endpoint with page_id in request body
+      // Transform pageContent to separate layout and widget data
+      const { content, widgets } = extractWidgetsFromPageContent(pageContent);
+
+      console.log('Saving with separated data:', { content, widgets });
+
+      // Use the new page builder API endpoint with proper data separation
       const response = await fetch('/api/page-builder/save', {
         method: 'POST',
         headers: {
@@ -653,8 +698,9 @@ const usePageBuilderStore = create((set, get) => ({
         credentials: 'same-origin',
         body: JSON.stringify({
           page_id: pageId,
-          content: pageContent,
-          is_published: false, // Save as draft by default
+          content: content,        // Clean layout structure
+          widgets: widgets,        // Separate widget data
+          is_published: false,     // Save as draft by default
           version: '1.0'
         })
       });

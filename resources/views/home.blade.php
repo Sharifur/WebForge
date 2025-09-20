@@ -99,16 +99,16 @@
                 <div class="bg-white rounded-xl shadow-lg p-8 inline-block">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
                     <p class="text-gray-600 mb-6">Access the admin panel to manage your content with advanced meta information tools.</p>
-                    
+
                     <div class="space-y-4">
-                        <a href="{{ route('admin.login') }}" 
+                        <a href="{{ route('admin.login') }}"
                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                             </svg>
                             Access Admin Panel
                         </a>
-                        
+
                         <div class="text-sm text-gray-500">
                             <p>Demo Credentials:</p>
                             <p class="font-mono bg-gray-100 p-2 rounded mt-1">
@@ -143,5 +143,20 @@
             </div>
         </div>
     </div>
+    <!-- AI Chatbot Widget -->
+    <script>
+        window.aiChatbot = {
+            chatbotId: '1',
+            baseUrl: 'http://aibot.test',
+            config: {
+                position: 'bottom-right',
+                primaryColor: '#4F46E5',
+                textColor: '#111827',
+                backgroundColor: '#FFFFFF',
+                welcomeMessage: 'Hello! How can I help you?'
+            }
+        };
+    </script>
+    <script src="http://aibot.test/chatbot-widget.js"></script>
 </body>
 </html>

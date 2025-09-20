@@ -30,7 +30,9 @@ class PageController extends Controller
             // Load page builder content from the PageBuilderContent model
             $pageBuilderContent = $page->pageBuilderContent;
             if ($pageBuilderContent && $pageBuilderContent->content) {
-                $result = $this->pageContentRenderer->renderForFrontendWithCss($pageBuilderContent->content);
+                // Get complete content with widget settings merged from database
+                $completeContent = $pageBuilderContent->getCompleteContent();
+                $result = $this->pageContentRenderer->renderForFrontendWithCss($completeContent);
                 $renderedContent = $result['html'];
                 $pageBuilderCss = $result['css'];
             }

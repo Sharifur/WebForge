@@ -122,33 +122,14 @@ class PageBuilderController extends Controller
                 ]);
             }
 
-            // Get widgets separately
-            $widgets = $page->widgets()->with(['creator', 'updater'])->get();
-            $widgetsArray = [];
-
-            foreach ($widgets as $widget) {
-                $widgetsArray[$widget->widget_id] = [
-                    'id' => $widget->widget_id,
-                    'type' => $widget->widget_type,
-                    'container_id' => $widget->container_id,
-                    'column_id' => $widget->column_id,
-                    'sort_order' => $widget->sort_order,
-                    'settings' => $widget->all_settings,
-                    'is_visible' => $widget->is_visible,
-                    'is_enabled' => $widget->is_enabled,
-                    'version' => $widget->version,
-                    'analytics' => $widget->getAnalytics(),
-                    'created_at' => $widget->created_at,
-                    'updated_at' => $widget->updated_at
-                ];
-            }
+            // Get complete content with merged widget data for frontend
+            $completeContent = $pageBuilderContent->getCompleteContent();
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'id' => $pageBuilderContent->id,
-                    'content' => $pageBuilderContent->content,
-                    'widgets' => $widgetsArray,
+                    'content' => $completeContent,  // Send complete merged content
                     'version' => $pageBuilderContent->version,
                     'is_published' => $pageBuilderContent->is_published,
                     'published_at' => $pageBuilderContent->published_at,

@@ -516,7 +516,7 @@ class DividerWidget extends BaseWidget
     /**
      * Generate CSS for this widget instance
      */
-    public function generateCSS(string $widgetId, array $settings): string
+    public function generateCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         $styleControl = new ControlManager();
         
@@ -530,23 +530,25 @@ class DividerWidget extends BaseWidget
         $dividerType = $general['divider_type'] ?? 'simple';
         
         if (in_array($dividerType, ['text', 'icon'])) {
-            $css .= "\n#{$widgetId} .divider-wrapper {";
+            $prefix = $sectionId ? "#{$sectionId} " : '';
+
+            $css .= "\n{$prefix}#{$widgetId} .divider-wrapper {";
             $css .= "\n    position: relative;";
             $css .= "\n    display: flex;";
             $css .= "\n    align-items: center;";
             $css .= "\n    justify-content: center;";
             $css .= "\n}";
-            
-            $css .= "\n#{$widgetId} .divider-wrapper .divider-line {";
+
+            $css .= "\n{$prefix}#{$widgetId} .divider-wrapper .divider-line {";
             $css .= "\n    position: absolute;";
             $css .= "\n    top: 50%;";
             $css .= "\n    left: 0;";
             $css .= "\n    right: 0;";
             $css .= "\n    transform: translateY(-50%);";
             $css .= "\n}";
-            
-            $css .= "\n#{$widgetId} .divider-text,";
-            $css .= "\n#{$widgetId} .divider-icon {";
+
+            $css .= "\n{$prefix}#{$widgetId} .divider-text,";
+            $css .= "\n{$prefix}#{$widgetId} .divider-icon {";
             $css .= "\n    position: relative;";
             $css .= "\n    z-index: 1;";
             $css .= "\n}";

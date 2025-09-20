@@ -174,7 +174,7 @@ class IconWidget extends BaseWidget
         return "<div class=\"{$containerClass}\">{$iconHtml}</div>";
     }
 
-    public function generateCSS(string $widgetId, array $settings): string
+    public function generateCSS(string $widgetId, array $settings, ?string $sectionId = null): string
     {
         $styleControl = new ControlManager();
         $this->registerStyleFields($styleControl);

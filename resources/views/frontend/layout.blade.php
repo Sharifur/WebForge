@@ -46,17 +46,16 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Tailwind CSS from built assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="stylesheet" href="{{asset('assets/css/widgets.css')}}">
     <!-- Page Builder Default Styles -->
 {{--    <link rel="stylesheet" href="{{ asset(config('app.debug') ? 'css/pagebuilder-defaults.css' : 'css/pagebuilder-defaults.min.css') }}">--}}
-
-    <!-- Page Builder CSS -->
-    @yield('styles')
-
     @stack('head')
+
+    <!-- Page Builder CSS - loads after Tailwind for proper precedence -->
+    @yield('styles')
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
