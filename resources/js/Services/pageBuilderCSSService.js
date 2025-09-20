@@ -91,9 +91,14 @@ class PageBuilderCSSService {
       const bgStyles = this.generateBackgroundCSS(settings.background);
       if (bgStyles) styles.push(bgStyles);
     }
-    // Handle sectionBackground from section settings
+    // Handle sectionBackground from section settings (direct field name)
     if (settings.sectionBackground) {
       const bgStyles = this.generateBackgroundCSS(settings.sectionBackground);
+      if (bgStyles) styles.push(bgStyles);
+    }
+    // Handle widget_background from default style fields
+    if (settings.widget_background) {
+      const bgStyles = this.generateBackgroundCSS(settings.widget_background);
       if (bgStyles) styles.push(bgStyles);
     }
 
