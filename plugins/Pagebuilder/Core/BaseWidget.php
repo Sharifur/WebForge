@@ -645,34 +645,34 @@ abstract class BaseWidget
      */
     protected function getBaseWidgetCSS(string $widgetId, ?string $sectionId = null): string
     {
-        $prefix = $sectionId ? "#{$sectionId} " : '';
+        $prefix = $sectionId ? ".{$sectionId} " : '';
 
         return "
 /* Base Widget Styles for {$widgetId} */
-{$prefix}#{$widgetId}.xgp-widget {
+{$prefix}.{$widgetId}.xgp-widget {
     position: relative;
     box-sizing: border-box;
 }
 
-{$prefix}#{$widgetId}.xgp-widget * {
+{$prefix}.{$widgetId}.xgp-widget * {
     box-sizing: border-box;
 }
 
 /* Responsive Utilities */
 @media (max-width: 768px) {
-    {$prefix}#{$widgetId}.hide-mobile {
+    {$prefix}.{$widgetId}.hide-mobile {
         display: none !important;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
-    {$prefix}#{$widgetId}.hide-tablet {
+    {$prefix}.{$widgetId}.hide-tablet {
         display: none !important;
     }
 }
 
 @media (min-width: 1025px) {
-    {$prefix}#{$widgetId}.hide-desktop {
+    {$prefix}.{$widgetId}.hide-desktop {
         display: none !important;
     }
 }";
@@ -855,6 +855,32 @@ abstract class BaseWidget
             case 'number':
                 $unit = $fieldConfig['unit'] ?? '';
                 return "value: {$value}{$unit};";
+
+            case 'typography_group':
+                // Use TypographyField's built-in CSS generation
+                if (class_exists('\Plugins\Pagebuilder\Core\Fields\TypographyField')) {
+                    return \Plugins\Pagebuilder\Core\Fields\TypographyField::generateCSS($value);
+                }
+                return '';
+
+            case 'gradient':
+                if (!empty($value)) {
+                    return "background: {$value};";
+                }
+                return '';
+
+            case 'alignment':
+                if (!empty($value)) {
+                    return "text-align: {$value};";
+                }
+                return '';
+
+            case 'range':
+                $unit = $fieldConfig['unit'] ?? '';
+                return "{$value}{$unit};";
+
+            case 'border_shadow_group':
+                return $this->generateBorderShadowCSS($value);
         }
 
         return '';
@@ -911,6 +937,74 @@ abstract class BaseWidget
                     }
                 }
                 break;
+        }
+
+        return implode(' ', $styles);
+    }
+
+    /**
+     * Generate border and shadow CSS from border shadow group value
+     */
+    protected function generateBorderShadowCSS($borderShadowValue): string
+    {
+        if (!is_array($borderShadowValue)) {
+            return '';
+        }
+
+        $styles = [];
+
+        // Generate border CSS
+        if (isset($borderShadowValue['border'])) {
+            $border = $borderShadowValue['border'];
+
+            // Border width
+            if (isset($border['width']) && is_array($border['width'])) {
+                $width = $border['width'];
+                $top = $width['top'] ?? 0;
+                $right = $width['right'] ?? 0;
+                $bottom = $width['bottom'] ?? 0;
+                $left = $width['left'] ?? 0;
+
+                if ($top || $right || $bottom || $left) {
+                    $styles[] = "border-width: {$top}px {$right}px {$bottom}px {$left}px;";
+                    $styles[] = "border-style: " . ($border['style'] ?? 'solid') . ";";
+
+                    if (!empty($border['color'])) {
+                        $styles[] = "border-color: {$border['color']};";
+                    }
+                }
+            }
+
+            // Border radius
+            if (isset($border['radius']) && is_array($border['radius'])) {
+                $radius = $border['radius'];
+                $topLeft = $radius['top'] ?? $radius['top-left'] ?? 0;
+                $topRight = $radius['right'] ?? $radius['top-right'] ?? 0;
+                $bottomRight = $radius['bottom'] ?? $radius['bottom-right'] ?? 0;
+                $bottomLeft = $radius['left'] ?? $radius['bottom-left'] ?? 0;
+
+                if ($topLeft || $topRight || $bottomRight || $bottomLeft) {
+                    $styles[] = "border-radius: {$topLeft}px {$topRight}px {$bottomRight}px {$bottomLeft}px;";
+                }
+            }
+        }
+
+        // Generate shadow CSS
+        if (isset($borderShadowValue['shadow'])) {
+            $shadow = $borderShadowValue['shadow'];
+            $shadowType = $shadow['type'] ?? 'none';
+
+            if ($shadowType !== 'none') {
+                $xOffset = $shadow['x_offset'] ?? 0;
+                $yOffset = $shadow['y_offset'] ?? 2;
+                $blurRadius = $shadow['blur_radius'] ?? 4;
+                $spreadRadius = $shadow['spread_radius'] ?? 0;
+                $color = $shadow['color'] ?? 'rgba(0,0,0,0.1)';
+                $inset = !empty($shadow['inset']) ? 'inset ' : '';
+
+                $shadowValue = "{$inset}{$xOffset}px {$yOffset}px {$blurRadius}px {$spreadRadius}px {$color}";
+                $styles[] = "box-shadow: {$shadowValue};";
+            }
         }
 
         return implode(' ', $styles);

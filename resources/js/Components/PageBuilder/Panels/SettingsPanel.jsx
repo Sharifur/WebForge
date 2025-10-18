@@ -809,7 +809,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             </div>
 
             {/* Section Tab Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 flex flex-col min-h-0">
               {activeTab === 'general' && (
                 <SectionGeneralSettings
                   container={widget}
@@ -854,7 +854,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             </div>
 
             {/* Column Tab Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 flex flex-col min-h-0">
               {activeTab === 'general' && (
                 <ColumnGeneralSettings
                   column={widget}

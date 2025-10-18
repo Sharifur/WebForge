@@ -213,37 +213,110 @@ class PageBuilderContent extends Model
         // Load all widgets for this page with their settings
         $widgets = $this->widgets()->get()->keyBy('widget_id');
 
-        // Process each container - using explicit indexing to ensure references work
-        for ($containerIndex = 0; $containerIndex < count($content['containers']); $containerIndex++) {
-            $container = &$content['containers'][$containerIndex];
+        \Log::info('PageBuilderContent::getCompleteContent - Loaded widgets count: ' . $widgets->count());
+
+        // Create a new array without references to prevent circular references
+        $processedContent = ['containers' => []];
+
+        // Process each container - avoiding references that cause circular loops
+        foreach ($content['containers'] ?? [] as $containerIndex => $container) {
+            $processedContainer = $container;
 
             // Process each column in the container
-            for ($columnIndex = 0; $columnIndex < count($container['columns'] ?? []); $columnIndex++) {
-                $column = &$container['columns'][$columnIndex];
+            $processedContainer['columns'] = [];
+            foreach ($container['columns'] ?? [] as $columnIndex => $column) {
+                $processedColumn = $column;
 
                 // Process each widget in the column
-                for ($widgetIndex = 0; $widgetIndex < count($column['widgets'] ?? []); $widgetIndex++) {
-                    $widget = &$column['widgets'][$widgetIndex];
+                $processedColumn['widgets'] = [];
+                foreach ($column['widgets'] ?? [] as $widgetIndex => $widget) {
                     $widgetId = $widget['id'] ?? null;
 
                     if ($widgetId && $widgets->has($widgetId)) {
                         $widgetData = $widgets[$widgetId];
+                        \Log::info("Found widget {$widgetId} in database", ['type' => $widgetData->widget_type]);
 
                         // Merge widget settings into the content structure (frontend format)
-                        $widget = array_merge($widget, [
+                        $processedWidget = array_merge($widget, [
                             'type' => $widgetData->widget_type,
-                            'content' => $widgetData->general_settings ?? [],  // Frontend expects 'content' not 'general'
+                            'content' => $widgetData->general_settings ?? [],  // Legacy widgets expect 'content'
+                            'general' => $widgetData->general_settings ?? [],  // PHP widgets expect 'general'
                             'style' => $widgetData->style_settings ?? [],
                             'advanced' => $widgetData->advanced_settings ?? [],
                             'is_visible' => $widgetData->is_visible ?? true,
                             'is_enabled' => $widgetData->is_enabled ?? true,
                         ]);
+
+                        // Debug specific widgets
+                        if ($widgetData->widget_type === 'heading') {
+                            \Log::info("Found heading widget {$widgetId} - merged data", [
+                                'general_settings_from_db' => $widgetData->general_settings,
+                                'processed_widget_general' => $processedWidget['general'],
+                                'processed_widget_content' => $processedWidget['content']
+                            ]);
+                        }
+
+                        // Deep clone arrays to prevent any references
+                        // Use direct array cloning instead of json encode/decode to prevent circular reference issues
+                        $processedWidget['content'] = $this->deepCloneArray($processedWidget['content']);
+                        $processedWidget['general'] = $this->deepCloneArray($processedWidget['general']);
+                        $processedWidget['style'] = $this->deepCloneArray($processedWidget['style']);
+                        $processedWidget['advanced'] = $this->deepCloneArray($processedWidget['advanced']);
+                    } else {
+                        \Log::warning("Widget {$widgetId} not found in database");
+                        $processedWidget = $widget;
                     }
+
+                    $processedColumn['widgets'][] = $processedWidget;
                 }
+
+                $processedContainer['columns'][] = $processedColumn;
             }
+
+            $processedContent['containers'][] = $processedContainer;
         }
 
-        return $content;
+        return $processedContent;
+    }
+
+    /**
+     * Deep clone an array with strict depth limit to prevent circular references
+     * Max depth of 2 levels to keep data structure simple and prevent issues
+     *
+     * @param mixed $data The data to clone
+     * @param int $depth Current depth level (starts at 0)
+     * @param int $maxDepth Maximum allowed depth (default 2)
+     * @return mixed The cloned data
+     */
+    private function deepCloneArray($data, int $depth = 0, int $maxDepth = 2)
+    {
+        // Strict depth limit - prevent any deep nesting
+        if ($depth >= $maxDepth) {
+            // At max depth, return simple representation
+            if (is_array($data) || is_object($data)) {
+                return '[MAX_DEPTH_REACHED]';
+            }
+            return $data;
+        }
+
+        if (is_array($data)) {
+            $result = [];
+            foreach ($data as $key => $value) {
+                $result[$key] = $this->deepCloneArray($value, $depth + 1, $maxDepth);
+            }
+            return $result;
+        } elseif (is_object($data)) {
+            // Convert objects to arrays at this depth level only
+            if ($depth < $maxDepth - 1) {
+                return $this->deepCloneArray((array) $data, $depth + 1, $maxDepth);
+            } else {
+                // At near-max depth, convert object to string representation
+                return '[OBJECT:' . get_class($data) . ']';
+            }
+        } else {
+            // Return scalar values as-is (string, int, bool, null)
+            return $data;
+        }
     }
 
     /**

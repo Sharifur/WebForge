@@ -6,6 +6,7 @@ import ToggleFieldComponent from '../../Fields/ToggleFieldComponent';
 import TextFieldComponent from '../../Fields/TextFieldComponent';
 import sectionSettingsMapper from '@/Services/sectionSettingsMapper';
 import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
+import SaveAllSettingsButton from './SaveAllSettingsButton';
 
 const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
   const updateSetting = (path, value) => {
@@ -93,7 +94,9 @@ const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
   };
 
   return (
-    <div className="p-4">
+    <div className="flex flex-col h-full">
+      {/* Scrollable settings content */}
+      <div className="flex-1 overflow-y-auto p-4">
       <div className="space-y-6">
         {/* Column Structure Section */}
         <div>
@@ -429,6 +432,35 @@ const SectionGeneralSettings = ({ container, onUpdate, onWidgetUpdate }) => {
           </div>
         </div>
 
+      </div>
+
+      {/* Sticky save button at bottom */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <SaveAllSettingsButton
+          entity={{
+            id: container.id,
+            type: 'section',
+            settings: container.settings || {},
+            responsiveSettings: container.responsiveSettings || {}
+          }}
+          pageId={(() => {
+            const match = window.location.pathname.match(/\/admin\/page-builder\/(.+)$/);
+            if (match) {
+              const slug = match[1];
+              if (/^\d+$/.test(slug)) {
+                return parseInt(slug);
+              }
+            }
+            return window.currentPageId || 1;
+          })()}
+          onSaveSuccess={(result) => {
+            console.log('[SectionGeneralSettings] Save successful:', result);
+          }}
+          onSaveError={(error) => {
+            console.error('[SectionGeneralSettings] Save failed:', error);
+          }}
+        />
+      </div>
       </div>
     </div>
   );

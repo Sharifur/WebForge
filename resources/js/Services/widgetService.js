@@ -140,6 +140,50 @@ class WidgetService {
   }
 
   /**
+   * Get widget settings with field definitions and saved values merged (NEW UNIFIED API)
+   * This replaces the separate getWidgetFields + data mapping approach
+   *
+   * @param {number} pageId - The page ID
+   * @param {string} widgetId - The widget ID
+   * @param {string} tab - The settings tab (general, style, advanced)
+   * @returns {Promise<Object|null>} Pre-populated fields ready for rendering
+   */
+  async getWidgetSettings(pageId, widgetId, tab) {
+    try {
+      const url = `/api/page-builder/pages/${pageId}/widgets/${widgetId}/settings/${tab}`;
+      console.log(`[DEBUG] widgetService.getWidgetSettings: Making request to ${url}`);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      console.log(`[DEBUG] widgetService.getWidgetSettings: Response status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error(`[DEBUG] widgetService.getWidgetSettings: HTTP error details:`, {
+          status: response.status,
+          statusText: response.statusText,
+          url: url
+        });
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`[DEBUG] widgetService.getWidgetSettings: Response data:`, data);
+
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error(`[DEBUG] widgetService.getWidgetSettings: Error fetching settings for ${widgetId}/${tab}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Render widget preview
    */
   async renderWidget(type, settings) {

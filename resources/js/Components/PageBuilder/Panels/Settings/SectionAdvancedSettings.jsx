@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import TextFieldComponent from '../../Fields/TextFieldComponent';
 import TextareaFieldComponent from '../../Fields/TextareaFieldComponent';
 import SelectFieldComponent from '../../Fields/SelectFieldComponent';
@@ -7,8 +7,44 @@ import NumberFieldComponent from '../../Fields/NumberFieldComponent';
 import CheckboxFieldComponent from '../../Fields/CheckboxFieldComponent';
 import sectionSettingsMapper from '@/Services/sectionSettingsMapper';
 import pageBuilderCSSService from '@/Services/pageBuilderCSSService';
+import SaveAllSettingsButton from './SaveAllSettingsButton';
+import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 
 const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
+  const { updateContainer } = usePageBuilderStore();
+  const [localContainer, setLocalContainer] = useState(container);
+  const debounceTimeoutRef = useRef(null);
+
+  // Sync local container when prop changes
+  useEffect(() => {
+    setLocalContainer(container);
+  }, [container]);
+
+  // Debounced store update function
+  const debouncedStoreUpdate = useCallback((updatedContainer) => {
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set new timeout for 500ms delay
+    debounceTimeoutRef.current = setTimeout(() => {
+      // Update the container in the store
+      updateContainer(container.id, updatedContainer);
+
+      // Update the selected container
+      onWidgetUpdate(updatedContainer);
+    }, 500);
+  }, [container.id, updateContainer, onWidgetUpdate]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
   // Generate consistent section ID based on container
   const generateConsistentSectionId = () => {
     // Use container ID to create consistent, predictable section IDs
@@ -36,7 +72,7 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
 
   // Auto-generate section ID on mount if not exists
   useEffect(() => {
-    if (!container.settings?.htmlId) {
+    if (!localContainer.settings?.htmlId) {
       const consistentId = generateConsistentSectionId();
       updateSetting('settings.htmlId', consistentId);
     }
@@ -46,14 +82,17 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
     const pathArray = path.split('.');
 
     const updatedContainer = {
-      ...container,
+      ...localContainer,
       settings: {
-        ...container.settings,
+        ...localContainer.settings,
         [pathArray[pathArray.length - 1]]: value
       }
     };
 
-    // Update state
+    // Update local state immediately for visual feedback
+    setLocalContainer(updatedContainer);
+
+    // Update parent state for immediate UI response
     onUpdate(prev => ({
       ...prev,
       containers: prev.containers.map(c =>
@@ -61,7 +100,8 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
       )
     }));
 
-    onWidgetUpdate(updatedContainer);
+    // Debounce the store update
+    debouncedStoreUpdate(updatedContainer);
 
     // Generate and apply CSS for advanced settings changes (visibility, animation, custom CSS)
     requestAnimationFrame(() => {
@@ -89,145 +129,176 @@ const SectionAdvancedSettings = ({ container, onUpdate, onWidgetUpdate }) => {
     });
   };
 
+  const getPageId = () => {
+    const match = window.location.pathname.match(/\/admin\/page-builder\/(.+)$/);
+    if (match) {
+      const slug = match[1];
+      if (/^\d+$/.test(slug)) {
+        return parseInt(slug);
+      }
+    }
+    return window.currentPageId || container?.pageId || 1;
+  };
+
+  const handleSaveSuccess = (result) => {
+    console.log('[SectionAdvancedSettings] Save successful:', result);
+  };
+
+  const handleSaveError = (error) => {
+    console.error('[SectionAdvancedSettings] Save failed:', error);
+  };
+
   return (
-    <div className="p-4">
-      <div className="space-y-6">
-        {/* Responsive Settings - Moved after Visibility */}
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Responsive Settings</h4>
-          <div className="space-y-4">
-            <div className="space-y-2">
+    <div className="flex flex-col h-full">
+      {/* Scrollable settings content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-6">
+          {/* Responsive Settings - Moved after Visibility */}
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Responsive Settings</h4>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div>
+                  <ToggleFieldComponent
+                    fieldKey="show_desktop"
+                    fieldConfig={{
+                      label: 'Show on Desktop',
+                      default: true
+                    }}
+                    value={localContainer.settings?.hideOnDesktop !== true}
+                    onChange={(value) => updateSetting('settings.hideOnDesktop', !value)}
+                  />
+                </div>
+                <div>
+                  <ToggleFieldComponent
+                    fieldKey="show_tablet"
+                    fieldConfig={{
+                      label: 'Show on Tablet',
+                      default: true
+                    }}
+                    value={localContainer.settings?.hideOnTablet !== true}
+                    onChange={(value) => updateSetting('settings.hideOnTablet', !value)}
+                  />
+                </div>
+                <div>
+                  <ToggleFieldComponent
+                    fieldKey="show_mobile"
+                    fieldConfig={{
+                      label: 'Show on Mobile',
+                      default: true
+                    }}
+                    value={localContainer.settings?.hideOnMobile !== true}
+                    onChange={(value) => updateSetting('settings.hideOnMobile', !value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Custom CSS</h4>
+            <div className="space-y-4">
               <div>
-                <ToggleFieldComponent
-                  fieldKey="show_desktop"
+                <TextFieldComponent
+                  fieldKey="css_class"
                   fieldConfig={{
-                    label: 'Show on Desktop',
-                    default: true
+                    label: 'CSS Class',
+                    placeholder: 'custom-class-name',
+                    default: ''
                   }}
-                  value={container.settings?.hideOnDesktop !== true}
-                  onChange={(value) => updateSetting('settings.hideOnDesktop', !value)}
+                  value={localContainer.settings?.cssClass || ''}
+                  onChange={(value) => updateSetting('settings.cssClass', value)}
                 />
               </div>
+
+              {/* Section ID - Consistent Auto-generated */}
               <div>
-                <ToggleFieldComponent
-                  fieldKey="show_tablet"
+                <TextFieldComponent
+                  fieldKey="html_id"
                   fieldConfig={{
-                    label: 'Show on Tablet',
-                    default: true
+                    label: 'Section ID',
+                    placeholder: 'section-12345',
+                    default: ''
                   }}
-                  value={container.settings?.hideOnTablet !== true}
-                  onChange={(value) => updateSetting('settings.hideOnTablet', !value)}
+                  value={localContainer.settings?.htmlId || generateConsistentSectionId()}
+                  onChange={(value) => updateSetting('settings.htmlId', value)}
                 />
+                <div className="text-xs text-gray-500 mt-1">
+                  Consistent ID for database storage, CSS generation, and JavaScript targeting
+                </div>
               </div>
+
               <div>
-                <ToggleFieldComponent
-                  fieldKey="show_mobile"
+                <TextareaFieldComponent
+                  fieldKey="custom_css"
                   fieldConfig={{
-                    label: 'Show on Mobile',
-                    default: true
+                    label: 'Custom CSS',
+                    placeholder: '/* Custom CSS rules */',
+                    rows: 6,
+                    default: ''
                   }}
-                  value={container.settings?.hideOnMobile !== true}
-                  onChange={(value) => updateSetting('settings.hideOnMobile', !value)}
+                  value={localContainer.settings?.customCSS || ''}
+                  onChange={(value) => updateSetting('settings.customCSS', value)}
                 />
               </div>
             </div>
           </div>
-        </div>
 
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Custom CSS</h4>
-          <div className="space-y-4">
-            <div>
-              <TextFieldComponent
-                fieldKey="css_class"
-                fieldConfig={{
-                  label: 'CSS Class',
-                  placeholder: 'custom-class-name',
-                  default: ''
-                }}
-                value={container.settings?.cssClass || ''}
-                onChange={(value) => updateSetting('settings.cssClass', value)}
-              />
-            </div>
-
-            {/* Section ID - Consistent Auto-generated */}
-            <div>
-              <TextFieldComponent
-                fieldKey="html_id"
-                fieldConfig={{
-                  label: 'Section ID',
-                  placeholder: 'section-12345',
-                  default: ''
-                }}
-                value={container.settings?.htmlId || generateConsistentSectionId()}
-                onChange={(value) => updateSetting('settings.htmlId', value)}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                Consistent ID for database storage, CSS generation, and JavaScript targeting
-              </div>
-            </div>
-
-            <div>
-              <TextareaFieldComponent
-                fieldKey="custom_css"
-                fieldConfig={{
-                  label: 'Custom CSS',
-                  placeholder: '/* Custom CSS rules */',
-                  rows: 6,
-                  default: ''
-                }}
-                value={container.settings?.customCSS || ''}
-                onChange={(value) => updateSetting('settings.customCSS', value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Animation</h4>
-          <div className="space-y-4">
-            <div>
-              <SelectFieldComponent
-                fieldKey="animation"
-                fieldConfig={{
-                  label: 'Animation Type',
-                  options: {
-                    'none': 'None',
-                    'fade-in': 'Fade In',
-                    'slide-up': 'Slide Up',
-                    'slide-down': 'Slide Down',
-                    'slide-left': 'Slide Left',
-                    'slide-right': 'Slide Right',
-                    'zoom-in': 'Zoom In',
-                    'bounce': 'Bounce'
-                  },
-                  default: 'none'
-                }}
-                value={container.settings?.animation || 'none'}
-                onChange={(value) => updateSetting('settings.animation', value)}
-              />
-            </div>
-
-            {container.settings?.animation && container.settings.animation !== 'none' && (
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Animation</h4>
+            <div className="space-y-4">
               <div>
-                <NumberFieldComponent
-                  fieldKey="animation_duration"
+                <SelectFieldComponent
+                  fieldKey="animation"
                   fieldConfig={{
-                    label: 'Animation Duration (ms)',
-                    min: 100,
-                    max: 3000,
-                    step: 100,
-                    default: 500,
-                    placeholder: '500'
+                    label: 'Animation Type',
+                    options: {
+                      'none': 'None',
+                      'fade-in': 'Fade In',
+                      'slide-up': 'Slide Up',
+                      'slide-down': 'Slide Down',
+                      'slide-left': 'Slide Left',
+                      'slide-right': 'Slide Right',
+                      'zoom-in': 'Zoom In',
+                      'bounce': 'Bounce'
+                    },
+                    default: 'none'
                   }}
-                  value={container.settings?.animationDuration || 500}
-                  onChange={(value) => updateSetting('settings.animationDuration', value)}
+                  value={localContainer.settings?.animation || 'none'}
+                  onChange={(value) => updateSetting('settings.animation', value)}
                 />
               </div>
-            )}
+
+              {localContainer.settings?.animation && localContainer.settings.animation !== 'none' && (
+                <div>
+                  <NumberFieldComponent
+                    fieldKey="animation_duration"
+                    fieldConfig={{
+                      label: 'Animation Duration (ms)',
+                      min: 100,
+                      max: 3000,
+                      step: 100,
+                      default: 500,
+                      placeholder: '500'
+                    }}
+                    value={localContainer.settings?.animationDuration || 500}
+                    onChange={(value) => updateSetting('settings.animationDuration', value)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
+      {/* Sticky save button at bottom */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <SaveAllSettingsButton
+          entity={localContainer}
+          pageId={getPageId()}
+          onSaveSuccess={handleSaveSuccess}
+          onSaveError={handleSaveError}
+        />
       </div>
     </div>
   );

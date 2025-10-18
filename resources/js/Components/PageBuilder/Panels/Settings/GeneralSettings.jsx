@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import widgetService from '@/Services/widgetService';
-import { Loader, ChevronDown, ChevronRight } from 'lucide-react';
+import settingsService from '@/Services/settingsService';
+import { Loader, ChevronDown, ChevronRight, Save } from 'lucide-react';
 import PhpFieldRenderer from '@/Components/PageBuilder/Fields/PhpFieldRenderer';
 
 const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
@@ -13,37 +14,64 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const [localWidget, setLocalWidget] = useState(widget);
   const debounceTimeoutRef = useRef(null);
 
+  // Global save state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
   // Dynamic PHP widget detection - no hardcoded list needed
   const [isPhpWidget, setIsPhpWidget] = useState(false);
 
-  // Always try to fetch PHP widget fields for universal detection
-  useEffect(() => {
-    fetchPhpWidgetFields();
-  }, [widget.type]);
+  // NEW: Tab-based lazy loading - only fetch when component becomes active
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  const fetchPhpWidgetFields = async () => {
+  useEffect(() => {
+    // Only load if component is mounted and we haven't loaded yet
+    if (!hasLoaded) {
+      fetchWidgetSettings();
+    }
+  }, [widget.id, hasLoaded]); // Depend on widget.id to reload when widget changes
+
+  const fetchWidgetSettings = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      // Try to load PHP fields for any widget type
-      const fieldsData = await widgetService.getWidgetFields(widget.type, 'general');
-      
-      if (fieldsData && fieldsData.fields && Object.keys(fieldsData.fields).length > 0) {
-        // Successfully loaded PHP fields - this is a PHP widget
-        setPhpFields(fieldsData);
+
+      console.log('[GeneralSettings] Fetching unified widget settings:', {
+        widgetId: widget.id,
+        widgetType: widget.type,
+        pageId: getPageId()
+      });
+
+      // NEW: Use unified API that returns pre-populated fields
+      const settingsData = await widgetService.getWidgetSettings(getPageId(), widget.id, 'general');
+
+      if (settingsData && settingsData.fields && Object.keys(settingsData.fields).length > 0) {
+        // Successfully loaded pre-populated fields
+        setPhpFields(settingsData);
         setIsPhpWidget(true);
+        setHasLoaded(true);
+
+        console.log('[GeneralSettings] Loaded pre-populated fields:', {
+          fieldCount: Object.keys(settingsData.fields).length,
+          widgetType: settingsData.widget_type,
+          timestamp: settingsData.timestamp
+        });
       } else {
         // No PHP fields available - fallback to legacy rendering
         setPhpFields(null);
         setIsPhpWidget(false);
+        setHasLoaded(true);
+
+        console.log('[GeneralSettings] No PHP fields, using legacy rendering for:', widget.type);
       }
     } catch (err) {
-      // Error loading PHP fields - fallback to legacy rendering
-      console.log(`No PHP fields for widget type '${widget.type}', using legacy rendering`);
+      // Error loading settings - fallback to legacy rendering
+      console.error(`[GeneralSettings] Error loading settings for widget ${widget.id}:`, err);
       setPhpFields(null);
       setIsPhpWidget(false);
-      setError(null); // Don't show error for widgets without PHP fields
+      setError(`Failed to load settings: ${err.message}`);
+      setHasLoaded(true);
     } finally {
       setIsLoading(false);
     }
@@ -51,6 +79,13 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
 
   // Sync local widget with prop changes
   useEffect(() => {
+    console.log('[DEBUG] GeneralSettings received widget:', {
+      id: widget.id,
+      type: widget.type,
+      general: widget.general,
+      content: widget.content,
+      hasHeadingText: widget.general?.content?.heading_text || widget.content?.content?.heading_text
+    });
     setLocalWidget(widget);
   }, [widget]);
 
@@ -92,7 +127,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const updateContent = (path, value) => {
     const pathArray = path.split('.');
     const updatedWidget = { ...localWidget };
-    
+
     // Navigate to the nested property
     let current = updatedWidget;
     for (let i = 0; i < pathArray.length - 1; i++) {
@@ -101,13 +136,57 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
       }
       current = current[pathArray[i]];
     }
-    
+
     // Set the value
     current[pathArray[pathArray.length - 1]] = value;
-    
+
     // Update local state immediately for visual feedback
     setLocalWidget(updatedWidget);
-    
+
+    // Debounce the store update
+    debouncedStoreUpdate(updatedWidget);
+  };
+
+  const updateGeneral = (property, value) => {
+    const updatedWidget = {
+      ...localWidget,
+      general: {
+        ...localWidget.general,
+        [property]: value
+      }
+    };
+
+    // Update local state immediately for visual feedback
+    setLocalWidget(updatedWidget);
+
+    // Debounce the store update
+    debouncedStoreUpdate(updatedWidget);
+  };
+
+  const updateGeneralPath = (path, value) => {
+    const pathArray = path.split('.');
+    const updatedWidget = { ...localWidget };
+
+    // Ensure general object exists
+    if (!updatedWidget.general) {
+      updatedWidget.general = {};
+    }
+
+    // Navigate to the nested property within general
+    let current = updatedWidget.general;
+    for (let i = 0; i < pathArray.length - 1; i++) {
+      if (!current[pathArray[i]]) {
+        current[pathArray[i]] = {};
+      }
+      current = current[pathArray[i]];
+    }
+
+    // Set the value
+    current[pathArray[pathArray.length - 1]] = value;
+
+    // Update local state immediately for visual feedback
+    setLocalWidget(updatedWidget);
+
     // Debounce the store update
     debouncedStoreUpdate(updatedWidget);
   };
@@ -121,42 +200,6 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
 
   const renderLegacyWidgetSettings = () => {
     switch (localWidget.type) {
-      case 'heading':
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Text
-              </label>
-              <input
-                type="text"
-                value={localWidget.content?.text || ''}
-                onChange={(e) => updateContent('content.text', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter heading text"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tag
-              </label>
-              <select
-                value={localWidget.content?.tag || 'h2'}
-                onChange={(e) => updateContent('content.tag', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="h1">H1</option>
-                <option value="h2">H2</option>
-                <option value="h3">H3</option>
-                <option value="h4">H4</option>
-                <option value="h5">H5</option>
-                <option value="h6">H6</option>
-              </select>
-            </div>
-          </div>
-        );
-
       case 'text':
         return (
           <div className="space-y-4">
@@ -673,15 +716,27 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 {!isCollapsed && (
                   <div className="px-4 pb-4 border-t border-gray-100">
                     <div className="space-y-4 pt-3">
-                      {Object.entries(groupConfig.fields).map(([fieldKey, fieldConfig]) => (
-                        <PhpFieldRenderer
-                          key={`${groupKey}.${fieldKey}`}
-                          fieldKey={fieldKey}
-                          fieldConfig={fieldConfig}
-                          value={localWidget.general?.[groupKey]?.[fieldKey]}
-                          onChange={(value) => updateContent(`general.${groupKey}.${fieldKey}`, value)}
-                        />
-                      ))}
+                      {Object.entries(groupConfig.fields).map(([fieldKey, fieldConfig]) => {
+                        // NEW: Fields come pre-populated from backend - use the value directly
+                        const fieldValue = fieldConfig.value;
+
+                        console.log(`[DEBUG] Pre-populated field ${groupKey}.${fieldKey}:`, {
+                          fieldType: fieldConfig.type,
+                          value: fieldValue,
+                          hasValue: fieldValue !== undefined && fieldValue !== null,
+                          fieldConfig: fieldConfig
+                        });
+
+                        return (
+                          <PhpFieldRenderer
+                            key={`${groupKey}.${fieldKey}`}
+                            fieldKey={fieldKey}
+                            fieldConfig={fieldConfig}
+                            value={fieldValue}
+                            onChange={(value) => updateGeneralPath(`${groupKey}.${fieldKey}`, value)}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -690,13 +745,16 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
           } else {
             // Handle non-group fields (fallback)
             return (
-              <PhpFieldRenderer
-                key={groupKey}
-                fieldKey={groupKey}
-                fieldConfig={groupConfig}
-                value={localWidget.general?.[groupKey]}
-                onChange={(value) => updateContent(`general.${groupKey}`, value)}
-              />
+              <div key={groupKey} className="border border-gray-200 rounded-lg">
+                <div className="p-4">
+                  <PhpFieldRenderer
+                    fieldKey={groupKey}
+                    fieldConfig={groupConfig}
+                    value={localWidget.general?.[groupKey]}
+                    onChange={(value) => updateGeneral(groupKey, value)}
+                  />
+                </div>
+              </div>
             );
           }
         })}
@@ -721,7 +779,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     }
     
     // Second priority: Legacy hardcoded settings for specific widget types
-    const legacyWidgetTypes = ['heading', 'text', 'button', 'image', 'divider', 'spacer', 'container', 'collapse'];
+    const legacyWidgetTypes = ['text', 'button', 'image', 'divider', 'spacer', 'container', 'collapse'];
     if (legacyWidgetTypes.includes(widget.type)) {
       return renderLegacyWidgetSettings();
     }
@@ -737,9 +795,118 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     );
   };
 
+  const handleSaveSuccess = (result) => {
+    console.log('[GeneralSettings] Save successful:', result);
+    // Optional: Show success notification, update UI state, etc.
+  };
+
+  const handleSaveError = (error) => {
+    console.error('[GeneralSettings] Save failed:', error);
+    // Optional: Show error notification, handle error state, etc.
+  };
+
+  // Extract page ID from current URL or widget data
+  const getPageId = () => {
+    // Try to get page ID from URL path (e.g., /admin/page-builder/123)
+    const match = window.location.pathname.match(/\/admin\/page-builder\/(.+)$/);
+    if (match) {
+      // If the slug is numeric, it's likely a page ID
+      const slug = match[1];
+      if (/^\d+$/.test(slug)) {
+        return parseInt(slug);
+      }
+      // Otherwise, we might need to get it from page data
+      // For now, we'll use a fallback method
+    }
+
+    // Fallback: try to get from global page data or widget context
+    return window.currentPageId || widget?.pageId || 1;
+  };
+
+  const handleGlobalSave = async () => {
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const pageId = getPageId();
+
+      // Prepare all settings data - ensure proper structure for PHP backend
+      const allSettings = {
+        general: localWidget.general || localWidget.content || {},
+        style: localWidget.style || {},
+        advanced: localWidget.advanced || {}
+      };
+
+      // Debug the data being saved
+      console.log('[GeneralSettings] Widget before save:', localWidget);
+      console.log('[GeneralSettings] Settings structure being saved:', allSettings);
+
+      console.log('[GeneralSettings] Saving all settings:', allSettings);
+
+      // Call the global save service
+      const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
+
+      console.log('[GeneralSettings] Save successful:', result);
+      setSaveSuccess(true);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+
+      // Update parent components
+      onWidgetUpdate(localWidget);
+
+    } catch (error) {
+      console.error('[GeneralSettings] Save failed:', error);
+      setSaveError(error.message || 'Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="p-4">
-      {renderSettings()}
+    <div className="flex flex-col h-full">
+      {/* Scrollable settings content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {renderSettings()}
+      </div>
+
+      {/* Sticky bottom save button */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {saveSuccess && (
+              <div className="flex items-center text-green-600">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm font-medium">Settings saved successfully!</span>
+              </div>
+            )}
+            {saveError && (
+              <div className="flex items-center text-red-600">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm font-medium">{saveError}</span>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleGlobalSave}
+            disabled={isSaving}
+            className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isSaving ? (
+              <Loader className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Saving...' : 'Save All Settings'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

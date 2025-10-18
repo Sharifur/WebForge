@@ -89,7 +89,9 @@ class HeadingWidget extends BaseWidget
                 ->setShowNone(false)
                 ->setShowJustify(true)
                 ->setDefault('left')
-                ->setResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .heading-element' => 'text-align: {{VALUE}};'
+                ])
                 ->setDescription('Set text alignment')
             )
             ->endGroup();
@@ -124,6 +126,9 @@ class HeadingWidget extends BaseWidget
             ->registerField('heading_typography', FieldManager::TYPOGRAPHY_GROUP()
                 ->setLabel('Typography')
                 ->setEnableResponsive(true)
+                ->setSelectors([
+                    '{{WRAPPER}} .heading-element'
+                ])
                 ->setDescription('Configure all typography settings for the heading')
             )
             ->endGroup();

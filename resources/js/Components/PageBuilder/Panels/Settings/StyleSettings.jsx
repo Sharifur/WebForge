@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import widgetService from '@/Services/widgetService';
-import { Loader, ChevronDown, ChevronRight } from 'lucide-react';
+import settingsService from '@/Services/settingsService';
+import { Loader, ChevronDown, ChevronRight, Save } from 'lucide-react';
 import PhpFieldRenderer from '@/Components/PageBuilder/Fields/PhpFieldRenderer';
 import DynamicTabGroup from '@/Components/PageBuilder/Fields/DynamicTabGroup';
 
@@ -13,6 +14,11 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   const [collapsedGroups, setCollapsedGroups] = useState({});
   const [localWidget, setLocalWidget] = useState(widget);
   const debounceTimeoutRef = useRef(null);
+
+  // Global save state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   // Dynamic PHP widget detection - no hardcoded list needed
   const [isPhpWidget, setIsPhpWidget] = useState(false);
@@ -228,13 +234,16 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
           } else {
             // Handle non-group fields (fallback)
             return (
-              <PhpFieldRenderer
-                key={groupKey}
-                fieldKey={groupKey}
-                fieldConfig={groupConfig}
-                value={localWidget.style?.[groupKey]}
-                onChange={(value) => updateStyle(groupKey, value)}
-              />
+              <div key={groupKey} className="border border-gray-200 rounded-lg">
+                <div className="p-4">
+                  <PhpFieldRenderer
+                    fieldKey={groupKey}
+                    fieldConfig={groupConfig}
+                    value={localWidget.style?.[groupKey]}
+                    onChange={(value) => updateStyle(groupKey, value)}
+                  />
+                </div>
+              </div>
             );
           }
         })}
@@ -511,9 +520,105 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     return renderLegacyFields();
   };
 
+  const handleSaveSuccess = (result) => {
+    console.log('[StyleSettings] Save successful:', result);
+  };
+
+  const handleSaveError = (error) => {
+    console.error('[StyleSettings] Save failed:', error);
+  };
+
+  const getPageId = () => {
+    const match = window.location.pathname.match(/\/admin\/page-builder\/(.+)$/);
+    if (match) {
+      const slug = match[1];
+      if (/^\d+$/.test(slug)) {
+        return parseInt(slug);
+      }
+    }
+    return window.currentPageId || widget?.pageId || 1;
+  };
+
+  const handleGlobalSave = async () => {
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    try {
+      const pageId = getPageId();
+
+      // Prepare all settings data
+      const allSettings = {
+        general: localWidget.general || localWidget.content || {},
+        style: localWidget.style || {},
+        advanced: localWidget.advanced || {}
+      };
+
+      console.log('[StyleSettings] Saving all settings:', allSettings);
+
+      // Call the global save service
+      const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
+
+      console.log('[StyleSettings] Save successful:', result);
+      setSaveSuccess(true);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+
+      // Update parent components
+      onWidgetUpdate(localWidget);
+
+    } catch (error) {
+      console.error('[StyleSettings] Save failed:', error);
+      setSaveError(error.message || 'Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="p-4">
-      {renderSettings()}
+    <div className="flex flex-col h-full">
+      {/* Scrollable settings content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {renderSettings()}
+      </div>
+
+      {/* Sticky bottom save button */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {saveSuccess && (
+              <div className="flex items-center text-green-600">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm font-medium">Settings saved successfully!</span>
+              </div>
+            )}
+            {saveError && (
+              <div className="flex items-center text-red-600">
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm font-medium">{saveError}</span>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleGlobalSave}
+            disabled={isSaving}
+            className="flex items-center px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isSaving ? (
+              <Loader className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Saving...' : 'Save All Settings'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

@@ -131,15 +131,6 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
           </a>
         `;
         break;
-      case 'heading':
-        const headingText = widget.content?.text || widget.general?.text_content?.heading_text || 'Heading';
-        const headingTag = widget.content?.tag || widget.general?.text_content?.heading_tag || 'h2';
-        fallbackContent = `
-          <${headingTag} class="font-bold text-gray-900 mb-4">
-            ${headingText}
-          </${headingTag}>
-        `;
-        break;
       case 'paragraph':
         const paragraphText = widget.content?.text || widget.general?.content?.paragraph_text || 'Your paragraph text goes here.';
         fallbackContent = `

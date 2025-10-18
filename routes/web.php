@@ -82,7 +82,37 @@ Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
     
     Route::post('/unpublish', [App\Http\Controllers\Api\PageBuilderController::class, 'unpublish'])
         ->name('api.page-builder.unpublish');
-    
+
+    // Widget Settings Fetch Routes - Unified API for tab-based loading
+    Route::get('/pages/{pageId}/widgets/{widgetId}/settings/{tab}', [App\Http\Controllers\Api\PageBuilderController::class, 'getWidgetSettings'])
+        ->name('api.page-builder.get-widget-settings')
+        ->whereNumber('pageId')
+        ->whereIn('tab', ['general', 'style', 'advanced']);
+
+    // Individual Settings Save Routes
+    Route::post('/pages/{pageId}/widgets/{widgetId}/save-all-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveWidgetAllSettings'])
+        ->name('api.page-builder.save-widget-all-settings')
+        ->whereNumber('pageId');
+
+    Route::post('/pages/{pageId}/sections/{sectionId}/save-all-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveSectionAllSettings'])
+        ->name('api.page-builder.save-section-all-settings')
+        ->whereNumber('pageId');
+
+    Route::post('/pages/{pageId}/columns/{columnId}/save-all-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveColumnAllSettings'])
+        ->name('api.page-builder.save-column-all-settings')
+        ->whereNumber('pageId');
+
+    // Individual Widget Settings Save Routes
+    Route::post('/pages/{pageId}/widgets/{widgetId}/save-general-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveWidgetGeneralSettings'])
+        ->name('api.page-builder.save-widget-general-settings')
+        ->whereNumber('pageId');
+    Route::post('/pages/{pageId}/widgets/{widgetId}/save-style-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveWidgetStyleSettings'])
+        ->name('api.page-builder.save-widget-style-settings')
+        ->whereNumber('pageId');
+    Route::post('/pages/{pageId}/widgets/{widgetId}/save-advanced-settings', [App\Http\Controllers\Api\PageBuilderController::class, 'saveWidgetAdvancedSettings'])
+        ->name('api.page-builder.save-widget-advanced-settings')
+        ->whereNumber('pageId');
+
     // Column CSS Generation Routes
     Route::post('/columns/css/generate', [App\Http\Controllers\Admin\ColumnCSSController::class, 'generateCSS'])
         ->name('api.page-builder.column-css.generate');
@@ -97,6 +127,28 @@ Route::prefix('api/page-builder')->middleware(['admin'])->group(function () {
     Route::get('/defaults/{type}', [App\Http\Controllers\Api\PageBuilderController::class, 'getDefaultSettings'])
         ->name('api.page-builder.defaults')
         ->where('type', 'section|column|widget');
+
+    // Editing Session Management Routes
+    Route::post('/pages/{pageId}/start-editing', [App\Http\Controllers\Api\EditingSessionController::class, 'startSession'])
+        ->name('api.page-builder.start-editing')
+        ->whereNumber('pageId');
+
+    Route::put('/editing-sessions/{sessionToken}/heartbeat', [App\Http\Controllers\Api\EditingSessionController::class, 'heartbeat'])
+        ->name('api.page-builder.heartbeat');
+
+    Route::delete('/editing-sessions/{sessionToken}', [App\Http\Controllers\Api\EditingSessionController::class, 'endSession'])
+        ->name('api.page-builder.end-session');
+
+    Route::post('/pages/{pageId}/takeover', [App\Http\Controllers\Api\EditingSessionController::class, 'takeover'])
+        ->name('api.page-builder.takeover')
+        ->whereNumber('pageId');
+
+    Route::get('/pages/{pageId}/editors', [App\Http\Controllers\Api\EditingSessionController::class, 'getEditors'])
+        ->name('api.page-builder.get-editors')
+        ->whereNumber('pageId');
+
+    Route::post('/editing-sessions/cleanup', [App\Http\Controllers\Api\EditingSessionController::class, 'cleanup'])
+        ->name('api.page-builder.cleanup-sessions');
 });
 
 // Media Upload API Routes

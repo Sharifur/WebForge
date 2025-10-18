@@ -649,13 +649,22 @@ const usePageBuilderStore = create((set, get) => ({
           widgets: column.widgets.map(widget => {
             // Extract widget settings for separate storage
             if (widget.id && widget.type) {
+              // Create widget object matching frontend structure
               widgets[widget.id] = {
+                id: widget.id,
                 type: widget.type,
                 container_id: container.id,
                 column_id: column.id,
                 sort_order: column.widgets.indexOf(widget),
+
+                // Frontend structure - direct properties not nested in settings
+                general: widget.general || widget.content || {},
+                style: widget.style || {},
+                advanced: widget.advanced || {},
+
+                // Database structure for saving (kept for compatibility)
                 settings: {
-                  general: widget.content || {},
+                  general: widget.general || widget.content || {},
                   style: widget.style || {},
                   advanced: widget.advanced || {}
                 },
@@ -770,35 +779,44 @@ const usePageBuilderStore = create((set, get) => ({
       }
 
       const text = await response.text();
-      
+
       // Check if response is HTML instead of JSON
       if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
         throw new Error('Authentication required. Please log in as admin.');
       }
-      
+
       const data = JSON.parse(text);
-      
+
       if (data.success) {
-        const content = data.data.content || { containers: [] };
+        const completeContent = data.data.content || { containers: [] };
+
+        // Extract widgets from complete content (which includes all settings)
+        const { content: layoutContent, widgets } = get().extractWidgetsFromPageContent(completeContent);
+
+        // Store both layout structure and widget data
         set({
-          pageContent: content,
-          originalContent: content,
+          pageContent: layoutContent,      // Layout structure only
+          originalContent: layoutContent,  // Original layout structure
+          widgets: widgets,                // Widget objects with all settings
           isDirty: false
         });
-        
+
+        console.log('Loaded widgets with settings:', widgets);
+        console.log('Complex content received from backend:', completeContent);
+
         return data.data;
       } else {
         throw new Error(data.message || 'Failed to load content');
       }
     } catch (error) {
       console.error('Load content failed:', error);
-      
+
       // Handle authentication errors
       if (error.message.includes('Authentication required')) {
         // Redirect to admin login
         window.location.href = '/admin/login';
       }
-      
+
       throw error;
     }
   },
@@ -883,6 +901,172 @@ const usePageBuilderStore = create((set, get) => ({
       }
     } catch (e) {
       console.warn('Could not load device from session storage:', e);
+    }
+  },
+
+  // Individual Settings Save Actions
+  saveWidgetAllSettings: async (pageId, widgetId, allSettings) => {
+    try {
+      const response = await fetch(`/api/page-builder/pages/${pageId}/widgets/${widgetId}/save-all-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          general: allSettings.general || {},
+          style: allSettings.style || {},
+          advanced: allSettings.advanced || {}
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('Widget settings saved successfully:', data.message);
+
+        // Update the widget in the store with latest data
+        const widgetLocation = get().findWidget(widgetId);
+        if (widgetLocation) {
+          set(state => ({
+            pageContent: {
+              ...state.pageContent,
+              containers: state.pageContent.containers.map(container =>
+                container.id === widgetLocation.containerId ? {
+                  ...container,
+                  columns: container.columns.map(column =>
+                    column.id === widgetLocation.columnId ? {
+                      ...column,
+                      widgets: column.widgets.map(widget =>
+                        widget.id === widgetId ? {
+                          ...widget,
+                          general: allSettings.general || widget.general,
+                          style: allSettings.style || widget.style,
+                          advanced: allSettings.advanced || widget.advanced
+                        } : widget
+                      )
+                    } : column
+                  )
+                } : container
+              )
+            }
+          }));
+        }
+
+        return data;
+      } else {
+        throw new Error(data.message || 'Save failed');
+      }
+    } catch (error) {
+      console.error('Save widget settings failed:', error);
+      throw error;
+    }
+  },
+
+  saveSectionAllSettings: async (pageId, sectionId, settings, responsiveSettings = {}) => {
+    try {
+      const response = await fetch(`/api/page-builder/pages/${pageId}/sections/${sectionId}/save-all-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          settings: settings || {},
+          responsiveSettings: responsiveSettings || {}
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('Section settings saved successfully:', data.message);
+
+        // Update the section in the store
+        set(state => ({
+          pageContent: {
+            ...state.pageContent,
+            containers: state.pageContent.containers.map(container =>
+              container.id === sectionId ? {
+                ...container,
+                settings: { ...container.settings, ...settings },
+                responsiveSettings: { ...container.responsiveSettings, ...responsiveSettings }
+              } : container
+            )
+          }
+        }));
+
+        return data;
+      } else {
+        throw new Error(data.message || 'Save failed');
+      }
+    } catch (error) {
+      console.error('Save section settings failed:', error);
+      throw error;
+    }
+  },
+
+  saveColumnAllSettings: async (pageId, columnId, settings, responsiveSettings = {}) => {
+    try {
+      const response = await fetch(`/api/page-builder/pages/${pageId}/columns/${columnId}/save-all-settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          settings: settings || {},
+          responsiveSettings: responsiveSettings || {}
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('Column settings saved successfully:', data.message);
+
+        // Update the column in the store
+        set(state => ({
+          pageContent: {
+            ...state.pageContent,
+            containers: state.pageContent.containers.map(container => ({
+              ...container,
+              columns: container.columns.map(column =>
+                column.id === columnId ? {
+                  ...column,
+                  settings: { ...column.settings, ...settings },
+                  responsiveSettings: { ...column.responsiveSettings, ...responsiveSettings }
+                } : column
+              )
+            }))
+          }
+        }));
+
+        return data;
+      } else {
+        throw new Error(data.message || 'Save failed');
+      }
+    } catch (error) {
+      console.error('Save column settings failed:', error);
+      throw error;
     }
   },
 

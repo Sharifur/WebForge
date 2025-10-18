@@ -109,6 +109,11 @@ class PageBuilderController extends Controller
             $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
+            \Log::info('[DEBUG] getContent called', [
+                'pageId' => $pageId,
+                'has_page_builder_content' => !!$pageBuilderContent
+            ]);
+
             if (!$pageBuilderContent) {
                 return response()->json([
                     'success' => true,
@@ -124,6 +129,13 @@ class PageBuilderController extends Controller
 
             // Get complete content with merged widget data for frontend
             $completeContent = $pageBuilderContent->getCompleteContent();
+
+            \Log::info('[DEBUG] getContent - complete content loaded', [
+                'pageId' => $pageId,
+                'container_count' => count($completeContent['containers'] ?? []),
+                'first_container_id' => $completeContent['containers'][0]['id'] ?? 'none',
+                'widget_count_in_first' => count($completeContent['containers'][0]['columns'][0]['widgets'] ?? [])
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -572,8 +584,9 @@ class PageBuilderController extends Controller
         $validator = Validator::make($request->all(), [
             'type' => 'required|string|in:section,column,widget',
             'id' => 'required|string',
-            'settings' => 'required|array',
-            'responsiveSettings' => 'sometimes|array'
+            'settings' => 'sometimes|array',
+            'widget_type' => 'required_if:type,widget|string',
+            'section_id' => 'sometimes|string'
         ]);
 
         if ($validator->fails()) {
@@ -588,16 +601,24 @@ class PageBuilderController extends Controller
             $type = $request->input('type');
             $id = $request->input('id');
             $settings = $request->input('settings', []);
-            $responsiveSettings = $request->input('responsiveSettings', []);
+            $widgetType = $request->input('widget_type');
+            $sectionId = $request->input('section_id');
 
-            // Generate CSS using the service logic
-            $css = $this->generateComponentCSS($type, $id, $settings, $responsiveSettings);
+            $css = '';
+
+            if ($type === 'widget' && $widgetType) {
+                // Use PHP widget classes for CSS generation
+                $css = $this->generateWidgetCSS($widgetType, $id, $settings, $sectionId);
+            } else {
+                // Use existing logic for sections and columns
+                $css = $this->generateComponentCSS($type, $id, $settings);
+            }
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'css' => $css,
-                    'selector' => ".pb-{$type}-{$id}",
+                    'selector' => $type === 'widget' ? ".{$sectionId} .{$id}" : ".pb-{$type}-{$id}",
                     'type' => $type,
                     'id' => $id
                 ]
@@ -621,7 +642,9 @@ class PageBuilderController extends Controller
             'components' => 'required|array',
             'components.*.type' => 'required|string|in:section,column,widget',
             'components.*.id' => 'required|string',
-            'components.*.settings' => 'required|array',
+            'components.*.settings' => 'sometimes|array',
+            'components.*.widget_type' => 'sometimes|string',
+            'components.*.section_id' => 'sometimes|string',
             'components.*.responsiveSettings' => 'sometimes|array'
         ]);
 
@@ -642,14 +665,24 @@ class PageBuilderController extends Controller
                 $type = $component['type'];
                 $id = $component['id'];
                 $settings = $component['settings'];
-                $responsiveSettings = $component['responsiveSettings'] ?? [];
+                $widgetType = $component['widget_type'] ?? null;
+                $sectionId = $component['section_id'] ?? null;
 
-                $css = $this->generateComponentCSS($type, $id, $settings, $responsiveSettings);
+                if ($type === 'widget' && $widgetType) {
+                    // Use PHP widget classes for CSS generation
+                    $css = $this->generateWidgetCSS($widgetType, $id, $settings, $sectionId);
+                    $selector = ".{$sectionId} .{$id}";
+                } else {
+                    // Use existing logic for sections and columns
+                    $responsiveSettings = $component['responsiveSettings'] ?? [];
+                    $css = $this->generateComponentCSS($type, $id, $settings, $responsiveSettings);
+                    $selector = ".pb-{$type}-{$id}";
+                }
 
                 $results[] = [
                     'type' => $type,
                     'id' => $id,
-                    'selector' => ".pb-{$type}-{$id}",
+                    'selector' => $selector,
                     'css' => $css
                 ];
 
@@ -945,13 +978,867 @@ class PageBuilderController extends Controller
         return implode(' ', $styles);
     }
 
-    private function normalizeSpacing(array $spacing): string
+    private function normalizeSpacing($spacing): string
     {
-        if (isset($spacing['top'])) {
+        // Handle string input (already formatted CSS value)
+        if (is_string($spacing)) {
+            return trim($spacing) !== '' ? $spacing : '0';
+        }
+
+        // Handle array input (object with top, right, bottom, left properties)
+        if (is_array($spacing) && isset($spacing['top'])) {
             $unit = $spacing['unit'] ?? 'px';
             return "{$spacing['top']}{$unit} {$spacing['right']}{$unit} {$spacing['bottom']}{$unit} {$spacing['left']}{$unit}";
         }
 
         return '0';
+    }
+
+    /**
+     * Generate CSS for widget using PHP widget classes
+     */
+    private function generateWidgetCSS(string $widgetType, string $widgetId, array $settings, ?string $sectionId = null): string
+    {
+        try {
+            // Get the widget class name
+            $widgetClassName = $this->getWidgetClassName($widgetType);
+
+            if (!class_exists($widgetClassName)) {
+                return '';
+            }
+
+            // Create widget instance
+            $widget = new $widgetClassName();
+
+            // Generate CSS using the widget's CSS generation system
+            $css = $widget->generateCSS($widgetId, $settings, $sectionId);
+
+            return $css;
+
+        } catch (\Exception $e) {
+            \Log::error("Failed to generate widget CSS for type: {$widgetType}", [
+                'error' => $e->getMessage(),
+                'widget_id' => $widgetId,
+                'settings' => $settings
+            ]);
+            return '';
+        }
+    }
+
+    /**
+     * Save all settings for a specific widget
+     */
+    public function saveWidgetAllSettings(Request $request, int $pageId, string $widgetId): JsonResponse
+    {
+        \Log::info('[DEBUG] saveWidgetAllSettings called', [
+            'pageId' => $pageId,
+            'widgetId' => $widgetId,
+            'request_data' => $request->all()
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'general' => 'sometimes|array',
+            'style' => 'sometimes|array',
+            'advanced' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $updateData = ['updated_by' => Auth::guard('admin')->id()];
+
+            if ($request->has('general')) {
+                $updateData['general_settings'] = $request->input('general');
+            }
+            if ($request->has('style')) {
+                $updateData['style_settings'] = $request->input('style');
+            }
+            if ($request->has('advanced')) {
+                $updateData['advanced_settings'] = $request->input('advanced');
+            }
+
+            $widget->update($updateData);
+
+            DB::commit();
+
+            \Log::info('[DEBUG] saveWidgetAllSettings successful', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'updated_settings' => $widget->all_settings,
+                'widget_updated_at' => $widget->updated_at
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget settings saved successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'settings' => $widget->all_settings,
+                    'updated_at' => $widget->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save widget settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save all settings for a specific section
+     */
+    public function saveSectionAllSettings(Request $request, int $pageId, string $sectionId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'settings' => 'required|array',
+            'responsiveSettings' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $page = Page::findOrFail($pageId);
+            $pageBuilderContent = $page->pageBuilderContent;
+
+            if (!$pageBuilderContent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No page builder content found'
+                ], 404);
+            }
+
+            $content = $pageBuilderContent->content;
+            $settings = $request->input('settings');
+            $responsiveSettings = $request->input('responsiveSettings', []);
+
+            // Find and update the section in the content structure
+            $updated = false;
+            if (isset($content['containers'])) {
+                foreach ($content['containers'] as &$container) {
+                    if ($container['id'] === $sectionId) {
+                        $container['settings'] = array_merge($container['settings'] ?? [], $settings);
+                        if (!empty($responsiveSettings)) {
+                            $container['responsiveSettings'] = array_merge($container['responsiveSettings'] ?? [], $responsiveSettings);
+                        }
+                        $updated = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Section not found'
+                ], 404);
+            }
+
+            $pageBuilderContent->update([
+                'content' => $content,
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Section settings saved successfully',
+                'data' => [
+                    'section_id' => $sectionId,
+                    'settings' => $settings,
+                    'updated_at' => $pageBuilderContent->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save section settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save all settings for a specific column
+     */
+    public function saveColumnAllSettings(Request $request, int $pageId, string $columnId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'settings' => 'required|array',
+            'responsiveSettings' => 'sometimes|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $page = Page::findOrFail($pageId);
+            $pageBuilderContent = $page->pageBuilderContent;
+
+            if (!$pageBuilderContent) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No page builder content found'
+                ], 404);
+            }
+
+            $content = $pageBuilderContent->content;
+            $settings = $request->input('settings');
+            $responsiveSettings = $request->input('responsiveSettings', []);
+
+            // Find and update the column in the content structure
+            $updated = false;
+            if (isset($content['containers'])) {
+                foreach ($content['containers'] as &$container) {
+                    if (isset($container['columns'])) {
+                        foreach ($container['columns'] as &$column) {
+                            if ($column['id'] === $columnId) {
+                                $column['settings'] = array_merge($column['settings'] ?? [], $settings);
+                                if (!empty($responsiveSettings)) {
+                                    $column['responsiveSettings'] = array_merge($column['responsiveSettings'] ?? [], $responsiveSettings);
+                                }
+                                $updated = true;
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Column not found'
+                ], 404);
+            }
+
+            $pageBuilderContent->update([
+                'content' => $content,
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Column settings saved successfully',
+                'data' => [
+                    'column_id' => $columnId,
+                    'settings' => $settings,
+                    'updated_at' => $pageBuilderContent->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save column settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save general settings for a specific widget
+     */
+    public function saveWidgetGeneralSettings(Request $request, int $pageId, string $widgetId): JsonResponse
+    {
+        \Log::info('[DEBUG] saveWidgetGeneralSettings called', [
+            'pageId' => $pageId,
+            'widgetId' => $widgetId,
+            'request_data' => $request->all()
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'general' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $widget->update([
+                'general_settings' => $request->input('general'),
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            \Log::info('[DEBUG] saveWidgetGeneralSettings successful', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'updated_general_settings' => $widget->general_settings,
+                'widget_updated_at' => $widget->updated_at
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget general settings saved successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'general_settings' => $widget->general_settings,
+                    'updated_at' => $widget->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('[DEBUG] saveWidgetGeneralSettings failed', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save widget general settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save style settings for a specific widget
+     */
+    public function saveWidgetStyleSettings(Request $request, int $pageId, string $widgetId): JsonResponse
+    {
+        \Log::info('[DEBUG] saveWidgetStyleSettings called', [
+            'pageId' => $pageId,
+            'widgetId' => $widgetId,
+            'request_data' => $request->all()
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'style' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $widget->update([
+                'style_settings' => $request->input('style'),
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            \Log::info('[DEBUG] saveWidgetStyleSettings successful', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'updated_style_settings' => $widget->style_settings,
+                'widget_updated_at' => $widget->updated_at
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget style settings saved successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'style_settings' => $widget->style_settings,
+                    'updated_at' => $widget->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('[DEBUG] saveWidgetStyleSettings failed', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save widget style settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save advanced settings for a specific widget
+     */
+    public function saveWidgetAdvancedSettings(Request $request, int $pageId, string $widgetId): JsonResponse
+    {
+        \Log::info('[DEBUG] saveWidgetAdvancedSettings called', [
+            'pageId' => $pageId,
+            'widgetId' => $widgetId,
+            'request_data' => $request->all()
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'advanced' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $widget = PageBuilderWidget::where('page_id', $pageId)
+                                       ->where('widget_id', $widgetId)
+                                       ->firstOrFail();
+
+            $widget->update([
+                'advanced_settings' => $request->input('advanced'),
+                'updated_by' => Auth::guard('admin')->id()
+            ]);
+
+            DB::commit();
+
+            \Log::info('[DEBUG] saveWidgetAdvancedSettings successful', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'updated_advanced_settings' => $widget->advanced_settings,
+                'widget_updated_at' => $widget->updated_at
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Widget advanced settings saved successfully',
+                'data' => [
+                    'id' => $widget->widget_id,
+                    'type' => $widget->widget_type,
+                    'advanced_settings' => $widget->advanced_settings,
+                    'updated_at' => $widget->updated_at
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            \Log::error('[DEBUG] saveWidgetAdvancedSettings failed', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save widget advanced settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get widget settings with field definitions and saved values merged
+     * This is the unified API endpoint that returns both field definitions AND saved values
+     *
+     * @param int $pageId
+     * @param string $widgetId
+     * @param string $tab
+     * @return JsonResponse
+     */
+    public function getWidgetSettings(int $pageId, string $widgetId, string $tab): JsonResponse
+    {
+        try {
+            \Log::info('[PageBuilderController] getWidgetSettings called', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'tab' => $tab
+            ]);
+
+            // Find the page
+            $page = Page::findOrFail($pageId);
+
+            // Find the widget in the database
+            $widget = PageBuilderWidget::where('widget_id', $widgetId)
+                ->where('page_id', $pageId)
+                ->first();
+
+            if (!$widget) {
+                \Log::warning('[PageBuilderController] Widget not found in database', [
+                    'widgetId' => $widgetId,
+                    'pageId' => $pageId
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Widget not found'
+                ], 404);
+            }
+
+            // Get widget class to fetch field definitions
+            $widgetClassName = $this->getWidgetClassName($widget->widget_type);
+
+            if (!class_exists($widgetClassName)) {
+                \Log::error('[PageBuilderController] Widget class not found', [
+                    'widgetType' => $widget->widget_type,
+                    'className' => $widgetClassName
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Widget class not found'
+                ], 404);
+            }
+
+            // Create widget instance to get field definitions
+            $widgetInstance = new $widgetClassName();
+
+            // Get field definitions for the specified tab
+            $fieldDefinitions = match($tab) {
+                'general' => $widgetInstance->getGeneralFields(),
+                'style' => $widgetInstance->getStyleFields(),
+                'advanced' => $widgetInstance->getAdvancedFields(),
+                default => []
+            };
+
+            if (empty($fieldDefinitions)) {
+                \Log::info('[PageBuilderController] No field definitions found for tab', [
+                    'widgetType' => $widget->widget_type,
+                    'tab' => $tab
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'fields' => [],
+                        'widget_id' => $widgetId,
+                        'tab' => $tab,
+                        'message' => 'No fields available for this tab'
+                    ]
+                ]);
+            }
+
+            // Get saved values from database
+            $savedValues = match($tab) {
+                'general' => $widget->general_settings ?? [],
+                'style' => $widget->style_settings ?? [],
+                'advanced' => $widget->advanced_settings ?? [],
+                default => []
+            };
+
+            \Log::info('[PageBuilderController] Processing field definitions', [
+                'fieldCount' => count($fieldDefinitions),
+                'savedValuesCount' => count($savedValues),
+                'tab' => $tab
+            ]);
+
+            // Merge saved values into field definitions
+            $populatedFields = $this->mergeFieldsWithValues($fieldDefinitions, $savedValues);
+
+            \Log::info('[PageBuilderController] Fields populated successfully', [
+                'populatedFieldCount' => count($populatedFields),
+                'tab' => $tab
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'fields' => $populatedFields,
+                    'widget_id' => $widgetId,
+                    'widget_type' => $widget->widget_type,
+                    'tab' => $tab,
+                    'timestamp' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('[PageBuilderController] Error in getWidgetSettings', [
+                'pageId' => $pageId,
+                'widgetId' => $widgetId,
+                'tab' => $tab,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load widget settings',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Universal field value merging for all 32 field types
+     * This handles the complex data structures of dimension, background, typography, etc.
+     */
+    private function mergeFieldsWithValues(array $fieldDefinitions, array $savedValues): array
+    {
+        $populatedFields = [];
+
+        foreach ($fieldDefinitions as $groupKey => $groupConfig) {
+            if ($groupConfig['type'] === 'group' && isset($groupConfig['fields'])) {
+                // Handle group fields
+                $populatedFields[$groupKey] = $groupConfig;
+                $populatedFields[$groupKey]['fields'] = [];
+
+                foreach ($groupConfig['fields'] as $fieldKey => $fieldConfig) {
+                    $savedValue = $savedValues[$groupKey][$fieldKey] ?? null;
+                    $populatedFields[$groupKey]['fields'][$fieldKey] = $this->mergeFieldWithValue($fieldConfig, $savedValue);
+                }
+            } else {
+                // Handle non-group fields
+                $savedValue = $savedValues[$groupKey] ?? null;
+                $populatedFields[$groupKey] = $this->mergeFieldWithValue($groupConfig, $savedValue);
+            }
+        }
+
+        return $populatedFields;
+    }
+
+    /**
+     * Merge individual field with its saved value based on field type
+     */
+    private function mergeFieldWithValue(array $fieldConfig, $savedValue): array
+    {
+        $fieldType = $fieldConfig['type'] ?? 'text';
+
+        switch ($fieldType) {
+            case 'dimension':
+                return $this->mergeDimensionField($fieldConfig, $savedValue);
+
+            case 'background_group':
+                return $this->mergeBackgroundField($fieldConfig, $savedValue);
+
+            case 'typography_group':
+                return $this->mergeTypographyField($fieldConfig, $savedValue);
+
+            case 'repeater':
+                return $this->mergeRepeaterField($fieldConfig, $savedValue);
+
+            default:
+                // Simple fields: text, number, color, select, etc.
+                $fieldConfig['value'] = $savedValue ?? $fieldConfig['default'] ?? null;
+                return $fieldConfig;
+        }
+    }
+
+    /**
+     * Handle dimension field complex data structure
+     */
+    private function mergeDimensionField(array $fieldConfig, $savedValue): array
+    {
+        $defaultDimension = [
+            'top' => '0px',
+            'right' => '0px',
+            'bottom' => '0px',
+            'left' => '0px'
+        ];
+
+        if (is_array($savedValue)) {
+            // Direct object mapping
+            $fieldConfig['value'] = array_merge($defaultDimension, $savedValue);
+        } elseif (is_string($savedValue) && !empty($savedValue)) {
+            // Parse CSS shorthand: "10px 15px 10px 15px"
+            $fieldConfig['value'] = $this->parseCssShorthandToDimension($savedValue, $defaultDimension);
+        } else {
+            // Use defaults
+            $fieldConfig['value'] = $fieldConfig['default'] ?? $defaultDimension;
+        }
+
+        return $fieldConfig;
+    }
+
+    /**
+     * Handle background field complex data structure
+     */
+    private function mergeBackgroundField(array $fieldConfig, $savedValue): array
+    {
+        $defaultBackground = [
+            'type' => 'none',
+            'color' => '#000000',
+            'gradient' => [
+                'type' => 'linear',
+                'angle' => 135,
+                'colorStops' => [
+                    ['color' => '#667EEA', 'position' => 0],
+                    ['color' => '#764BA2', 'position' => 100]
+                ]
+            ],
+            'image' => [
+                'url' => '',
+                'size' => 'cover',
+                'position' => 'center center',
+                'repeat' => 'no-repeat',
+                'attachment' => 'scroll'
+            ]
+        ];
+
+        if (is_array($savedValue)) {
+            $fieldConfig['value'] = array_merge($defaultBackground, $savedValue);
+        } else {
+            $fieldConfig['value'] = $fieldConfig['default'] ?? $defaultBackground;
+        }
+
+        return $fieldConfig;
+    }
+
+    /**
+     * Handle typography field complex data structure
+     */
+    private function mergeTypographyField(array $fieldConfig, $savedValue): array
+    {
+        $defaultTypography = [
+            'font_family' => 'inherit',
+            'font_size' => ['value' => 16, 'unit' => 'px'],
+            'font_weight' => '400',
+            'font_style' => 'normal',
+            'text_transform' => 'none',
+            'text_decoration' => 'none',
+            'line_height' => ['value' => 1.4, 'unit' => 'em'],
+            'letter_spacing' => ['value' => 0, 'unit' => 'px'],
+            'word_spacing' => ['value' => 0, 'unit' => 'px']
+        ];
+
+        if (is_array($savedValue)) {
+            $fieldConfig['value'] = array_merge($defaultTypography, $savedValue);
+        } else {
+            $fieldConfig['value'] = $fieldConfig['default'] ?? $defaultTypography;
+        }
+
+        return $fieldConfig;
+    }
+
+    /**
+     * Handle repeater field array data structure
+     */
+    private function mergeRepeaterField(array $fieldConfig, $savedValue): array
+    {
+        if (is_array($savedValue)) {
+            $fieldConfig['value'] = $savedValue;
+        } else {
+            $fieldConfig['value'] = $fieldConfig['default'] ?? [];
+        }
+
+        return $fieldConfig;
+    }
+
+    /**
+     * Parse CSS shorthand notation to dimension object
+     */
+    private function parseCssShorthandToDimension(string $shorthand, array $default): array
+    {
+        $parts = array_filter(explode(' ', trim($shorthand)));
+        $count = count($parts);
+
+        switch ($count) {
+            case 1:
+                // "10px" -> all sides
+                return [
+                    'top' => $parts[0],
+                    'right' => $parts[0],
+                    'bottom' => $parts[0],
+                    'left' => $parts[0]
+                ];
+
+            case 2:
+                // "10px 15px" -> top/bottom, left/right
+                return [
+                    'top' => $parts[0],
+                    'right' => $parts[1],
+                    'bottom' => $parts[0],
+                    'left' => $parts[1]
+                ];
+
+            case 3:
+                // "10px 15px 5px" -> top, left/right, bottom
+                return [
+                    'top' => $parts[0],
+                    'right' => $parts[1],
+                    'bottom' => $parts[2],
+                    'left' => $parts[1]
+                ];
+
+            case 4:
+                // "10px 15px 5px 20px" -> top, right, bottom, left
+                return [
+                    'top' => $parts[0],
+                    'right' => $parts[1],
+                    'bottom' => $parts[2],
+                    'left' => $parts[3]
+                ];
+
+            default:
+                return $default;
+        }
+    }
+
+    /**
+     * Get widget class name from widget type
+     */
+    private function getWidgetClassName(string $widgetType): string
+    {
+        // Convert widget type to class name (e.g., 'heading' -> 'HeadingWidget')
+        $className = str_replace(' ', '', ucwords(str_replace(['_', '-'], ' ', $widgetType))) . 'Widget';
+
+        return "Plugins\\Pagebuilder\\Core\\Widgets\\{$className}";
     }
 }
