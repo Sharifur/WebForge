@@ -29,27 +29,23 @@
             <form method="GET" class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                 <div class="flex-1 min-w-0">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                    <x-admin.input 
-                        type="text" 
-                        id="search"
-                        name="search" 
-                        placeholder="Search pages..."
-                        value="{{ request('search') }}"
-                    />
+                    <x-admin.input type="text" id="search" name="search" placeholder="Search pages..."
+                        value="{{ request('search') }}" />
                 </div>
-                
+
                 <div class="w-full sm:w-auto sm:min-w-[120px]">
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <x-admin.select id="status" name="status">
                         <option value="">All Status</option>
                         <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Published</option>
+                        <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Published
+                        </option>
                     </x-admin.select>
                 </div>
-                
+
                 <div class="flex gap-2 w-full sm:w-auto">
                     <x-admin.button type="submit" class="flex-1 sm:flex-none">Filter</x-admin.button>
-                    @if(request()->hasAny(['search', 'status']))
+                    @if (request()->hasAny(['search', 'status']))
                         <a href="{{ route('admin.pages.index') }}" class="flex-1 sm:flex-none">
                             <x-admin.button variant="secondary" class="w-full">Clear</x-admin.button>
                         </a>
@@ -58,22 +54,28 @@
             </form>
         </div>
 
-        @if($pages->count() > 0)
+        @if ($pages->count() > 0)
             <!-- Pages Table -->
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Page</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEO</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Page
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SEO
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Author</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach($pages as $page)
+                        @foreach ($pages as $page)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4">
                                     <div>
@@ -82,13 +84,14 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         {{ $page->status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                         {{ ucfirst($page->status) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($page->metaInformation)
+                                    @if ($page->metaInformation)
                                         <div class="flex items-center">
                                             <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
                                             <span class="text-xs text-gray-500">Optimized</span>
@@ -104,23 +107,29 @@
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ $page->created_at->format('M d, Y') }}</td>
                                 <td class="px-6 py-4 text-right text-sm font-medium">
                                     <div class="flex items-center justify-end space-x-2">
-                                        <x-admin.button href="{{ route('admin.pages.show', $page) }}" variant="outline" size="sm">
+                                        <x-admin.button href="{{ route('admin.pages.show', $page) }}" variant="outline"
+                                            size="sm">
                                             View
                                         </x-admin.button>
-                                        <x-admin.button href="{{ route('admin.pages.edit', $page) }}" variant="primary" size="sm">
+                                        <x-admin.button href="{{ route('admin.pages.edit', $page) }}" variant="primary"
+                                            size="sm">
                                             Edit
                                         </x-admin.button>
-                                        @if($page->use_page_builder)
-                                            <a href="{{ route('admin.pages.builder', $page) }}" 
-                                               class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
-                                               title="Edit with Page Builder">
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                        @if ($page->use_page_builder)
+                                            <a href="{{ route('admin.pages.builder', $page) }}"
+                                                class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+                                                title="Edit with Page Builder">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                                                    </path>
                                                 </svg>
                                             </a>
                                         @endif
-                                        <form method="POST" action="{{ route('admin.pages.destroy', $page) }}" class="inline" 
-                                              onsubmit="return confirm('Are you sure you want to delete this page?')">
+                                        <form method="POST" action="{{ route('admin.pages.destroy', $page) }}"
+                                            class="inline"
+                                            onsubmit="return confirm('Are you sure you want to delete this page?')">
                                             @csrf
                                             @method('DELETE')
                                             <x-admin.button type="submit" variant="danger" size="sm">
@@ -136,7 +145,7 @@
             </div>
 
             <!-- Pagination -->
-            @if($pages->hasPages())
+            @if ($pages->hasPages())
                 <div class="mt-6">
                     {{ $pages->links() }}
                 </div>
@@ -145,21 +154,25 @@
             <!-- Empty State -->
             <div class="text-center py-12">
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">No pages found</h3>
                 <p class="mt-1 text-sm text-gray-500">
-                    @if(request()->hasAny(['search', 'status']))
-                        Try adjusting your search criteria or <a href="{{ route('admin.pages.index') }}" class="text-blue-600 hover:text-blue-500">clear filters</a>.
+                    @if (request()->hasAny(['search', 'status']))
+                        Try adjusting your search criteria or <a href="{{ route('admin.pages.index') }}"
+                            class="text-blue-600 hover:text-blue-500">clear filters</a>.
                     @else
                         Get started by creating your first page.
                     @endif
                 </p>
-                @if(!request()->hasAny(['search', 'status']))
+                @if (!request()->hasAny(['search', 'status']))
                     <div class="mt-6">
                         <x-admin.button href="{{ route('admin.pages.create') }}" variant="primary">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                             </svg>
                             Create Your First Page
                         </x-admin.button>

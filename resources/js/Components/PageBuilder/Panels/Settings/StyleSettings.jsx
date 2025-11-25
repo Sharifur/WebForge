@@ -540,41 +540,51 @@ const StyleSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   };
 
   const handleGlobalSave = async () => {
-    setIsSaving(true);
-    setSaveError(null);
-    setSaveSuccess(false);
+  setIsSaving(true);
+  setSaveError(null);
+  setSaveSuccess(false);
 
-    try {
-      const pageId = getPageId();
+  try {
+    const pageId = getPageId();
 
-      // Prepare all settings data
-      const allSettings = {
-        general: localWidget.general || localWidget.content || {},
-        style: localWidget.style || {},
-        advanced: localWidget.advanced || {}
-      };
+    // CRITICAL: Extract widget type correctly
+    let widgetType = localWidget.type;
+    console.log("widget type", widgetType);
+    
 
-      console.log('[StyleSettings] Saving all settings:', allSettings);
-
-      // Call the global save service
-      const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
-
-      console.log('[StyleSettings] Save successful:', result);
-      setSaveSuccess(true);
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000);
-
-      // Update parent components
-      onWidgetUpdate(localWidget);
-
-    } catch (error) {
-      console.error('[StyleSettings] Save failed:', error);
-      setSaveError(error.message || 'Failed to save settings');
-    } finally {
-      setIsSaving(false);
+    // Fallback logic for different possible structures
+    if (!widgetType && localWidget.widget_type) widgetType = localWidget.widget_type;
+    if (!widgetType && localWidget.id) {
+      // Try to extract from widget ID: heading-abc123 → "heading"
+      const match = localWidget.id.match(/^([^-\d]+)-/);
+      if (match) widgetType = match[1];
     }
-  };
+    if (!widgetType) widgetType = 'text'; // final fallback
+
+    const allSettings = {
+      widget_type: widgetType,                    // ← ALWAYS sent now
+      general: localWidget.general || localWidget.content || {},
+      style: localWidget.style || {},
+      advanced: localWidget.advanced || {}
+    };
+
+    console.log('[SAVE] Sending widget_type:', widgetType);
+    console.log('[SAVE] Full payload:', allSettings);
+
+    const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
+
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+    onWidgetUpdate(localWidget);
+
+  } catch (error) {
+    console.error('[SAVE] Failed:', error);
+    const msg = error?.response?.data?.message || error.message || 'Save failed';
+    setSaveError(msg);
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   return (
     <div className="flex flex-col h-full">

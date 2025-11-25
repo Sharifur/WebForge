@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\Page;
-use App\Models\PageBuilderContent;
-use App\Models\PageBuilderWidget;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\PageBuilderWidget;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PageBuilderContent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PageBuilderController extends Controller
 {
@@ -88,10 +91,9 @@ class PageBuilderController extends Controller
                     'widgets_stats' => $widgetStats
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save page builder content',
@@ -150,7 +152,6 @@ class PageBuilderController extends Controller
                     'widget_analytics' => $pageBuilderContent->getWidgetAnalytics()
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -199,7 +200,6 @@ class PageBuilderController extends Controller
                     'published_at' => $pageBuilderContent->published_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -248,7 +248,6 @@ class PageBuilderController extends Controller
                     'published_at' => null
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -273,7 +272,6 @@ class PageBuilderController extends Controller
                 'success' => true,
                 'data' => $history
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -300,8 +298,8 @@ class PageBuilderController extends Controller
             }
 
             $widget = PageBuilderWidget::where('page_id', $page->id)
-                                         ->where('widget_id', $widgetId)
-                                         ->first();
+                ->where('widget_id', $widgetId)
+                ->first();
 
             if (!$widget) {
                 return response()->json([
@@ -324,7 +322,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $widget->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -352,8 +349,8 @@ class PageBuilderController extends Controller
 
         // Get existing widgets for this page
         $existingWidgets = PageBuilderWidget::where('page_id', $pageId)
-                                            ->get()
-                                            ->keyBy('widget_id');
+            ->get()
+            ->keyBy('widget_id');
 
         // Process provided widgets
         foreach ($widgets as $widgetId => $widgetData) {
@@ -453,7 +450,6 @@ class PageBuilderController extends Controller
                     'settings' => $widget->all_settings
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -489,8 +485,8 @@ class PageBuilderController extends Controller
 
         try {
             $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+                ->where('widget_id', $widgetId)
+                ->firstOrFail();
 
             $updateData = ['updated_by' => Auth::guard('admin')->id()];
 
@@ -540,7 +536,6 @@ class PageBuilderController extends Controller
                     'is_enabled' => $widget->is_enabled
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -557,8 +552,8 @@ class PageBuilderController extends Controller
     {
         try {
             $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+                ->where('widget_id', $widgetId)
+                ->firstOrFail();
 
             $widget->delete();
 
@@ -566,7 +561,6 @@ class PageBuilderController extends Controller
                 'success' => true,
                 'message' => 'Widget deleted successfully'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -623,7 +617,6 @@ class PageBuilderController extends Controller
                     'id' => $id
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -698,7 +691,6 @@ class PageBuilderController extends Controller
                     'combinedCSS' => implode("\n\n", $combinedCSS)
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -723,7 +715,6 @@ class PageBuilderController extends Controller
                     'defaults' => $defaults
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1014,7 +1005,6 @@ class PageBuilderController extends Controller
             $css = $widget->generateCSS($widgetId, $settings, $sectionId);
 
             return $css;
-
         } catch (\Exception $e) {
             \Log::error("Failed to generate widget CSS for type: {$widgetType}", [
                 'error' => $e->getMessage(),
@@ -1028,76 +1018,151 @@ class PageBuilderController extends Controller
     /**
      * Save all settings for a specific widget
      */
+    // public function saveWidgetAllSettings(Request $request, int $pageId, string $widgetId): JsonResponse
+    // {
+    //     \Log::info('[DEBUG] saveWidgetAllSettings called', [
+    //         'pageId' => $pageId,
+    //         'widgetId' => $widgetId,
+    //         'request_data' => $request->all()
+    //     ]);
+
+    //     $validator = Validator::make($request->all(), [
+    //         'general' => 'sometimes|array',
+    //         'style' => 'sometimes|array',
+    //         'advanced' => 'sometimes|array'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $widget = PageBuilderWidget::where('page_id', $pageId)
+    //                                    ->where('widget_id', $widgetId)
+    //                                    ->firstOrFail();
+
+    //         $updateData = ['updated_by' => Auth::guard('admin')->id()];
+
+    //         if ($request->has('general')) {
+    //             $updateData['general_settings'] = $request->input('general');
+    //         }
+    //         if ($request->has('style')) {
+    //             $updateData['style_settings'] = $request->input('style');
+    //         }
+    //         if ($request->has('advanced')) {
+    //             $updateData['advanced_settings'] = $request->input('advanced');
+    //         }
+
+    //         $widget->update($updateData);
+
+    //         DB::commit();
+
+    //         \Log::info('[DEBUG] saveWidgetAllSettings successful', [
+    //             'pageId' => $pageId,
+    //             'widgetId' => $widgetId,
+    //             'updated_settings' => $widget->all_settings,
+    //             'widget_updated_at' => $widget->updated_at
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Widget settings saved successfully',
+    //             'data' => [
+    //                 'id' => $widget->widget_id,
+    //                 'type' => $widget->widget_type,
+    //                 'settings' => $widget->all_settings,
+    //                 'updated_at' => $widget->updated_at
+    //             ]
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to save widget settings',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
     public function saveWidgetAllSettings(Request $request, int $pageId, string $widgetId): JsonResponse
     {
-        \Log::info('[DEBUG] saveWidgetAllSettings called', [
-            'pageId' => $pageId,
+        Log::info('saveWidgetAllSettings called', [
+            'pageId'   => $pageId,
             'widgetId' => $widgetId,
-            'request_data' => $request->all()
+            'input'    => $request->all()
         ]);
 
-        $validator = Validator::make($request->all(), [
-            'general' => 'sometimes|array',
-            'style' => 'sometimes|array',
-            'advanced' => 'sometimes|array'
-        ]);
+        // Only require widget_type when creating (not updating)
+        $rules = [
+            'general'  => 'sometimes|array',
+            'style'    => 'sometimes|array',
+            'advanced' => 'sometimes|array',
+        ];
+
+        $exists = PageBuilderWidget::where('page_id', $pageId)
+            ->where('widget_id', $widgetId)
+            ->exists();
+
+        if (!$exists) {
+            $rules['widget_type'] = 'required|string';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors'  => $validator->errors(),
             ], 422);
         }
 
         try {
             DB::beginTransaction();
 
-            $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+            $adminId = Auth::guard('admin')->id();
 
-            $updateData = ['updated_by' => Auth::guard('admin')->id()];
+            $widget = PageBuilderWidget::updateOrCreate(
+                ['page_id' => $pageId, 'widget_id' => $widgetId],
+                [
+                    'widget_type'       => $request->input('widget_type'),
+                    'general_settings'  => $request->input('general', []),
+                    'style_settings'    => $request->input('style', []),
+                    'advanced_settings' => $request->input('advanced', []),
+                    'created_by'        => $adminId,
+                    'updated_by'        => $adminId,
+                ]
+            );
 
-            if ($request->has('general')) {
-                $updateData['general_settings'] = $request->input('general');
-            }
-            if ($request->has('style')) {
-                $updateData['style_settings'] = $request->input('style');
-            }
-            if ($request->has('advanced')) {
-                $updateData['advanced_settings'] = $request->input('advanced');
-            }
-
-            $widget->update($updateData);
+            $widget->updated_by = $adminId;
+            $widget->saveQuietly();
 
             DB::commit();
 
-            \Log::info('[DEBUG] saveWidgetAllSettings successful', [
-                'pageId' => $pageId,
-                'widgetId' => $widgetId,
-                'updated_settings' => $widget->all_settings,
-                'widget_updated_at' => $widget->updated_at
-            ]);
-
             return response()->json([
                 'success' => true,
-                'message' => 'Widget settings saved successfully',
+                'message' => $widget->wasRecentlyCreated ? 'Widget created!' : 'Settings saved!',
                 'data' => [
-                    'id' => $widget->widget_id,
+                    'id'   => $widget->widget_id,
                     'type' => $widget->widget_type,
                     'settings' => $widget->all_settings,
-                    'updated_at' => $widget->updated_at
                 ]
             ]);
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-
+            Log::error('saveWidgetAllSettings error', ['exception' => $e]);
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save widget settings',
-                'error' => $e->getMessage()
+                'message' => 'Server error',
+                'error'   => app()->environment('local') ? $e->getMessage() : 'Failed'
             ], 500);
         }
     }
@@ -1175,7 +1240,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $pageBuilderContent->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1264,7 +1328,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $pageBuilderContent->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1303,8 +1366,8 @@ class PageBuilderController extends Controller
             DB::beginTransaction();
 
             $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+                ->where('widget_id', $widgetId)
+                ->firstOrFail();
 
             $widget->update([
                 'general_settings' => $request->input('general'),
@@ -1330,7 +1393,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $widget->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1376,8 +1438,8 @@ class PageBuilderController extends Controller
             DB::beginTransaction();
 
             $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+                ->where('widget_id', $widgetId)
+                ->firstOrFail();
 
             $widget->update([
                 'style_settings' => $request->input('style'),
@@ -1403,7 +1465,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $widget->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1449,8 +1510,8 @@ class PageBuilderController extends Controller
             DB::beginTransaction();
 
             $widget = PageBuilderWidget::where('page_id', $pageId)
-                                       ->where('widget_id', $widgetId)
-                                       ->firstOrFail();
+                ->where('widget_id', $widgetId)
+                ->firstOrFail();
 
             $widget->update([
                 'advanced_settings' => $request->input('advanced'),
@@ -1476,7 +1537,6 @@ class PageBuilderController extends Controller
                     'updated_at' => $widget->updated_at
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1552,7 +1612,7 @@ class PageBuilderController extends Controller
             $widgetInstance = new $widgetClassName();
 
             // Get field definitions for the specified tab
-            $fieldDefinitions = match($tab) {
+            $fieldDefinitions = match ($tab) {
                 'general' => $widgetInstance->getGeneralFields(),
                 'style' => $widgetInstance->getStyleFields(),
                 'advanced' => $widgetInstance->getAdvancedFields(),
@@ -1577,7 +1637,7 @@ class PageBuilderController extends Controller
             }
 
             // Get saved values from database
-            $savedValues = match($tab) {
+            $savedValues = match ($tab) {
                 'general' => $widget->general_settings ?? [],
                 'style' => $widget->style_settings ?? [],
                 'advanced' => $widget->advanced_settings ?? [],
@@ -1608,7 +1668,6 @@ class PageBuilderController extends Controller
                     'timestamp' => now()->toISOString()
                 ]
             ]);
-
         } catch (\Exception $e) {
             \Log::error('[PageBuilderController] Error in getWidgetSettings', [
                 'pageId' => $pageId,

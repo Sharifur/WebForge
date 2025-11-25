@@ -14,9 +14,9 @@ import DragOverlayContent from '@/Components/PageBuilder/DragDrop/DragOverlayCon
 import EditingConflictModal from '@/Components/PageBuilder/EditingConflictModal';
 
 const PageBuilder = ({ page, widgets, sections, templates }) => {
-  const { 
-    pageContent, 
-    selectedWidget, 
+  const {
+    pageContent,
+    selectedWidget,
     activePanel,
     isDragging,
     activeId,
@@ -91,12 +91,12 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
               backgroundColor: '#ffffff'
             }
           };
-          
+
           initializePageContent({ containers: [defaultContainer] });
         }
       } catch (error) {
         console.error('Failed to load page content:', error);
-        
+
         // Fallback to default content if API fails
         const defaultContainer = {
           id: `container-${Date.now()}`,
@@ -113,7 +113,7 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
             backgroundColor: '#ffffff'
           }
         };
-        
+
         initializePageContent({ containers: [defaultContainer] });
       }
     };
@@ -139,16 +139,16 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
         <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
         <link href="/css/drop-zones.css" rel="stylesheet" />
       </Head>
-      
+
       <div className="h-screen flex bg-gray-50 overflow-hidden">
-        <DndContext 
+        <DndContext
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           {/* Left Sidebar - Widget Panel */}
-          <WidgetPanel 
+          <WidgetPanel
             widgets={widgets}
             sections={sections}
             templates={templates}
@@ -157,7 +157,7 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
             collapsed={sidebarCollapsed}
             onToggleCollapse={toggleSidebar}
           />
-          
+
           {/* Main Canvas Area */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Canvas Toolbar */}
@@ -172,17 +172,17 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
               hoveredDropZone={hoveredDropZone}
             />
           </div>
-          
+
           {/* Right Sidebar - Settings Panel */}
           {settingsPanelVisible && (
-            <SettingsPanel 
+            <SettingsPanel
               widget={selectedWidget}
               page={page}
               onUpdate={setPageContent}
               onWidgetUpdate={setSelectedWidget}
             />
           )}
-          
+
           {/* Drag Overlay */}
           <DragOverlay>
             {activeId ? (

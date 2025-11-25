@@ -119,6 +119,7 @@ class SettingsService {
                 headers: this.getHeaders(),
                 credentials: 'same-origin',
                 body: JSON.stringify({
+                    widget_type: allSettings.widget_type,
                     general: allSettings.general || {},
                     style: allSettings.style || {},
                     advanced: allSettings.advanced || {}
