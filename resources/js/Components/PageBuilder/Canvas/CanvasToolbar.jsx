@@ -88,7 +88,7 @@ const CanvasToolbar = ({ page }) => {
         <div className="flex items-center space-x-4">
           {/* Back Button */}
           <button
-            onClick={() => router.get(route('admin.pages.index'))}
+            onClick={() => window.location.href = route('admin.pages.index')}
             className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
             title="Back to Pages"
           >
