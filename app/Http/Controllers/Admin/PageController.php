@@ -186,93 +186,9 @@ class PageController extends Controller
     {
         $page = Page::where('slug', $slug)->firstOrFail();
         $page->load('metaInformation');
-        
-        // Complete widgets data with icons and default content
-        $widgets = [
-            [
-                'type' => 'heading', 
-                'label' => 'Heading', 
-                'category' => 'content',
-                'icon' => 'Type',
-                'defaultContent' => ['text' => 'Sample Heading', 'tag' => 'h2']
-            ],
-            [
-                'type' => 'text', 
-                'label' => 'Text Editor', 
-                'category' => 'content',
-                'icon' => 'FileText',
-                'defaultContent' => ['html' => '<p>Sample text content</p>']
-            ],
-            [
-                'type' => 'button', 
-                'label' => 'Button', 
-                'category' => 'content',
-                'icon' => 'MousePointer',
-                'defaultContent' => ['text' => 'Click Me', 'url' => '#', 'variant' => 'primary']
-            ],
-            [
-                'type' => 'image', 
-                'label' => 'Image', 
-                'category' => 'content',
-                'icon' => 'Image',
-                'defaultContent' => ['src' => '/placeholder.jpg', 'alt' => 'Image', 'alignment' => 'center']
-            ],
-            [
-                'type' => 'container', 
-                'label' => 'Container', 
-                'category' => 'layout',
-                'icon' => 'Layout',
-                'defaultContent' => ['columns' => 1, 'gap' => '20px', 'padding' => '20px']
-            ],
-            [
-                'type' => 'divider', 
-                'label' => 'Divider', 
-                'category' => 'layout',
-                'icon' => 'Minus',
-                'defaultContent' => ['style' => 'solid', 'color' => '#e5e7eb']
-            ],
-            [
-                'type' => 'spacer', 
-                'label' => 'Spacer', 
-                'category' => 'layout',
-                'icon' => 'Space',
-                'defaultContent' => ['height' => '20px']
-            ],
-            [
-                'type' => 'collapse', 
-                'label' => 'Collapse', 
-                'category' => 'interactive',
-                'icon' => 'ChevronDown',
-                'defaultContent' => ['title' => 'Collapsible Section', 'content' => 'Content here', 'isOpenByDefault' => false]
-            ],
-            [
-                'type' => 'carousel', 
-                'label' => 'Carousel', 
-                'category' => 'interactive',
-                'icon' => 'RotateCcw',
-                'defaultContent' => ['slides' => [], 'autoplay' => false]
-            ],
-        ];
-
-        // Sample sections data
-        $sections = [
-            [
-                'id' => 'hero',
-                'label' => 'Hero Section',
-                'icon' => 'Layers',
-                'columns' => [['id' => 'col-1', 'width' => '100%', 'widgets' => [], 'settings' => []]],
-                'settings' => ['padding' => '80px 20px', 'backgroundColor' => '#f8fafc', 'minHeight' => '400px']
-            ]
-        ];
-
-        // Sample templates data
-        $templates = [];
 
         return Inertia::render('PageBuilder/Index', [
             'page' => $page,
-            'widgets' => $widgets,
-            'sections' => $sections,
-            'templates' => $templates
         ]);
     }
 

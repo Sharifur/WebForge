@@ -111,17 +111,96 @@ class PageBuilderController extends Controller
             $page = Page::findOrFail($pageId);
             $pageBuilderContent = $page->pageBuilderContent;
 
-            \Log::info('[DEBUG] getContent called', [
+            Log::info('[DEBUG] getContent called', [
                 'pageId' => $pageId,
                 'has_page_builder_content' => !!$pageBuilderContent
             ]);
 
+            // If no PageBuilderContent exists, try to build from widgets
             if (!$pageBuilderContent) {
+                $widgets = $page->widgets()->ordered()->get();
+
+                Log::info('[DEBUG] No page builder content, checking widgets', [
+                    'widget_count' => $widgets->count()
+                ]);
+
+                if ($widgets->isEmpty()) {
+                    // Return empty structure if no widgets
+                    return response()->json([
+                        'success' => true,
+                        'data' => [
+                            'content' => ['containers' => []],
+                            'widgets' => [],
+                            'version' => '1.0',
+                            'is_published' => false,
+                            'published_at' => null
+                        ]
+                    ]);
+                }
+
+                // Build content structure from widgets
+                $containersMap = [];
+
+                foreach ($widgets as $widget) {
+                    // Use default container/column if null
+                    $containerId = $widget->container_id ?? 'default-container';
+                    $columnId = $widget->column_id ?? 'default-column';
+
+                    // Initialize container if not exists
+                    if (!isset($containersMap[$containerId])) {
+                        $containersMap[$containerId] = [
+                            'id' => $containerId,
+                            'type' => 'section',
+                            'columns' => [],
+                            'settings' => [
+                                'padding' => '40px 20px',
+                                'margin' => '0px',
+                                'backgroundColor' => '#ffffff'
+                            ]
+                        ];
+                    }
+
+                    // Initialize column if not exists
+                    if (!isset($containersMap[$containerId]['columns'][$columnId])) {
+                        $containersMap[$containerId]['columns'][$columnId] = [
+                            'id' => $columnId,
+                            'width' => '100%',
+                            'widgets' => [],
+                            'settings' => []
+                        ];
+                    }
+
+                    // Add widget to column
+                    $containersMap[$containerId]['columns'][$columnId]['widgets'][] = [
+                        'id' => $widget->widget_id,
+                        'type' => $widget->widget_type,
+                        'settings' => [
+                            'general' => $widget->general_settings ?? [],
+                            'style' => $widget->style_settings ?? [],
+                            'advanced' => $widget->advanced_settings ?? [],
+                            'responsive' => $widget->responsive_settings ?? []
+                        ],
+                        'isVisible' => $widget->is_visible,
+                        'isEnabled' => $widget->is_enabled
+                    ];
+                }
+
+                // Convert associative arrays to indexed arrays
+                $containers = array_values(array_map(function ($container) {
+                    $container['columns'] = array_values($container['columns']);
+                    return $container;
+                }, $containersMap));
+
+                Log::info('[DEBUG] Built content from widgets', [
+                    'container_count' => count($containers),
+                    'total_widgets' => $widgets->count()
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'data' => [
-                        'content' => ['containers' => []],
-                        'widgets' => [],
+                        'content' => ['containers' => $containers],
+                        'widgets' => $widgets->toArray(),
                         'version' => '1.0',
                         'is_published' => false,
                         'published_at' => null
@@ -132,7 +211,7 @@ class PageBuilderController extends Controller
             // Get complete content with merged widget data for frontend
             $completeContent = $pageBuilderContent->getCompleteContent();
 
-            \Log::info('[DEBUG] getContent - complete content loaded', [
+            Log::info('[DEBUG] getContent - complete content loaded', [
                 'pageId' => $pageId,
                 'container_count' => count($completeContent['containers'] ?? []),
                 'first_container_id' => $completeContent['containers'][0]['id'] ?? 'none',
@@ -153,6 +232,12 @@ class PageBuilderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('[ERROR] getContent failed', [
+                'pageId' => $pageId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to get page builder content',
@@ -1898,6 +1983,44 @@ class PageBuilderController extends Controller
         // Convert widget type to class name (e.g., 'heading' -> 'HeadingWidget')
         $className = str_replace(' ', '', ucwords(str_replace(['_', '-'], ' ', $widgetType))) . 'Widget';
 
-        return "Plugins\\Pagebuilder\\Core\\Widgets\\{$className}";
+        $coreClass  = "Plugins\\Pagebuilder\\Core\\Widgets\\{$className}";
+        $mediaClass = "Plugins\\Pagebuilder\\Widgets\\Media\\{$className}";
+        $themeClass = "Plugins\\Pagebuilder\\Widgets\\Theme\\{$className}";
+        $interactiveClass = "Plugins\\Pagebuilder\\Widgets\\Interactive\\{$className}";
+        $advancedClass = "Plugins\\Pagebuilder\\Widgets\\Advanced\\{$className}";
+        $contentClass = "Plugins\\Pagebuilder\\Widgets\\Content\\{$className}";
+
+        // Check if the class actually exists in Core
+        if (class_exists($coreClass)) {
+            return $coreClass;
+        }
+
+        // Check if the class exists in Media
+        if (class_exists($mediaClass)) {
+            return $mediaClass;
+        }
+
+        // Check if the class exists in Theme
+        if (class_exists($themeClass)) {
+            return $themeClass;
+        }
+
+        // Check if the class exists in Interactive
+        if (class_exists($interactiveClass)) {
+            return $interactiveClass;
+        }
+
+        // Check if the class exists in Advanced
+        if (class_exists($advancedClass)) {
+            return $advancedClass;
+        }
+
+        // Check if the class exists in Content
+        if (class_exists($contentClass)) {
+            return $contentClass;
+        }
+
+        // Fallback: return the core namespace
+        return $coreClass;
     }
 }
