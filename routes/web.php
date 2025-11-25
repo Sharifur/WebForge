@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\Api\IconController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\PageController;
 
 Route::get('/', function () {
     return view('home');
@@ -165,28 +166,28 @@ Route::prefix('api/media')->middleware(['admin'])->group(function () {
 
 // Icon API Routes
 Route::prefix('api/icons')->group(function () {
-    Route::get('/', [App\Http\Controllers\API\IconController::class, 'index'])
+    Route::get('/', [IconController::class, 'index'])
         ->name('api.icons.index');
 
-    Route::get('/popular', [App\Http\Controllers\API\IconController::class, 'popular'])
+    Route::get('/popular', [IconController::class, 'popular'])
         ->name('api.icons.popular');
 
-    Route::get('/categories', [App\Http\Controllers\API\IconController::class, 'categories'])
+    Route::get('/categories', [IconController::class, 'categories'])
         ->name('api.icons.categories');
 
-    Route::get('/search', [App\Http\Controllers\API\IconController::class, 'search'])
+    Route::get('/search', [IconController::class, 'search'])
         ->name('api.icons.search');
 
-    Route::post('/validate', [App\Http\Controllers\API\IconController::class, 'validate'])
+    Route::post('/validate', [IconController::class, 'validate'])
         ->name('api.icons.validate');
 
-    Route::get('/category/{category}', [App\Http\Controllers\API\IconController::class, 'byCategory'])
+    Route::get('/category/{category}', [IconController::class, 'byCategory'])
         ->name('api.icons.by-category');
 
-    Route::get('/{iconClass}', [App\Http\Controllers\API\IconController::class, 'show'])
+    Route::get('/{iconClass}', [IconController::class, 'show'])
         ->name('api.icons.show');
 
-    Route::delete('/cache', [App\Http\Controllers\API\IconController::class, 'clearCache'])
+    Route::delete('/cache', [IconController::class, 'clearCache'])
         ->name('api.icons.clear-cache')
         ->middleware(['admin']);
 
