@@ -546,32 +546,78 @@ class ListWidget extends BaseWidget
      */
     private function renderListItem(array $item, string $listStyle, string $customIcon, bool $enableNested): string
     {
-        $text = htmlspecialchars($item['text'] ?? '', ENT_QUOTES, 'UTF-8');
-        $link = $item['link'] ?? '';
-        $linkTarget = $item['link_target'] ?? '_self';
-        $nestedItems = $item['nested_items'] ?? '';
-        
-        $itemContent = '';
-        
-        // Add custom icon if needed
-        if ($listStyle === 'custom') {
-            $itemContent .= '<i class="list-icon icon-' . htmlspecialchars($customIcon, ENT_QUOTES, 'UTF-8') . '"></i>';
+        // Sanitize TEXT 
+        $textRaw = $item['text'] ?? '';
+
+        if (is_array($textRaw)) {
+            $textRaw = $textRaw['value']
+                ?? $textRaw['text']
+                ?? reset($textRaw)
+                ?? '';
         }
-        
-        // Add text content (with link if specified)
+
+        $text = htmlspecialchars((string)$textRaw, ENT_QUOTES, 'UTF-8');
+
+
+        // Sanitize LINK
+        $linkRaw = $item['link'] ?? '';
+        if (is_array($linkRaw)) {
+            $linkRaw = reset($linkRaw) ?? '';
+        }
+        $link = (string) $linkRaw;
+
+
+        // Sanitize LINK TARGET
+        $linkTargetRaw = $item['link_target'] ?? '_self';
+        if (is_array($linkTargetRaw)) {
+            $linkTargetRaw = reset($linkTargetRaw) ?? '_self';
+        }
+        $linkTarget = (string) $linkTargetRaw;
+
+
+        // Sanitize CUSTOM ICON
+        if (is_array($customIcon)) {
+            $customIcon = reset($customIcon) ?? '';
+        }
+        $customIcon = (string)$customIcon;
+
+
+        // Nested items    
+        $nestedItems = $item['nested_items'] ?? '';
+
+        $itemContent = '';
+
+
+        // Custom icon
+        if ($listStyle === 'custom') {
+            $itemContent .= '<i class="list-icon icon-'
+                . htmlspecialchars($customIcon, ENT_QUOTES, 'UTF-8')
+                . '"></i>';
+        }
+
+
+        /* Add text + link */
         if (!empty($link)) {
-            $linkAttrs = 'href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '" target="' . htmlspecialchars($linkTarget, ENT_QUOTES, 'UTF-8') . '"';
-            $itemContent .= '<a ' . $linkAttrs . '>' . $text . '</a>';
+
+            $itemContent .= '<a href="'
+                . htmlspecialchars($link, ENT_QUOTES, 'UTF-8')
+                . '" target="'
+                . htmlspecialchars($linkTarget, ENT_QUOTES, 'UTF-8')
+                . '">'
+                . $text
+                . '</a>';
         } else {
+
             $itemContent .= '<span class="list-text">' . $text . '</span>';
         }
-        
-        // Add nested items if enabled and present
+
+
+        /* Nested items */
         if ($enableNested && !empty($nestedItems)) {
-            $nestedList = $this->renderNestedList($nestedItems, $listStyle, $customIcon);
-            $itemContent .= $nestedList;
+            $itemContent .= $this->renderNestedList($nestedItems, $listStyle, $customIcon);
         }
-        
+
+
         return '<li>' . $itemContent . '</li>';
     }
 
