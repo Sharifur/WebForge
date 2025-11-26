@@ -627,6 +627,13 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
     clearWidgetSnapshot 
   } = usePageBuilderStore();
 
+  // Reset active tab when widget changes
+  useEffect(() => {
+    if (widget?.id) {
+      setActiveTab('general'); // Always reset to general tab
+    }
+  }, [widget?.id]);
+
   // Store original settings when widget changes
   useEffect(() => {
     if (widget) {
@@ -812,6 +819,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             <div className="flex-1 flex flex-col min-h-0">
               {activeTab === 'general' && (
                 <SectionGeneralSettings
+                  key={widget.id}
                   container={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -819,6 +827,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               )}
               {activeTab === 'style' && (
                 <SectionStyleSettings
+                  key={widget.id}
                   container={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -826,6 +835,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               )}
               {activeTab === 'advanced' && (
                 <SectionAdvancedSettings
+                  key={widget.id}
                   container={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -857,6 +867,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             <div className="flex-1 flex flex-col min-h-0">
               {activeTab === 'general' && (
                 <ColumnGeneralSettings
+                  key={widget.id}
                   column={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -864,6 +875,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               )}
               {activeTab === 'style' && (
                 <ColumnStyleSettings
+                  key={widget.id}
                   column={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -871,6 +883,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
               )}
               {activeTab === 'advanced' && (
                 <ColumnAdvancedSettings
+                  key={widget.id}
                   column={widget}
                   onUpdate={onUpdate}
                   onWidgetUpdate={onWidgetUpdate}
@@ -882,6 +895,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
           <>
             {activeTab === 'general' && (
               <GeneralSettings
+                key={widget.id}
                 widget={widget}
                 onUpdate={onUpdate}
                 onWidgetUpdate={onWidgetUpdate}
@@ -889,6 +903,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             )}
             {activeTab === 'style' && (
               <StyleSettings
+                key={widget.id}
                 widget={widget}
                 onUpdate={onUpdate}
                 onWidgetUpdate={onWidgetUpdate}
@@ -896,6 +911,7 @@ const SettingsPanel = ({ widget, page, onUpdate, onWidgetUpdate, onClose }) => {
             )}
             {activeTab === 'advanced' && (
               <AdvancedSettings
+                key={widget.id}
                 widget={widget}
                 onUpdate={onUpdate}
                 onWidgetUpdate={onWidgetUpdate}
