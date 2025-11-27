@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * PageBuilderContent Model
@@ -212,10 +213,6 @@ class PageBuilderContent extends Model
 
         // Load all widgets for this page with their settings
         $widgets = $this->widgets()->get()->keyBy('widget_id');
-
-        \Log::info('PageBuilderContent::getCompleteContent - Loaded widgets count: ' . $widgets->count());
-
-        // Create a new array without references to prevent circular references
         $processedContent = ['containers' => []];
 
         // Process each container - avoiding references that cause circular loops
@@ -234,22 +231,35 @@ class PageBuilderContent extends Model
 
                     if ($widgetId && $widgets->has($widgetId)) {
                         $widgetData = $widgets[$widgetId];
-                        \Log::info("Found widget {$widgetId} in database", ['type' => $widgetData->widget_type]);
+                        Log::info("Found widget {$widgetId} in database", ['type' => $widgetData->widget_type]);
+
+                        // Helper to ensure settings are objects, not empty arrays
+                        $ensureObject = function($value) {
+                            if (empty($value) || (is_array($value) && count($value) === 0)) {
+                                return [];  // Return empty array for now, frontend will convert
+                            }
+                            return $value;
+                        };
+
+                        // Get settings with proper fallback
+                        $generalSettings = $ensureObject($widgetData->general_settings);
+                        $styleSettings = $ensureObject($widgetData->style_settings);
+                        $advancedSettings = $ensureObject($widgetData->advanced_settings);
 
                         // Merge widget settings into the content structure (frontend format)
                         $processedWidget = array_merge($widget, [
                             'type' => $widgetData->widget_type,
-                            'content' => $widgetData->general_settings ?? [],  // Legacy widgets expect 'content'
-                            'general' => $widgetData->general_settings ?? [],  // PHP widgets expect 'general'
-                            'style' => $widgetData->style_settings ?? [],
-                            'advanced' => $widgetData->advanced_settings ?? [],
+                            'content' => $generalSettings,  // Legacy widgets expect 'content'
+                            'general' => $generalSettings,  // PHP widgets expect 'general'
+                            'style' => $styleSettings,
+                            'advanced' => $advancedSettings,
                             'is_visible' => $widgetData->is_visible ?? true,
                             'is_enabled' => $widgetData->is_enabled ?? true,
                         ]);
 
                         // Debug specific widgets
                         if ($widgetData->widget_type === 'heading') {
-                            \Log::info("Found heading widget {$widgetId} - merged data", [
+                            Log::info("Found heading widget {$widgetId} - merged data", [
                                 'general_settings_from_db' => $widgetData->general_settings,
                                 'processed_widget_general' => $processedWidget['general'],
                                 'processed_widget_content' => $processedWidget['content']
@@ -263,7 +273,7 @@ class PageBuilderContent extends Model
                         $processedWidget['style'] = $this->deepCloneArray($processedWidget['style']);
                         $processedWidget['advanced'] = $this->deepCloneArray($processedWidget['advanced']);
                     } else {
-                        \Log::warning("Widget {$widgetId} not found in database");
+                        Log::warning("Widget {$widgetId} not found in database");
                         $processedWidget = $widget;
                     }
 
@@ -280,23 +290,23 @@ class PageBuilderContent extends Model
     }
 
     /**
-     * Deep clone an array with strict depth limit to prevent circular references
-     * Max depth of 2 levels to keep data structure simple and prevent issues
+     * Deep clone an array to prevent circular references
+     * Uses a reasonable depth limit for widget settings which can be deeply nested
      *
      * @param mixed $data The data to clone
      * @param int $depth Current depth level (starts at 0)
-     * @param int $maxDepth Maximum allowed depth (default 2)
+     * @param int $maxDepth Maximum allowed depth (default 10 for complex widget settings)
      * @return mixed The cloned data
      */
-    private function deepCloneArray($data, int $depth = 0, int $maxDepth = 2)
+    private function deepCloneArray($data, int $depth = 0, int $maxDepth = 10)
     {
-        // Strict depth limit - prevent any deep nesting
+        // Strict depth limit - prevent infinite recursion
         if ($depth >= $maxDepth) {
-            // At max depth, return simple representation
-            if (is_array($data) || is_object($data)) {
-                return '[MAX_DEPTH_REACHED]';
+            // At max depth, return scalar or empty representation
+            if (is_scalar($data) || is_null($data)) {
+                return $data;
             }
-            return $data;
+            return null; // Truncate deeply nested structures
         }
 
         if (is_array($data)) {
@@ -306,13 +316,8 @@ class PageBuilderContent extends Model
             }
             return $result;
         } elseif (is_object($data)) {
-            // Convert objects to arrays at this depth level only
-            if ($depth < $maxDepth - 1) {
-                return $this->deepCloneArray((array) $data, $depth + 1, $maxDepth);
-            } else {
-                // At near-max depth, convert object to string representation
-                return '[OBJECT:' . get_class($data) . ']';
-            }
+            // Convert objects to arrays
+            return $this->deepCloneArray((array) $data, $depth + 1, $maxDepth);
         } else {
             // Return scalar values as-is (string, int, bool, null)
             return $data;

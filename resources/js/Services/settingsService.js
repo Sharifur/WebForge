@@ -110,6 +110,15 @@ class SettingsService {
     }
 
     /**
+     * Helper to ensure we always send objects, not arrays
+     */
+    ensureObject(val) {
+        if (!val || (Array.isArray(val) && val.length === 0)) return {};
+        if (typeof val !== 'object') return {};
+        return val;
+    }
+
+    /**
      * Save all settings for a widget (general + style + advanced)
      */
     async saveWidgetAllSettings(pageId, widgetId, allSettings) {
@@ -120,9 +129,9 @@ class SettingsService {
                 credentials: 'same-origin',
                 body: JSON.stringify({
                     widget_type: allSettings.widget_type,
-                    general: allSettings.general || {},
-                    style: allSettings.style || {},
-                    advanced: allSettings.advanced || {}
+                    general: this.ensureObject(allSettings.general),
+                    style: this.ensureObject(allSettings.style),
+                    advanced: this.ensureObject(allSettings.advanced)
                 })
             });
 

@@ -31,6 +31,27 @@ const EnhancedLinkPicker = ({
   allowedTargets = { '_self': 'Same Window', '_blank': 'New Window/Tab', '_parent': 'Parent Frame', '_top': 'Top Frame' },
   commonRelValues = ['nofollow', 'noopener', 'noreferrer', 'sponsored']
 }) => {
+  // Utility to merge value with defaults, replacing null with empty strings
+  const sanitizeValue = (val) => {
+    if (!val || typeof val !== 'object') return {};
+    
+    const sanitized = {};
+    Object.keys(val).forEach(key => {
+      if (val[key] === null) {
+        sanitized[key] = '';
+      } else if (Array.isArray(val[key])) {
+        sanitized[key] = val[key];
+      } else if (typeof val[key] === 'object') {
+        sanitized[key] = sanitizeValue(val[key]);
+      } else {
+        sanitized[key] = val[key];
+      }
+    });
+    return sanitized;
+  };
+
+  const sanitizedValue = sanitizeValue(value);
+
   // State management
   const [linkData, setLinkData] = useState({
     url: '',
@@ -53,7 +74,7 @@ const EnhancedLinkPicker = ({
       desktop_target: '_self',
       mobile_target: '_self'
     },
-    ...value
+    ...sanitizedValue
   });
 
   const [activeAdvancedTab, setActiveAdvancedTab] = useState('advanced');
@@ -212,7 +233,7 @@ const EnhancedLinkPicker = ({
         <div className="block">
           <input
             type="text"
-            value={linkData.url}
+            value={linkData.url ?? ''}
             onChange={(e) => {
               updateLinkData('url', e.target.value);
               setLinkValidation(validateURL(e.target.value, linkData.type));
@@ -353,7 +374,7 @@ const EnhancedLinkPicker = ({
                 </label>
                 <input
                   type="text"
-                  value={linkData.id}
+                  value={linkData.id ?? ''}
                   onChange={(e) => updateLinkData('id', e.target.value)}
                   placeholder="unique-id"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -367,7 +388,7 @@ const EnhancedLinkPicker = ({
                 </label>
                 <input
                   type="text"
-                  value={linkData.class}
+                  value={linkData.class ?? ''}
                   onChange={(e) => updateLinkData('class', e.target.value)}
                   placeholder="class1 class2"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -385,7 +406,7 @@ const EnhancedLinkPicker = ({
                 </label>
                 <input
                   type="text"
-                  value={linkData.title}
+                  value={linkData.title ?? ''}
                   onChange={(e) => updateLinkData('title', e.target.value)}
                   placeholder="Link description for accessibility"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -423,7 +444,7 @@ const EnhancedLinkPicker = ({
                   </label>
                   <input
                     type="text"
-                    value={value}
+                    value={value ?? ''}
                     onChange={(e) => updateNestedData('utm_parameters', key, e.target.value)}
                     placeholder={`Enter ${key.replace('utm_', '')}`}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -454,7 +475,7 @@ const EnhancedLinkPicker = ({
                     </label>
                     <input
                       type="text"
-                      value={attr.name}
+                      value={attr.name ?? ''}
                       onChange={(e) => updateCustomAttribute(index, 'name', e.target.value)}
                       placeholder="data-id, aria-label, etc."
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -467,7 +488,7 @@ const EnhancedLinkPicker = ({
                     </label>
                     <input
                       type="text"
-                      value={attr.value}
+                      value={attr.value ?? ''}
                       onChange={(e) => updateCustomAttribute(index, 'value', e.target.value)}
                       placeholder="Attribute value"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -27,6 +27,13 @@ const usePageBuilderStore = create((set, get) => ({
   sidebarCollapsed: false, // Left sidebar collapse state
   widgetSnapshots: {}, // Store original widget states for reverting changes
 
+  // Auto-save state
+  autoSaveEnabled: true,
+  isSaving: false,
+  lastSaved: null,
+  saveError: null,
+  currentPageId: null, // Track current page ID for auto-save
+
   // Responsive Device State
   currentDevice: 'desktop', // Current device mode: 'desktop', 'tablet', 'mobile'
   canvasViewport: {
@@ -39,7 +46,7 @@ const usePageBuilderStore = create((set, get) => ({
     tablet: { min: 769, max: 1024, label: 'Tablet (769px - 1024px)' },
     mobile: { max: 768, label: 'Mobile (≤768px)' }
   },
-  
+
   // Enhanced global drag state for cross-container always-visible drop zones
   dragState: {
     // Section dragging
@@ -69,13 +76,13 @@ const usePageBuilderStore = create((set, get) => ({
     lastMousePosition: null, // Last recorded mouse position
     dragVelocity: { x: 0, y: 0 } // Mouse movement velocity
   },
-  
+
   // Actions
-  initializePageContent: (content) => set({ 
+  initializePageContent: (content) => set({
     pageContent: content || { containers: [] },
     originalContent: content || { containers: [] }
   }),
-  
+
   setPageContent: (updater) => set(state => {
     const newContent = typeof updater === 'function' ? updater(state.pageContent) : updater;
     return {
@@ -83,7 +90,7 @@ const usePageBuilderStore = create((set, get) => ({
       isDirty: JSON.stringify(newContent) !== JSON.stringify(state.originalContent)
     };
   }),
-  
+
   setSelectedWidget: (widget) => set(state => {
     // Create snapshot when selecting a widget for the first time
     if (widget && widget.id && !state.widgetSnapshots[widget.id]) {
@@ -100,15 +107,15 @@ const usePageBuilderStore = create((set, get) => ({
         }
       };
     }
-    
+
     return {
       selectedWidget: widget,
       settingsPanelVisible: widget !== null
     };
   }),
-  
+
   setActivePanel: (panel) => set({ activePanel: panel }),
-  
+
   setIsDragging: (isDragging, draggedItem = null) => set(state => ({
     isDragging,
     dragState: {
@@ -124,9 +131,9 @@ const usePageBuilderStore = create((set, get) => ({
       crossContainerMode: isDragging ? state.dragState.crossContainerMode : false
     }
   })),
-  
+
   setActiveId: (activeId) => set({ activeId }),
-  
+
   setHoveredDropZone: (zone) => set({ hoveredDropZone: zone }),
 
   setDropPosition: (position) => set(state => ({
@@ -208,13 +215,13 @@ const usePageBuilderStore = create((set, get) => ({
       dragVelocity: { x: 0, y: 0 }
     }
   })),
-  
+
   setSettingsPanelVisible: (visible) => set({ settingsPanelVisible: visible }),
-  
+
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
-  
+
   toggleSidebar: () => set(state => ({ sidebarCollapsed: !state.sidebarCollapsed })),
-  
+
   // Section drag actions
   setIsDraggingSection: (isDragging) => set(state => ({
     dragState: {
@@ -225,32 +232,32 @@ const usePageBuilderStore = create((set, get) => ({
       activeDropZone: isDragging ? state.dragState.activeDropZone : null
     }
   })),
-  
+
   setDraggedSectionId: (sectionId) => set(state => ({
     dragState: {
       ...state.dragState,
       draggedSectionId: sectionId
     }
   })),
-  
+
   setAvailableDropZones: (dropZones) => set(state => ({
     dragState: {
       ...state.dragState,
       availableDropZones: dropZones
     }
   })),
-  
+
   setActiveDropZone: (dropZone) => set(state => ({
     dragState: {
       ...state.dragState,
       activeDropZone: dropZone
     }
   })),
-  
+
   calculateDropZones: () => set(state => {
     const { containers } = state.pageContent;
     const dropZones = [];
-    
+
     // Add drop zone before first container
     dropZones.push({
       id: 'drop-zone-before-0',
@@ -258,7 +265,7 @@ const usePageBuilderStore = create((set, get) => ({
       index: 0,
       type: 'section-drop-zone'
     });
-    
+
     // Add drop zones after each container
     containers.forEach((container, index) => {
       dropZones.push({
@@ -269,7 +276,7 @@ const usePageBuilderStore = create((set, get) => ({
         type: 'section-drop-zone'
       });
     });
-    
+
     return {
       dragState: {
         ...state.dragState,
@@ -277,7 +284,7 @@ const usePageBuilderStore = create((set, get) => ({
       }
     };
   }),
-  
+
   clearDragState: () => set(state => ({
     dragState: {
       isDraggingSection: false,
@@ -286,13 +293,13 @@ const usePageBuilderStore = create((set, get) => ({
       activeDropZone: null
     }
   })),
-  
+
   toggleSettingsPanel: () => set(state => ({ settingsPanelVisible: !state.settingsPanelVisible })),
 
   // Navigation dialog methods
   toggleNavigationDialog: () => set(state => ({ navigationDialogVisible: !state.navigationDialogVisible })),
   setNavigationDialogPosition: (position) => set(state => ({ navigationDialogPosition: position })),
-  
+
   // Widget snapshot methods
   createWidgetSnapshot: (widgetId, widget) => set(state => ({
     widgetSnapshots: {
@@ -304,11 +311,11 @@ const usePageBuilderStore = create((set, get) => ({
       }
     }
   })),
-  
+
   revertWidgetToSnapshot: (widgetId) => set(state => {
     const snapshot = state.widgetSnapshots[widgetId];
     if (!snapshot) return state;
-    
+
     return {
       pageContent: {
         ...state.pageContent,
@@ -317,45 +324,78 @@ const usePageBuilderStore = create((set, get) => ({
           columns: container.columns.map(column => ({
             ...column,
             widgets: column.widgets.map(widget =>
-              widget.id === widgetId 
-                ? { 
-                    ...widget, 
-                    content: JSON.parse(JSON.stringify(snapshot.content)),
-                    style: JSON.parse(JSON.stringify(snapshot.style)),
-                    advanced: JSON.parse(JSON.stringify(snapshot.advanced))
-                  } 
+              widget.id === widgetId
+                ? {
+                  ...widget,
+                  content: JSON.parse(JSON.stringify(snapshot.content)),
+                  style: JSON.parse(JSON.stringify(snapshot.style)),
+                  advanced: JSON.parse(JSON.stringify(snapshot.advanced))
+                }
                 : widget
             )
           }))
         }))
       },
-      selectedWidget: state.selectedWidget?.id === widgetId 
-        ? { 
-            ...state.selectedWidget,
-            content: JSON.parse(JSON.stringify(snapshot.content)),
-            style: JSON.parse(JSON.stringify(snapshot.style)),
-            advanced: JSON.parse(JSON.stringify(snapshot.advanced))
-          }
+      selectedWidget: state.selectedWidget?.id === widgetId
+        ? {
+          ...state.selectedWidget,
+          content: JSON.parse(JSON.stringify(snapshot.content)),
+          style: JSON.parse(JSON.stringify(snapshot.style)),
+          advanced: JSON.parse(JSON.stringify(snapshot.advanced))
+        }
         : state.selectedWidget
     };
   }),
-  
+
   clearWidgetSnapshot: (widgetId) => set(state => {
     const newSnapshots = { ...state.widgetSnapshots };
     delete newSnapshots[widgetId];
     return { widgetSnapshots: newSnapshots };
   }),
-  
+
   clearAllWidgetSnapshots: () => set({ widgetSnapshots: {} }),
-  
+
   // Container Actions
-  addContainer: (container) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: [...state.pageContent.containers, {
-        id: `container-${Date.now()}`,
+  addContainer: async (container) => {
+    set(state => ({
+      pageContent: {
+        ...state.pageContent,
+        containers: [...state.pageContent.containers, {
+          id: `container-${Date.now()}`,
+          type: 'section',
+          columns: [
+            {
+              id: `column-${Date.now()}`,
+              width: '100%',
+              widgets: [],
+              settings: {}
+            }
+          ],
+          settings: {
+            padding: '20px',
+            margin: '0px',
+            backgroundColor: '#ffffff'
+          },
+          ...container
+        }]
+      },
+      isDirty: true
+    }));
+
+    // Immediate save for structural change
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      await autoSave(currentPageId);
+    }
+  },
+
+  insertSectionAt: async (position, section) => {
+    set(state => {
+      const newContainers = [...state.pageContent.containers];
+      newContainers.splice(position, 0, {
+        id: section.id || `container-${Date.now()}`,
         type: 'section',
-        columns: [
+        columns: section.columns || [
           {
             id: `column-${Date.now()}`,
             width: '100%',
@@ -366,81 +406,71 @@ const usePageBuilderStore = create((set, get) => ({
         settings: {
           padding: '20px',
           margin: '0px',
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          ...section.settings
         },
-        ...container
-      }]
-    },
-    isDirty: true
-  })),
+        ...section
+      });
 
-  insertSectionAt: (position, section) => set(state => {
-    const newContainers = [...state.pageContent.containers];
-    newContainers.splice(position, 0, {
-      id: section.id || `container-${Date.now()}`,
-      type: 'section',
-      columns: section.columns || [
-        {
-          id: `column-${Date.now()}`,
-          width: '100%',
-          widgets: [],
-          settings: {}
-        }
-      ],
-      settings: {
-        padding: '20px',
-        margin: '0px',
-        backgroundColor: '#ffffff',
-        ...section.settings
-      },
-      ...section
+      return {
+        pageContent: {
+          ...state.pageContent,
+          containers: newContainers
+        },
+        isDirty: true
+      };
     });
 
-    return {
-      pageContent: {
-        ...state.pageContent,
-        containers: newContainers
-      },
-      isDirty: true
-    };
-  }),
+    // Immediate save for structural change
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      await autoSave(currentPageId);
+    }
+  },
 
   // Widget Actions
-  addWidgetToColumn: (widgetTemplate, columnId, containerId) => set(state => {
+  addWidgetToColumn: async (widgetTemplate, columnId, containerId) => {
+    // Helper to ensure we get an object, not an array
+    const ensureObject = (val) => {
+      if (!val || (Array.isArray(val) && val.length === 0)) return {};
+      if (typeof val !== 'object') return {};
+      return val;
+    };
+
     try {
       const newWidget = {
         id: `widget-${Date.now()}`,
         type: widgetTemplate.type,
-        content: { ...widgetTemplate.defaultContent },
-        style: { ...widgetTemplate.defaultStyle },
-        advanced: { ...widgetTemplate.defaultAdvanced }
+        general: { ...ensureObject(widgetTemplate.defaultContent) },  // Use 'general' instead of 'content'
+        style: { ...ensureObject(widgetTemplate.defaultStyle) },
+        advanced: { ...ensureObject(widgetTemplate.defaultAdvanced) }
       };
 
-    // Special handling for container widgets
-    if (widgetTemplate.type === 'container') {
-      const columns = widgetTemplate.defaultContent?.columns || 1;
-      newWidget.containerData = {
-        id: `container-${Date.now()}`,
-        columns: Array.from({ length: columns }).map((_, index) => ({
-          id: `column-${Date.now()}-${index}`,
-          width: `${100 / columns}%`,
-          widgets: [],
-          settings: {}
-        })),
-        settings: {
-          padding: widgetTemplate.defaultContent?.padding || '20px',
-          backgroundColor: widgetTemplate.defaultContent?.backgroundColor || '#ffffff',
-          gap: widgetTemplate.defaultContent?.gap || '20px'
-        }
-      };
-    }
+      // Special handling for container widgets
+      if (widgetTemplate.type === 'container') {
+        const columns = widgetTemplate.defaultContent?.columns || 1;
+        newWidget.containerData = {
+          id: `container-${Date.now()}`,
+          columns: Array.from({ length: columns }).map((_, index) => ({
+            id: `column-${Date.now()}-${index}`,
+            width: `${100 / columns}%`,
+            widgets: [],
+            settings: {}
+          })),
+          settings: {
+            padding: widgetTemplate.defaultContent?.padding || '20px',
+            backgroundColor: widgetTemplate.defaultContent?.backgroundColor || '#ffffff',
+            gap: widgetTemplate.defaultContent?.gap || '20px'
+          }
+        };
+      }
 
-    return {
-      pageContent: {
-        ...state.pageContent,
-        containers: state.pageContent.containers.map(container =>
-          container.id === containerId
-            ? {
+      set(state => ({
+        pageContent: {
+          ...state.pageContent,
+          containers: state.pageContent.containers.map(container =>
+            container.id === containerId
+              ? {
                 ...container,
                 columns: container.columns.map(column =>
                   column.id === columnId
@@ -448,168 +478,234 @@ const usePageBuilderStore = create((set, get) => ({
                     : column
                 )
               }
-            : container
-        )
-      },
-      isDirty: true
-    };
+              : container
+          )
+        },
+        isDirty: true
+      }));
+
+      // IMPORTANT: Save widget to database immediately after adding
+      // This ensures the widget is persisted to page_builder_widgets table
+      const { currentPageId, saveWidgetAllSettings, autoSave } = get();
+      if (currentPageId) {
+        console.log('[Store] Widget added via DnD, saving to database:', newWidget.id);
+
+        try {
+          // First, save the widget to the database with its initial settings
+          await saveWidgetAllSettings(currentPageId, newWidget.id, {
+            type: newWidget.type,
+            widget_type: newWidget.type,
+            general: newWidget.general || {},  // Use 'general' property
+            style: newWidget.style || {},
+            advanced: newWidget.advanced || {}
+          });
+
+          // Then save the entire page structure
+          await autoSave(currentPageId);
+
+          console.log('[Store] Widget and page saved successfully:', newWidget.id);
+        } catch (error) {
+          console.error('[Store] Failed to save widget on DnD:', error);
+          // Don't throw - widget is still in memory, user can save manually
+        }
+      }
     } catch (error) {
       console.error('[PageBuilderStore] Error in addWidgetToColumn:', error);
-      return state;
     }
-  }),
-  
-  updateWidget: (widgetId, updates) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: state.pageContent.containers.map(container => ({
-        ...container,
-        columns: container.columns.map(column => ({
-          ...column,
-          widgets: column.widgets.map(widget =>
-            widget.id === widgetId ? { ...widget, ...updates } : widget
-          )
-        }))
-      }))
-    },
-    selectedWidget: state.selectedWidget?.id === widgetId 
-      ? { ...state.selectedWidget, ...updates } 
-      : state.selectedWidget,
-    isDirty: true
-  })),
-  
-  removeWidget: (widgetId) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: state.pageContent.containers.map(container => ({
-        ...container,
-        columns: container.columns.map(column => ({
-          ...column,
-          widgets: column.widgets.filter(widget => widget.id !== widgetId)
-        }))
-      }))
-    },
-    selectedWidget: state.selectedWidget?.id === widgetId ? null : state.selectedWidget,
-    isDirty: true
-  })),
-  
-  reorderWidgets: (columnId, oldIndex, newIndex) => set(state => {
-    console.log('[Store] 🔄 REORDER WIDGETS START:', {
-      columnId,
-      oldIndex,
-      newIndex,
-      timestamp: new Date().toISOString()
+  },
+
+  updateWidget: (widgetId, updates) => {
+    set(state => {
+      const updatedWidget = state.selectedWidget?.id === widgetId
+        ? { ...state.selectedWidget, ...updates }
+        : state.selectedWidget;
+
+      return {
+        pageContent: {
+          ...state.pageContent,
+          containers: state.pageContent.containers.map(container => ({
+            ...container,
+            columns: container.columns.map(column => ({
+              ...column,
+              widgets: column.widgets.map(widget =>
+                widget.id === widgetId ? { ...widget, ...updates } : widget
+              )
+            }))
+          }))
+        },
+        // Update selectedWidget if it's the one being updated
+        // This ensures the settings panel has the latest data
+        selectedWidget: updatedWidget,
+        isDirty: true
+      };
     });
 
-    return {
+    // NO auto-save - settings changes only save on manual save button
+  },
+
+  removeWidget: async (widgetId) => {
+    set(state => ({
       pageContent: {
         ...state.pageContent,
         containers: state.pageContent.containers.map(container => ({
           ...container,
-          columns: container.columns.map(column => {
-            if (column.id === columnId) {
-              const beforeWidgets = column.widgets.map(w => ({ id: w.id, type: w.type }));
-              const newWidgets = [...column.widgets];
-              const [removed] = newWidgets.splice(oldIndex, 1);
-              newWidgets.splice(newIndex, 0, removed);
-
-              const afterWidgets = newWidgets.map(w => ({ id: w.id, type: w.type }));
-
-              console.log('[Store] ✅ REORDER WIDGETS SUCCESS:', {
-                columnId,
-                oldIndex,
-                newIndex,
-                movedWidget: removed.id,
-                beforeOrder: beforeWidgets,
-                afterOrder: afterWidgets
-              });
-
-              return { ...column, widgets: newWidgets };
-            }
-            return column;
-          })
+          columns: container.columns.map(column => ({
+            ...column,
+            widgets: column.widgets.filter(widget => widget.id !== widgetId)
+          }))
         }))
       },
+      selectedWidget: state.selectedWidget?.id === widgetId ? null : state.selectedWidget,
       isDirty: true
-    };
-  }),
+    }));
 
-  moveWidgetBetweenColumns: (widgetId, fromColumnId, toColumnId, toContainerId) => set(state => {
-    console.log('[Store] moveWidgetBetweenColumns called:', {
-      widgetId,
-      fromColumnId,
-      toColumnId,
-      toContainerId
-    });
-    
-    let widgetToMove = null;
-    let sourceContainerId = null;
-    
-    // First pass: find and remove the widget from source column
-    const containersAfterRemoval = state.pageContent.containers.map(container => {
-      const hasSourceColumn = container.columns.some(col => col.id === fromColumnId);
-      if (hasSourceColumn) {
-        sourceContainerId = container.id;
-      }
-      
-      return {
-        ...container,
-        columns: container.columns.map(column => {
-          if (column.id === fromColumnId) {
-            const widget = column.widgets.find(w => w.id === widgetId);
-            if (widget) {
-              widgetToMove = widget;
-              console.log('[Store] Found widget to move:', widget);
-              return {
-                ...column,
-                widgets: column.widgets.filter(w => w.id !== widgetId)
-              };
-            }
-          }
-          return column;
-        })
-      };
-    });
-    
-    // Second pass: add widget to destination column
-    if (widgetToMove) {
-      const finalContainers = containersAfterRemoval.map(container => {
-        // Check if this container contains the destination column
-        const hasDestColumn = container.columns.some(col => col.id === toColumnId);
-        
-        if (hasDestColumn || container.id === toContainerId) {
-          console.log('[Store] Adding widget to container:', container.id);
-          return {
-            ...container,
-            columns: container.columns.map(column => {
-              if (column.id === toColumnId) {
-                console.log('[Store] Adding widget to column:', column.id);
-                return {
-                  ...column,
-                  widgets: [...column.widgets, widgetToMove]
-                };
-              }
-              return column;
-            })
-          };
-        }
-        return container;
+    // Trigger IMMEDIATE save for widget deletion (structural change)
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      console.log('[Store] Triggering immediate save for widget deletion:', widgetId);
+      await autoSave(currentPageId);
+    }
+  },
+
+  reorderWidgets: async (columnId, oldIndex, newIndex) => {
+    set(state => {
+      console.log('[Store] 🔄 REORDER WIDGETS START:', {
+        columnId,
+        oldIndex,
+        newIndex,
+        timestamp: new Date().toISOString()
       });
-      
+
       return {
         pageContent: {
           ...state.pageContent,
-          containers: finalContainers
+          containers: state.pageContent.containers.map(container => ({
+            ...container,
+            columns: container.columns.map(column => {
+              if (column.id === columnId) {
+                const beforeWidgets = column.widgets.map(w => ({ id: w.id, type: w.type }));
+                const newWidgets = [...column.widgets];
+                const [removed] = newWidgets.splice(oldIndex, 1);
+                newWidgets.splice(newIndex, 0, removed);
+
+                const afterWidgets = newWidgets.map(w => ({ id: w.id, type: w.type }));
+
+                console.log('[Store] ✅ REORDER WIDGETS SUCCESS:', {
+                  columnId,
+                  oldIndex,
+                  newIndex,
+                  movedWidget: removed.id,
+                  beforeOrder: beforeWidgets,
+                  afterOrder: afterWidgets
+                });
+
+                return { ...column, widgets: newWidgets };
+              }
+              return column;
+            })
+          }))
         },
         isDirty: true
       };
-    } else {
-      console.warn('[Store] Widget not found for move:', widgetId);
+    });
+
+
+
+    // Trigger IMMEDIATE save for reordering (structural change)
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      console.log('[Store] Triggering immediate save for reorder');
+      await autoSave(currentPageId);
     }
-    
-    return state;
-  }),
-  
+  },
+
+  moveWidgetBetweenColumns: async (widgetId, fromColumnId, toColumnId, toContainerId) => {
+    set(state => {
+      console.log('[Store] moveWidgetBetweenColumns called:', {
+        widgetId,
+        fromColumnId,
+        toColumnId,
+        toContainerId
+      });
+
+      let widgetToMove = null;
+      let sourceContainerId = null;
+
+      // First pass: find and remove the widget from source column
+      const containersAfterRemoval = state.pageContent.containers.map(container => {
+        const hasSourceColumn = container.columns.some(col => col.id === fromColumnId);
+        if (hasSourceColumn) {
+          sourceContainerId = container.id;
+        }
+
+        return {
+          ...container,
+          columns: container.columns.map(column => {
+            if (column.id === fromColumnId) {
+              const widget = column.widgets.find(w => w.id === widgetId);
+              if (widget) {
+                widgetToMove = widget;
+                console.log('[Store] Found widget to move:', widget);
+                return {
+                  ...column,
+                  widgets: column.widgets.filter(w => w.id !== widgetId)
+                };
+              }
+            }
+            return column;
+          })
+        };
+      });
+
+      // Second pass: add widget to destination column
+      if (widgetToMove) {
+        const finalContainers = containersAfterRemoval.map(container => {
+          // Check if this container contains the destination column
+          const hasDestColumn = container.columns.some(col => col.id === toColumnId);
+
+          if (hasDestColumn || container.id === toContainerId) {
+            console.log('[Store] Adding widget to container:', container.id);
+            return {
+              ...container,
+              columns: container.columns.map(column => {
+                if (column.id === toColumnId) {
+                  console.log('[Store] Adding widget to column:', column.id);
+                  return {
+                    ...column,
+                    widgets: [...column.widgets, widgetToMove]
+                  };
+                }
+                return column;
+              })
+            };
+          }
+          return container;
+        });
+
+
+        return {
+          pageContent: {
+            ...state.pageContent,
+            containers: finalContainers
+          },
+          isDirty: true
+        };
+      } else {
+        console.warn('[Store] Widget not found for move:', widgetId);
+        return state;
+      }
+    });
+
+    // Trigger IMMEDIATE save for move (structural change)
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      console.log('[Store] Triggering immediate save for move');
+      await autoSave(currentPageId);
+    }
+  },
+
+
+
   // Container Actions
   updateContainer: (containerId, updates) => set(state => ({
     pageContent: {
@@ -620,26 +716,49 @@ const usePageBuilderStore = create((set, get) => ({
     },
     isDirty: true
   })),
-  
-  removeContainer: (containerId) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: state.pageContent.containers.filter(container => container.id !== containerId)
-    },
-    selectedWidget: null,
-    isDirty: true
-  })),
-  
-  reorderContainers: (oldIndex, newIndex) => set(state => ({
-    pageContent: {
-      ...state.pageContent,
-      containers: arrayMove(state.pageContent.containers, oldIndex, newIndex)
-    },
-    isDirty: true
-  })),
-  
+
+  removeContainer: async (containerId) => {
+    set(state => ({
+      pageContent: {
+        ...state.pageContent,
+        containers: state.pageContent.containers.filter(container => container.id !== containerId)
+      },
+      selectedWidget: null,
+      isDirty: true
+    }));
+
+    // Immediate save for structural change
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      await autoSave(currentPageId);
+    }
+  },
+
+  reorderContainers: async (oldIndex, newIndex) => {
+    set(state => ({
+      pageContent: {
+        ...state.pageContent,
+        containers: arrayMove(state.pageContent.containers, oldIndex, newIndex)
+      },
+      isDirty: true
+    }));
+
+    // Immediate save for structural change
+    const { currentPageId, autoSave } = get();
+    if (currentPageId) {
+      await autoSave(currentPageId);
+    }
+  },
+
   // Data Transformer: Extract widgets from pageContent for proper database storage
   extractWidgetsFromPageContent: (pageContent) => {
+    // Helper to ensure we always get an object, not an array
+    const ensureObj = (val) => {
+      if (!val || (Array.isArray(val) && val.length === 0)) return {};
+      if (typeof val !== 'object') return {};
+      return val;
+    };
+
     const widgets = {};
     const cleanContent = {
       containers: pageContent.containers.map(container => ({
@@ -649,6 +768,11 @@ const usePageBuilderStore = create((set, get) => ({
           widgets: column.widgets.map(widget => {
             // Extract widget settings for separate storage
             if (widget.id && widget.type) {
+              // Ensure settings are objects, not empty arrays
+              const generalSettings = ensureObj(widget.general || widget.content);
+              const styleSettings = ensureObj(widget.style);
+              const advancedSettings = ensureObj(widget.advanced);
+
               // Create widget object matching frontend structure
               widgets[widget.id] = {
                 id: widget.id,
@@ -658,15 +782,15 @@ const usePageBuilderStore = create((set, get) => ({
                 sort_order: column.widgets.indexOf(widget),
 
                 // Frontend structure - direct properties not nested in settings
-                general: widget.general || widget.content || {},
-                style: widget.style || {},
-                advanced: widget.advanced || {},
+                general: generalSettings,
+                style: styleSettings,
+                advanced: advancedSettings,
 
                 // Database structure for saving (kept for compatibility)
                 settings: {
-                  general: widget.general || widget.content || {},
-                  style: widget.style || {},
-                  advanced: widget.advanced || {}
+                  general: generalSettings,
+                  style: styleSettings,
+                  advanced: advancedSettings
                 },
                 is_visible: widget.is_visible !== false,
                 is_enabled: widget.is_enabled !== false,
@@ -724,41 +848,94 @@ const usePageBuilderStore = create((set, get) => ({
       }
 
       const text = await response.text();
-      
+
       // Check if response is HTML instead of JSON
       if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
         throw new Error('Authentication required. Please log in as admin.');
       }
-      
+
       const data = JSON.parse(text);
-      
+
       if (data.success) {
-        set({ 
+        set({
           isDirty: false,
           originalContent: pageContent
         });
-        
+
         // Show success message (you can use a toast library here)
         console.log('Page saved successfully:', data.message);
-        
+
         return data;
       } else {
         throw new Error(data.message || 'Save failed');
       }
     } catch (error) {
       console.error('Save failed:', error);
-      
+
       // Handle authentication errors
       if (error.message.includes('Authentication required')) {
         // Redirect to admin login
         window.location.href = '/admin/login';
       }
-      
+
       throw error;
     }
   },
 
-  // Load page content from the new API
+  // Auto-save functionality
+  autoSave: async (pageId) => {
+    const { autoSaveEnabled, isSaving } = get();
+
+    if (!autoSaveEnabled || isSaving) {
+      console.log('[Auto-save] Skipped - disabled or already saving');
+      return;
+    }
+
+    try {
+      set({ isSaving: true, saveError: null });
+      console.log('[Auto-save] Starting auto-save for page:', pageId);
+
+      await get().savePage(pageId);
+
+      set({
+        isSaving: false,
+        lastSaved: new Date(),
+        saveError: null
+      });
+
+      console.log('[Auto-save] Completed successfully');
+    } catch (error) {
+      console.error('[Auto-save] Failed:', error);
+      set({
+        isSaving: false,
+        saveError: error.message
+      });
+    }
+  },
+
+  // Debounced auto-save to prevent excessive API calls
+  debouncedAutoSave: (() => {
+    let timeoutId = null;
+
+    return (pageId, delay = 1500) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      console.log('[Auto-save] Debouncing save request...');
+
+      timeoutId = setTimeout(() => {
+        get().autoSave(pageId);
+      }, delay);
+    };
+  })(),
+
+  // Set current page ID for auto-save
+  setCurrentPageId: (pageId) => set({ currentPageId: pageId }),
+
+  // Toggle auto-save
+  setAutoSaveEnabled: (enabled) => set({ autoSaveEnabled: enabled }),
+
   loadPageContent: async (pageId) => {
     try {
       const response = await fetch(`/api/page-builder/pages/${pageId}/content`, {
@@ -788,21 +965,18 @@ const usePageBuilderStore = create((set, get) => ({
       const data = JSON.parse(text);
 
       if (data.success) {
+        // Backend already returns complete content with all widget settings merged
+        // DO NOT strip widget settings - keep the complete data for rendering
         const completeContent = data.data.content || { containers: [] };
 
-        // Extract widgets from complete content (which includes all settings)
-        const { content: layoutContent, widgets } = get().extractWidgetsFromPageContent(completeContent);
+        console.log('[Store] Loaded complete content from backend:', completeContent);
 
-        // Store both layout structure and widget data
+        // Store the complete content with all widget settings preserved
         set({
-          pageContent: layoutContent,      // Layout structure only
-          originalContent: layoutContent,  // Original layout structure
-          widgets: widgets,                // Widget objects with all settings
+          pageContent: completeContent,      // Complete content with widget settings
+          originalContent: JSON.parse(JSON.stringify(completeContent)),  // Deep clone for original
           isDirty: false
         });
-
-        console.log('Loaded widgets with settings:', widgets);
-        console.log('Complex content received from backend:', completeContent);
 
         return data.data;
       } else {
@@ -842,7 +1016,7 @@ const usePageBuilderStore = create((set, get) => ({
       }
 
       const data = await response.json();
-      
+
       if (data.success) {
         console.log('Page published successfully:', data.message);
         return data;
@@ -854,13 +1028,13 @@ const usePageBuilderStore = create((set, get) => ({
       throw error;
     }
   },
-  
-  resetChanges: () => set(state => ({ 
+
+  resetChanges: () => set(state => ({
     pageContent: state.originalContent,
     selectedWidget: null,
-    isDirty: false 
+    isDirty: false
   })),
-  
+
   // Preview Actions
   setPreviewMode: (mode) => set({ previewMode: mode }),
 
@@ -906,6 +1080,13 @@ const usePageBuilderStore = create((set, get) => ({
 
   // Individual Settings Save Actions
   saveWidgetAllSettings: async (pageId, widgetId, allSettings) => {
+    // Helper to ensure we always send objects, not arrays
+    const ensureObject = (val) => {
+      if (!val || Array.isArray(val) && val.length === 0) return {};
+      if (typeof val !== 'object') return {};
+      return val;
+    };
+
     try {
       const response = await fetch(`/api/page-builder/pages/${pageId}/widgets/${widgetId}/save-all-settings`, {
         method: 'POST',
@@ -916,9 +1097,10 @@ const usePageBuilderStore = create((set, get) => ({
         },
         credentials: 'same-origin',
         body: JSON.stringify({
-          general: allSettings.general || {},
-          style: allSettings.style || {},
-          advanced: allSettings.advanced || {}
+          widget_type: allSettings.widget_type || allSettings.type,  // Required for new widgets
+          general: ensureObject(allSettings.general),
+          style: ensureObject(allSettings.style),
+          advanced: ensureObject(allSettings.advanced)
         })
       });
 
@@ -956,6 +1138,8 @@ const usePageBuilderStore = create((set, get) => ({
                 } : container
               )
             }
+            // Widget settings are saved to database, so page is not dirty
+            // The page will be marked dirty by updateWidget when settings change
           }));
         }
 

@@ -183,15 +183,27 @@ class PageBuilderWidget extends Model
     }
 
     /**
+     * Ensure settings are objects not arrays for JSON serialization
+     * Empty arrays [] become empty objects {} in JSON
+     */
+    private function ensureObject($value)
+    {
+        if (empty($value) || (is_array($value) && array_keys($value) === range(0, count($value) - 1) && count($value) === 0)) {
+            return new \stdClass();
+        }
+        return $value;
+    }
+
+    /**
      * Get all widget settings combined
      */
     protected function allSettings(): Attribute
     {
         return Attribute::make(
             get: fn () => [
-                'general' => $this->general_settings ?? [],
-                'style' => $this->style_settings ?? [],
-                'advanced' => $this->advanced_settings ?? []
+                'general' => $this->ensureObject($this->general_settings),
+                'style' => $this->ensureObject($this->style_settings),
+                'advanced' => $this->ensureObject($this->advanced_settings)
             ]
         );
     }

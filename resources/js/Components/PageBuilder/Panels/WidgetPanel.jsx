@@ -368,6 +368,13 @@ const TemplatesList = ({ templates = [] }) => {
   );
 };
 
+// Helper to ensure value is an object, not an array
+const ensureObject = (val, fallback = {}) => {
+  if (!val || (Array.isArray(val) && val.length === 0)) return fallback;
+  if (typeof val !== 'object') return fallback;
+  return val;
+};
+
 // New PHP Widget Draggable Component
 const DraggablePhpWidget = ({ widget }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -376,15 +383,15 @@ const DraggablePhpWidget = ({ widget }) => {
       type: 'widget-template', 
       widget: {
         ...widget,
-        defaultContent: widget.defaultContent || {},
-        defaultStyle: widget.defaultStyle || {
+        defaultContent: ensureObject(widget.defaultContent),
+        defaultStyle: ensureObject(widget.defaultStyle, {
           margin: '0 0 16px 0',
           padding: '0'
-        },
-        defaultAdvanced: widget.defaultAdvanced || {
+        }),
+        defaultAdvanced: ensureObject(widget.defaultAdvanced, {
           cssClasses: '',
           customCSS: ''
-        }
+        })
       }
     }
   });
@@ -649,15 +656,15 @@ const CollapsedDraggableWidget = ({ widget }) => {
       type: 'widget-template', 
       widget: {
         ...widget,
-        defaultContent: widget.defaultContent || {},
-        defaultStyle: widget.defaultStyle || {
+        defaultContent: ensureObject(widget.defaultContent),
+        defaultStyle: ensureObject(widget.defaultStyle, {
           margin: '0 0 16px 0',
           padding: '0'
-        },
-        defaultAdvanced: widget.defaultAdvanced || {
+        }),
+        defaultAdvanced: ensureObject(widget.defaultAdvanced, {
           cssClasses: '',
           customCSS: ''
-        }
+        })
       }
     }
   });

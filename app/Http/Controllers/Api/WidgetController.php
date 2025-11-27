@@ -606,16 +606,6 @@ class WidgetController extends Controller
                 'advanced' => $this->arrayMergeRecursive($defaults['advanced'] ?? [], $settings['advanced'] ?? [])
             ];
 
-            // Validate the merged settings
-            $errors = WidgetRegistry::validateWidgetSettings($type, $mergedSettings);
-            if (!empty($errors)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid settings',
-                    'errors' => $errors
-                ], 400);
-            }
-
             // Render the widget with merged settings
             $renderResult = WidgetRegistry::renderWidget($type, $mergedSettings);
             

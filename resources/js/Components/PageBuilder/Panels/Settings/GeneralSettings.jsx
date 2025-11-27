@@ -66,33 +66,55 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
         console.log('[GeneralSettings] No PHP fields, using legacy rendering for:', widget.type);
       }
     } catch (err) {
-      // Error loading settings - fallback to legacy rendering
-      console.error(`[GeneralSettings] Error loading settings for widget ${widget.id}:`, err);
-      setPhpFields(null);
-      setIsPhpWidget(false);
-      setError(`Failed to load settings: ${err.message}`);
-      setHasLoaded(true);
+      if (err.message.includes('404')) {
+        try {
+          const defaults = await widgetService.getWidgetDefaults(widget.type);
+          if (defaults && defaults.fields) {
+            setPhpFields(defaults);
+            setIsPhpWidget(true);
+
+            // OPTIONAL: Update the global store immediately with these defaults
+            const newWidgetData = { ...widget, general: defaults.values.general };
+            updateWidget(widget.id, newWidgetData);
+            setLocalWidget(newWidgetData);
+
+          }
+        } catch (defaultsErr) {
+          setError(`Failed to load default settings: ${defaultsErr.message}`);
+        }
+      } else {
+        // For other errors, display them.
+        console.error('[GeneralSettings] Error loading widget settings:', err);
+        setError(`Failed to load settings: ${err.message}`);
+      }
     } finally {
       setIsLoading(false);
+      setHasLoaded(true); // Mark as loaded even if we only got defaults
     }
   };
 
-  // Sync local widget with prop changes
+  // Sync local widget with prop changes ONLY when widget ID changes
+  // This prevents resetting localWidget while user is typing
+  const prevWidgetIdRef = useRef(widget.id);
+
   useEffect(() => {
-    console.log('[DEBUG] GeneralSettings received widget:', {
-      id: widget.id,
-      type: widget.type,
-      general: widget.general,
-      content: widget.content,
-      hasHeadingText: widget.general?.content?.heading_text || widget.content?.content?.heading_text
-    });
-    setLocalWidget(widget);
-  }, [widget]);
+    // Only update localWidget if the widget ID has actually changed
+    // This prevents overwriting user input during typing
+    if (prevWidgetIdRef.current !== widget.id) {
+      console.log('[DEBUG] GeneralSettings widget ID changed:', {
+        oldId: prevWidgetIdRef.current,
+        newId: widget.id,
+        type: widget.type
+      });
+      setLocalWidget(widget);
+      prevWidgetIdRef.current = widget.id;
+    }
+  }, [widget.id, widget]); // Monitor widget.id for changes
 
   // Debounced store update function - Use ref to avoid dependency issues
   const onWidgetUpdateRef = useRef(onWidgetUpdate);
   const updateWidgetRef = useRef(updateWidget);
-  
+
   // Update refs when props change
   useEffect(() => {
     onWidgetUpdateRef.current = onWidgetUpdate;
@@ -104,12 +126,12 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
-    
+
     // Set new timeout for 500ms delay
     debounceTimeoutRef.current = setTimeout(() => {
       // Update the widget in the store
       updateWidgetRef.current(widget.id, updatedWidget);
-      
+
       // Update the selected widget
       onWidgetUpdateRef.current(updatedWidget);
     }, 500);
@@ -236,7 +258,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 placeholder="Button text"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 URL
@@ -311,7 +333,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 placeholder="https://example.com/image.jpg"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Alt Text
@@ -372,7 +394,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 <option value="dotted">Dotted</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Color
@@ -416,11 +438,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 {/* 1 Column */}
                 <button
                   onClick={() => updateContent('content.columns', 1)}
-                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (localWidget.content?.columns || 1) === 1
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${(localWidget.content?.columns || 1) === 1
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                 >
                   <svg className="w-6 h-4 mb-1" viewBox="0 0 24 16" fill="currentColor">
                     <rect width="24" height="16" rx="2" className="fill-current opacity-30" />
@@ -431,11 +452,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 {/* 2 Columns */}
                 <button
                   onClick={() => updateContent('content.columns', 2)}
-                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (localWidget.content?.columns || 1) === 2
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${(localWidget.content?.columns || 1) === 2
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                 >
                   <svg className="w-6 h-4 mb-1" viewBox="0 0 24 16" fill="currentColor">
                     <rect width="11" height="16" rx="2" className="fill-current opacity-30" />
@@ -447,11 +467,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 {/* 3 Columns */}
                 <button
                   onClick={() => updateContent('content.columns', 3)}
-                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (localWidget.content?.columns || 1) === 3
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${(localWidget.content?.columns || 1) === 3
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                 >
                   <svg className="w-6 h-4 mb-1" viewBox="0 0 24 16" fill="currentColor">
                     <rect width="7" height="16" rx="2" className="fill-current opacity-30" />
@@ -464,11 +483,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 {/* 4 Columns */}
                 <button
                   onClick={() => updateContent('content.columns', 4)}
-                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${
-                    (localWidget.content?.columns || 1) === 4
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center ${(localWidget.content?.columns || 1) === 4
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                 >
                   <svg className="w-6 h-4 mb-1" viewBox="0 0 24 16" fill="currentColor">
                     <rect width="5" height="16" rx="2" className="fill-current opacity-30" />
@@ -489,11 +507,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   {/* 30-70 Split */}
                   <button
                     onClick={() => updateContent('content.gridTemplate', '30% 70%')}
-                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      localWidget.content?.gridTemplate === '30% 70%'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
+                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${localWidget.content?.gridTemplate === '30% 70%'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
                   >
                     <svg className="w-8 h-3 mr-2" viewBox="0 0 32 12" fill="currentColor">
                       <rect width="9" height="12" rx="1" className="fill-current opacity-30" />
@@ -505,11 +522,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   {/* 70-30 Split */}
                   <button
                     onClick={() => updateContent('content.gridTemplate', '70% 30%')}
-                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      localWidget.content?.gridTemplate === '70% 30%'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
+                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${localWidget.content?.gridTemplate === '70% 30%'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
                   >
                     <svg className="w-8 h-3 mr-2" viewBox="0 0 32 12" fill="currentColor">
                       <rect width="21" height="12" rx="1" className="fill-current opacity-30" />
@@ -521,11 +537,10 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   {/* 25-50-25 Split */}
                   <button
                     onClick={() => updateContent('content.gridTemplate', '25% 50% 25%')}
-                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${
-                      localWidget.content?.gridTemplate === '25% 50% 25%'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                    }`}
+                    className={`p-2 border-2 rounded-lg transition-colors flex items-center ${localWidget.content?.gridTemplate === '25% 50% 25%'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
                   >
                     <svg className="w-8 h-3 mr-2" viewBox="0 0 32 12" fill="currentColor">
                       <rect width="7" height="12" rx="1" className="fill-current opacity-30" />
@@ -536,7 +551,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   </button>
                 </div>
               </div>
-              
+
               {/* Manual Grid Template Input */}
               <div className="pt-3 border-t border-gray-200">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -554,7 +569,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 </p>
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gap Between Columns
@@ -630,7 +645,7 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                 placeholder="Collapsible section title"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Content
@@ -668,13 +683,25 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     }
   };
 
+  // Helper function to get nested value from localWidget.general
+  const getNestedValue = (obj, path) => {
+    if (!obj || !path) return undefined;
+    const pathArray = path.split('.');
+    let current = obj;
+    for (const key of pathArray) {
+      if (current === undefined || current === null) return undefined;
+      current = current[key];
+    }
+    return current;
+  };
+
   // Render PHP widget fields
   const renderPhpWidgetFields = () => {
     if (error) {
       return (
         <div className="text-center py-8">
           <div className="text-red-600 mb-2 text-sm">{error}</div>
-          <button 
+          <button
             onClick={fetchPhpWidgetFields}
             className="text-sm text-blue-600 hover:text-blue-800"
           >
@@ -717,15 +744,9 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
                   <div className="px-4 pb-4 border-t border-gray-100">
                     <div className="space-y-4 pt-3">
                       {Object.entries(groupConfig.fields).map(([fieldKey, fieldConfig]) => {
-                        // NEW: Fields come pre-populated from backend - use the value directly
-                        const fieldValue = fieldConfig.value;
-
-                        console.log(`[DEBUG] Pre-populated field ${groupKey}.${fieldKey}:`, {
-                          fieldType: fieldConfig.type,
-                          value: fieldValue,
-                          hasValue: fieldValue !== undefined && fieldValue !== null,
-                          fieldConfig: fieldConfig
-                        });
+                        // FIXED: Use localWidget.general value first, fallback to fieldConfig.value, then default
+                        const localValue = getNestedValue(localWidget.general, `${groupKey}.${fieldKey}`);
+                        const fieldValue = localValue !== undefined ? localValue : (fieldConfig.value ?? fieldConfig.default);
 
                         return (
                           <PhpFieldRenderer
@@ -743,14 +764,17 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
               </div>
             );
           } else {
-            // Handle non-group fields (fallback)
+            // Handle non-group fields
+            const localValue = localWidget.general?.[groupKey];
+            const fieldValue = localValue !== undefined ? localValue : (groupConfig.value ?? groupConfig.default);
+
             return (
               <div key={groupKey} className="border border-gray-200 rounded-lg">
                 <div className="p-4">
                   <PhpFieldRenderer
                     fieldKey={groupKey}
                     fieldConfig={groupConfig}
-                    value={localWidget.general?.[groupKey]}
+                    value={fieldValue}
                     onChange={(value) => updateGeneral(groupKey, value)}
                   />
                 </div>
@@ -777,13 +801,13 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
     if (isPhpWidget && phpFields && phpFields.fields) {
       return renderPhpWidgetFields();
     }
-    
+
     // Second priority: Legacy hardcoded settings for specific widget types
     const legacyWidgetTypes = ['text', 'button', 'image', 'divider', 'spacer', 'container', 'collapse'];
     if (legacyWidgetTypes.includes(widget.type)) {
       return renderLegacyWidgetSettings();
     }
-    
+
     // Final fallback: No settings message
     return (
       <div className="text-center py-8 text-gray-500">
@@ -824,49 +848,52 @@ const GeneralSettings = ({ widget, onUpdate, onWidgetUpdate }) => {
   };
 
   const handleGlobalSave = async () => {
-  setIsSaving(true);
-  setSaveError(null);
-  setSaveSuccess(false);
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
 
-  try {
-    const pageId = getPageId();
+    try {
+      const pageId = getPageId();
 
-    // CRITICAL: Extract widget type correctly
-    let widgetType = localWidget.type;
+      // CRITICAL: Extract widget type correctly
+      let widgetType = localWidget.type;
 
-    // Fallback logic for different possible structures
-    if (!widgetType && localWidget.widget_type) widgetType = localWidget.widget_type;
-    if (!widgetType && localWidget.id) {
-      // Try to extract from widget ID: heading-abc123 → "heading"
-      const match = localWidget.id.match(/^([^-\d]+)-/);
-      if (match) widgetType = match[1];
+      // Fallback logic for different possible structures
+      if (!widgetType && localWidget.widget_type) widgetType = localWidget.widget_type;
+      if (!widgetType && localWidget.id) {
+        // Try to extract from widget ID: heading-abc123 → "heading"
+        const match = localWidget.id.match(/^([^-\d]+)-/);
+        if (match) widgetType = match[1];
+      }
+      if (!widgetType) widgetType = 'text'; // final fallback
+
+      const allSettings = {
+        widget_type: widgetType,                    // ← ALWAYS sent now
+        general: localWidget.general || localWidget.content || {},
+        style: localWidget.style || {},
+        advanced: localWidget.advanced || {}
+      };
+
+      const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
+
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+      onWidgetUpdate(localWidget);
+
+      // This ensures isDirty is set to false and the toolbar shows "Saved"
+      const { autoSave, currentPageId } = usePageBuilderStore.getState();
+      if (currentPageId || pageId) {
+        await autoSave(currentPageId || pageId);
+      }
+
+    } catch (error) {
+      console.error('[SAVE] Failed:', error);
+      const msg = error?.response?.data?.message || error.message || 'Save failed';
+      setSaveError(msg);
+    } finally {
+      setIsSaving(false);
     }
-    if (!widgetType) widgetType = 'text'; // final fallback
-
-    const allSettings = {
-      widget_type: widgetType,                    // ← ALWAYS sent now
-      general: localWidget.general || localWidget.content || {},
-      style: localWidget.style || {},
-      advanced: localWidget.advanced || {}
-    };
-
-    console.log('[SAVE] Sending widget_type:', widgetType);
-    console.log('[SAVE] Full payload:', allSettings);
-
-    const result = await settingsService.saveWidgetAllSettings(pageId, localWidget.id, allSettings);
-
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
-    onWidgetUpdate(localWidget);
-
-  } catch (error) {
-    console.error('[SAVE] Failed:', error);
-    const msg = error?.response?.data?.message || error.message || 'Save failed';
-    setSaveError(msg);
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
   return (
     <div className="flex flex-col h-full">

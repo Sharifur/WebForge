@@ -1114,8 +1114,10 @@ abstract class BaseWidget
             
             $value = $values[$fieldKey] ?? null;
             
-            // Check required fields
-            if (($field['required'] ?? false) && empty($value)) {
+            // Check required fields - but skip validation if field has a default value
+            // This allows widgets to use defaults for required fields when no value is provided
+            $hasDefault = isset($field['default']) && !empty($field['default']);
+            if (($field['required'] ?? false) && empty($value) && !$hasDefault) {
                 $errors[] = $prefix . '.' . $fieldKey . ' is required';
             }
             

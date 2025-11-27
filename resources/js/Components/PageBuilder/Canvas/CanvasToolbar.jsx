@@ -4,14 +4,15 @@ import { usePageBuilderStore } from '@/Store/pageBuilderStore';
 import { Monitor, Tablet, Smartphone, Settings, List } from 'lucide-react';
 
 const CanvasToolbar = ({ page }) => {
-  const [isSaving, setIsSaving] = useState(false);
-
   const {
     pageContent,
     isDirty,
     settingsPanelVisible,
     selectedWidget,
     currentDevice,
+    isSaving,
+    lastSaved,
+    saveError,
     savePage,
     resetChanges,
     toggleSettingsPanel,
@@ -33,8 +34,18 @@ const CanvasToolbar = ({ page }) => {
     { id: 'mobile', label: 'Mobile', icon: Smartphone, width: '375px' }
   ];
 
+  // Format time ago for last saved
+  const formatTimeAgo = (date) => {
+    if (!date) return '';
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+  };
+
   const handleSave = async () => {
-    setIsSaving(true);
     try {
       await savePage(page.id);
       // Show success message (could use a toast library)
@@ -43,13 +54,10 @@ const CanvasToolbar = ({ page }) => {
       console.error('Save failed:', error);
       // Show error message (could use a toast library)
       alert('Failed to save page. Please try again.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
   const handlePublish = async () => {
-    setIsSaving(true);
     try {
       // First save the current state
       await savePage(page.id);
@@ -60,8 +68,6 @@ const CanvasToolbar = ({ page }) => {
     } catch (error) {
       console.error('Publish failed:', error);
       alert('Failed to publish page. Please try again.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -103,13 +109,40 @@ const CanvasToolbar = ({ page }) => {
             <p className="text-sm text-gray-500">/{page.slug}</p>
           </div>
 
-          {/* Dirty Indicator */}
-          {isDirty && (
-            <div className="flex items-center text-orange-600">
-              <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-              <span className="text-sm">Unsaved changes</span>
-            </div>
-          )}
+          {/* Save Status Indicator */}
+          <div className="flex items-center">
+            {isSaving && (
+              <div className="flex items-center text-blue-600">
+                <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm font-medium">Saving...</span>
+              </div>
+            )}
+            {!isSaving && isDirty && (
+              <div className="flex items-center text-orange-600">
+                <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                <span className="text-sm">Unsaved changes</span>
+              </div>
+            )}
+            {!isSaving && !isDirty && lastSaved && (
+              <div className="flex items-center text-green-600">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm">Saved {formatTimeAgo(lastSaved)}</span>
+              </div>
+            )}
+            {saveError && (
+              <div className="flex items-center text-red-600">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span className="text-sm">Save failed</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Section - Primary Actions */}

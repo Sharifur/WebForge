@@ -44,25 +44,29 @@ const PhpWidgetRenderer = ({ widget, className = '', style = {} }) => {
         advanced: defaults?.advanced || {}
       };
 
-      // Merge widget content with defaults in the exact format PHP expects
-      // Widget content should be merged directly into the general settings, not nested under content
-      const settings = {
-        general: {
-          // Start with all default groups
-          ...safeDefaults.general,
-          // Merge widget content directly into general settings (not nested under content)
-          ...(widget.content || {}),
-          // Then merge any other general settings from the widget
-          ...(widget.general || {})
-        },
-        style: {
-          ...safeDefaults.style,
-          ...(widget.style || {})
-        },
-        advanced: {
-          ...safeDefaults.advanced,
-          ...(widget.advanced || {})
+      // Deep merge helper function that respects nested group structure
+      const deepMerge = (target, source) => {
+        if (!source || typeof source !== 'object') return target;
+        if (!target || typeof target !== 'object') return source;
+        
+        const result = { ...target };
+        for (const key of Object.keys(source)) {
+          if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            result[key] = deepMerge(result[key] || {}, source[key]);
+          } else if (source[key] !== undefined && source[key] !== null) {
+            result[key] = source[key];
+          }
         }
+        return result;
+      };
+
+      // Build settings by deeply merging defaults with widget data
+      // The widget.general should already have the nested group structure from the store
+      // (e.g., { content: { heading_text: 'My Text' }, link: { enhanced_link: {...} } })
+      const settings = {
+        general: deepMerge(safeDefaults.general, widget.general || {}),
+        style: deepMerge(safeDefaults.style, widget.style || {}),
+        advanced: deepMerge(safeDefaults.advanced, widget.advanced || {})
       };
 
       // Enhanced debug logging for all widgets
@@ -265,23 +269,27 @@ export const PhpWidgetPreview = ({ widgetType, settings = {}, className = '' }) 
         // Get default values for preview
         const defaults = await widgetService.getWidgetDefaults(widgetType);
         
-        // Use defaults merged with provided settings in PHP format
-        // The defaults now have the proper nested structure
-        const previewSettings = {
-          general: {
-            // Start with all default groups
-            ...defaults.general,
-            // Then merge any provided general settings
-            ...(settings.general || {})
-          },
-          style: {
-            ...defaults.style,
-            ...(settings.style || {})
-          },
-          advanced: {
-            ...defaults.advanced,
-            ...(settings.advanced || {})
+        // Deep merge helper function that respects nested group structure
+        const deepMerge = (target, source) => {
+          if (!source || typeof source !== 'object') return target;
+          if (!target || typeof target !== 'object') return source;
+          
+          const result = { ...target };
+          for (const key of Object.keys(source)) {
+            if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+              result[key] = deepMerge(result[key] || {}, source[key]);
+            } else if (source[key] !== undefined && source[key] !== null) {
+              result[key] = source[key];
+            }
           }
+          return result;
+        };
+
+        // Use defaults merged with provided settings using deep merge
+        const previewSettings = {
+          general: deepMerge(defaults.general || {}, settings.general || {}),
+          style: deepMerge(defaults.style || {}, settings.style || {}),
+          advanced: deepMerge(defaults.advanced || {}, settings.advanced || {})
         };
 
         const result = await widgetService.renderWidget(widgetType, previewSettings);

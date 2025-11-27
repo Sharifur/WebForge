@@ -9,6 +9,7 @@ use App\Models\PageBuilderWidget;
 use Illuminate\Http\JsonResponse;
 use App\Models\PageBuilderContent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\FacadesLog;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,37 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PageBuilderController extends Controller
 {
+    /**
+     * Recursively convert empty arrays to objects in response data
+     * This ensures {} is sent instead of [] for empty settings
+     */
+    private function convertEmptyArraysToObjects($data)
+    {
+        if (is_array($data)) {
+            // Check if it's an empty array or an indexed array
+            if (empty($data)) {
+                return new \stdClass();
+            }
+            
+            // Check if it's an associative array
+            $isAssociative = array_keys($data) !== range(0, count($data) - 1);
+            
+            if ($isAssociative) {
+                // Process each key recursively
+                $result = [];
+                foreach ($data as $key => $value) {
+                    $result[$key] = $this->convertEmptyArraysToObjects($value);
+                }
+                return $result;
+            } else {
+                // It's an indexed array
+                return array_map([$this, 'convertEmptyArraysToObjects'], $data);
+            }
+        }
+        
+        return $data;
+    }
+
     /**
      * Save page builder content for a page
      */
@@ -218,11 +250,14 @@ class PageBuilderController extends Controller
                 'widget_count_in_first' => count($completeContent['containers'][0]['columns'][0]['widgets'] ?? [])
             ]);
 
+            // Convert empty arrays to objects
+            $processedContent = $this->convertEmptyArraysToObjects($completeContent);
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'id' => $pageBuilderContent->id,
-                    'content' => $completeContent,  // Send complete merged content
+                    'content' => $processedContent,  // Send complete merged content with proper object types
                     'version' => $pageBuilderContent->version,
                     'is_published' => $pageBuilderContent->is_published,
                     'published_at' => $pageBuilderContent->published_at,
@@ -417,6 +452,17 @@ class PageBuilderController extends Controller
     }
 
     /**
+     * Helper to ensure settings are objects, not empty arrays
+     */
+    private function ensureSettingsObject($value)
+    {
+        if (empty($value) || (is_array($value) && array_keys($value) === range(0, count($value) - 1) && count($value) === 0)) {
+            return new \stdClass();
+        }
+        return $value;
+    }
+
+    /**
      * Sync page widgets with provided widget data
      * Creates, updates, or removes widgets as needed
      */
@@ -443,6 +489,11 @@ class PageBuilderController extends Controller
                 continue; // Skip invalid widget data
             }
 
+            // Ensure settings are objects, not empty arrays
+            $generalSettings = $this->ensureSettingsObject($widgetData['settings']['general'] ?? []);
+            $styleSettings = $this->ensureSettingsObject($widgetData['settings']['style'] ?? []);
+            $advancedSettings = $this->ensureSettingsObject($widgetData['settings']['advanced'] ?? []);
+
             $widgetAttributes = [
                 'page_id' => $pageId,
                 'widget_id' => $widgetId,
@@ -450,9 +501,9 @@ class PageBuilderController extends Controller
                 'container_id' => $widgetData['container_id'] ?? null,
                 'column_id' => $widgetData['column_id'] ?? null,
                 'sort_order' => $widgetData['sort_order'] ?? 0,
-                'general_settings' => $widgetData['settings']['general'] ?? [],
-                'style_settings' => $widgetData['settings']['style'] ?? [],
-                'advanced_settings' => $widgetData['settings']['advanced'] ?? [],
+                'general_settings' => $generalSettings,
+                'style_settings' => $styleSettings,
+                'advanced_settings' => $advancedSettings,
                 'is_visible' => $widgetData['is_visible'] ?? true,
                 'is_enabled' => $widgetData['is_enabled'] ?? true,
                 'version' => $widgetData['version'] ?? '1.0.0',
@@ -1091,7 +1142,7 @@ class PageBuilderController extends Controller
 
             return $css;
         } catch (\Exception $e) {
-            \Log::error("Failed to generate widget CSS for type: {$widgetType}", [
+            Log::error("Failed to generate widget CSS for type: {$widgetType}", [
                 'error' => $e->getMessage(),
                 'widget_id' => $widgetId,
                 'settings' => $settings
@@ -1103,80 +1154,6 @@ class PageBuilderController extends Controller
     /**
      * Save all settings for a specific widget
      */
-    // public function saveWidgetAllSettings(Request $request, int $pageId, string $widgetId): JsonResponse
-    // {
-    //     \Log::info('[DEBUG] saveWidgetAllSettings called', [
-    //         'pageId' => $pageId,
-    //         'widgetId' => $widgetId,
-    //         'request_data' => $request->all()
-    //     ]);
-
-    //     $validator = Validator::make($request->all(), [
-    //         'general' => 'sometimes|array',
-    //         'style' => 'sometimes|array',
-    //         'advanced' => 'sometimes|array'
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Validation failed',
-    //             'errors' => $validator->errors()
-    //         ], 422);
-    //     }
-
-    //     try {
-    //         DB::beginTransaction();
-
-    //         $widget = PageBuilderWidget::where('page_id', $pageId)
-    //                                    ->where('widget_id', $widgetId)
-    //                                    ->firstOrFail();
-
-    //         $updateData = ['updated_by' => Auth::guard('admin')->id()];
-
-    //         if ($request->has('general')) {
-    //             $updateData['general_settings'] = $request->input('general');
-    //         }
-    //         if ($request->has('style')) {
-    //             $updateData['style_settings'] = $request->input('style');
-    //         }
-    //         if ($request->has('advanced')) {
-    //             $updateData['advanced_settings'] = $request->input('advanced');
-    //         }
-
-    //         $widget->update($updateData);
-
-    //         DB::commit();
-
-    //         \Log::info('[DEBUG] saveWidgetAllSettings successful', [
-    //             'pageId' => $pageId,
-    //             'widgetId' => $widgetId,
-    //             'updated_settings' => $widget->all_settings,
-    //             'widget_updated_at' => $widget->updated_at
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Widget settings saved successfully',
-    //             'data' => [
-    //                 'id' => $widget->widget_id,
-    //                 'type' => $widget->widget_type,
-    //                 'settings' => $widget->all_settings,
-    //                 'updated_at' => $widget->updated_at
-    //             ]
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to save widget settings',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function saveWidgetAllSettings(Request $request, int $pageId, string $widgetId): JsonResponse
     {
         Log::info('saveWidgetAllSettings called', [
@@ -1215,13 +1192,21 @@ class PageBuilderController extends Controller
 
             $adminId = Auth::guard('admin')->id();
 
+            // Ensure settings are objects, not empty arrays
+            $ensureObject = function($value) {
+                if (empty($value) || (is_array($value) && array_keys($value) === range(0, count($value) - 1) && count($value) === 0)) {
+                    return new \stdClass(); // Will be encoded as {} in JSON
+                }
+                return $value;
+            };
+
             $widget = PageBuilderWidget::updateOrCreate(
                 ['page_id' => $pageId, 'widget_id' => $widgetId],
                 [
                     'widget_type'       => $request->input('widget_type'),
-                    'general_settings'  => $request->input('general', []),
-                    'style_settings'    => $request->input('style', []),
-                    'advanced_settings' => $request->input('advanced', []),
+                    'general_settings'  => $ensureObject($request->input('general', [])),
+                    'style_settings'    => $ensureObject($request->input('style', [])),
+                    'advanced_settings' => $ensureObject($request->input('advanced', [])),
                     'created_by'        => $adminId,
                     'updated_by'        => $adminId,
                 ]
@@ -1429,12 +1414,6 @@ class PageBuilderController extends Controller
      */
     public function saveWidgetGeneralSettings(Request $request, int $pageId, string $widgetId): JsonResponse
     {
-        \Log::info('[DEBUG] saveWidgetGeneralSettings called', [
-            'pageId' => $pageId,
-            'widgetId' => $widgetId,
-            'request_data' => $request->all()
-        ]);
-
         $validator = Validator::make($request->all(), [
             'general' => 'required|array'
         ]);
@@ -1461,13 +1440,6 @@ class PageBuilderController extends Controller
 
             DB::commit();
 
-            \Log::info('[DEBUG] saveWidgetGeneralSettings successful', [
-                'pageId' => $pageId,
-                'widgetId' => $widgetId,
-                'updated_general_settings' => $widget->general_settings,
-                'widget_updated_at' => $widget->updated_at
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Widget general settings saved successfully',
@@ -1481,7 +1453,7 @@ class PageBuilderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('[DEBUG] saveWidgetGeneralSettings failed', [
+            Log::error('[DEBUG] saveWidgetGeneralSettings failed', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'error' => $e->getMessage(),
@@ -1501,7 +1473,7 @@ class PageBuilderController extends Controller
      */
     public function saveWidgetStyleSettings(Request $request, int $pageId, string $widgetId): JsonResponse
     {
-        \Log::info('[DEBUG] saveWidgetStyleSettings called', [
+        Log::info('[DEBUG] saveWidgetStyleSettings called', [
             'pageId' => $pageId,
             'widgetId' => $widgetId,
             'request_data' => $request->all()
@@ -1533,7 +1505,7 @@ class PageBuilderController extends Controller
 
             DB::commit();
 
-            \Log::info('[DEBUG] saveWidgetStyleSettings successful', [
+            Log::info('[DEBUG] saveWidgetStyleSettings successful', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'updated_style_settings' => $widget->style_settings,
@@ -1553,7 +1525,7 @@ class PageBuilderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('[DEBUG] saveWidgetStyleSettings failed', [
+            Log::error('[DEBUG] saveWidgetStyleSettings failed', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'error' => $e->getMessage(),
@@ -1573,7 +1545,7 @@ class PageBuilderController extends Controller
      */
     public function saveWidgetAdvancedSettings(Request $request, int $pageId, string $widgetId): JsonResponse
     {
-        \Log::info('[DEBUG] saveWidgetAdvancedSettings called', [
+        Log::info('[DEBUG] saveWidgetAdvancedSettings called', [
             'pageId' => $pageId,
             'widgetId' => $widgetId,
             'request_data' => $request->all()
@@ -1605,7 +1577,7 @@ class PageBuilderController extends Controller
 
             DB::commit();
 
-            \Log::info('[DEBUG] saveWidgetAdvancedSettings successful', [
+            Log::info('[DEBUG] saveWidgetAdvancedSettings successful', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'updated_advanced_settings' => $widget->advanced_settings,
@@ -1625,7 +1597,7 @@ class PageBuilderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error('[DEBUG] saveWidgetAdvancedSettings failed', [
+            Log::error('[DEBUG] saveWidgetAdvancedSettings failed', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'error' => $e->getMessage(),
@@ -1652,7 +1624,7 @@ class PageBuilderController extends Controller
     public function getWidgetSettings(int $pageId, string $widgetId, string $tab): JsonResponse
     {
         try {
-            \Log::info('[PageBuilderController] getWidgetSettings called', [
+            Log::info('[PageBuilderController] getWidgetSettings called', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'tab' => $tab
@@ -1667,7 +1639,7 @@ class PageBuilderController extends Controller
                 ->first();
 
             if (!$widget) {
-                \Log::warning('[PageBuilderController] Widget not found in database', [
+                Log::warning('[PageBuilderController] Widget not found in database', [
                     'widgetId' => $widgetId,
                     'pageId' => $pageId
                 ]);
@@ -1682,7 +1654,7 @@ class PageBuilderController extends Controller
             $widgetClassName = $this->getWidgetClassName($widget->widget_type);
 
             if (!class_exists($widgetClassName)) {
-                \Log::error('[PageBuilderController] Widget class not found', [
+                Log::error('[PageBuilderController] Widget class not found', [
                     'widgetType' => $widget->widget_type,
                     'className' => $widgetClassName
                 ]);
@@ -1705,7 +1677,7 @@ class PageBuilderController extends Controller
             };
 
             if (empty($fieldDefinitions)) {
-                \Log::info('[PageBuilderController] No field definitions found for tab', [
+                Log::info('[PageBuilderController] No field definitions found for tab', [
                     'widgetType' => $widget->widget_type,
                     'tab' => $tab
                 ]);
@@ -1729,7 +1701,7 @@ class PageBuilderController extends Controller
                 default => []
             };
 
-            \Log::info('[PageBuilderController] Processing field definitions', [
+            Log::info('[PageBuilderController] Processing field definitions', [
                 'fieldCount' => count($fieldDefinitions),
                 'savedValuesCount' => count($savedValues),
                 'tab' => $tab
@@ -1738,7 +1710,7 @@ class PageBuilderController extends Controller
             // Merge saved values into field definitions
             $populatedFields = $this->mergeFieldsWithValues($fieldDefinitions, $savedValues);
 
-            \Log::info('[PageBuilderController] Fields populated successfully', [
+            Log::info('[PageBuilderController] Fields populated successfully', [
                 'populatedFieldCount' => count($populatedFields),
                 'tab' => $tab
             ]);
@@ -1754,7 +1726,7 @@ class PageBuilderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            \Log::error('[PageBuilderController] Error in getWidgetSettings', [
+            Log::error('[PageBuilderController] Error in getWidgetSettings', [
                 'pageId' => $pageId,
                 'widgetId' => $widgetId,
                 'tab' => $tab,

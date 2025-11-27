@@ -65,6 +65,9 @@ const PageBuilder = ({ page, widgets, sections, templates }) => {
   React.useEffect(() => {
     const initContent = async () => {
       try {
+        // Set current page ID for auto-save
+        usePageBuilderStore.getState().setCurrentPageId(page.id);
+        
         // Start editing session first
         await startSession('full_page');
 

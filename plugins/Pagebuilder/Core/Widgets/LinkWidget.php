@@ -562,9 +562,9 @@ class LinkWidget extends BaseWidget
         $behavior = $general['behavior'] ?? [];
         $accessibility = $general['accessibility'] ?? [];
         
-        $linkText = htmlspecialchars($content['link_text'] ?? 'Click Here', ENT_QUOTES, 'UTF-8');
-        $linkUrl = htmlspecialchars($content['link_url'] ?? '#', ENT_QUOTES, 'UTF-8');
-        $linkTitle = htmlspecialchars($content['link_title'] ?? '', ENT_QUOTES, 'UTF-8');
+        $linkText = htmlspecialchars(is_array($content['link_text'] ?? '') ? 'Click Here' : ($content['link_text'] ?? 'Click Here'), ENT_QUOTES, 'UTF-8');
+        $linkUrl = htmlspecialchars(is_array($content['link_url'] ?? '') ? '#' : ($content['link_url'] ?? '#'), ENT_QUOTES, 'UTF-8');
+        $linkTitle = htmlspecialchars(is_array($content['link_title'] ?? '') ? '' : ($content['link_title'] ?? ''), ENT_QUOTES, 'UTF-8');
         
         $linkStyle = $type['link_style'] ?? 'text';
         $buttonSize = $type['button_size'] ?? 'medium';
